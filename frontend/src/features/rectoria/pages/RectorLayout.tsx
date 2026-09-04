@@ -1,14 +1,15 @@
 import React from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
 import { 
   BarChart3, 
   ShieldAlert, 
   FileCheck, 
   LogOut, 
-  School, 
-  Award,
-  ScrollText
+  GraduationCap, 
+  ScrollText,
+  Bell,
+  HelpCircle
 } from 'lucide-react';
 
 export const RectorLayout: React.FC = () => {
@@ -20,76 +21,121 @@ export const RectorLayout: React.FC = () => {
     navigate('/login');
   };
 
+  const navItemClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-[0.98] ${
+      isActive
+        ? 'bg-trujillo-sky/15 text-trujillo-sky border border-trujillo-sky/30 shadow-sm'
+        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+    }`;
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex">
-      {/* Sidebar Directivo */}
-      <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between p-4 shrink-0">
+    <div className="min-h-screen bg-trujillo-ice text-trujillo-dark flex flex-col md:flex-row font-sans">
+      {/* Sidebar Directivo Institucional */}
+      <aside className="w-full md:w-64 bg-trujillo-dark text-slate-200 border-r border-slate-800 flex flex-col justify-between shrink-0 p-4">
         <div>
-          {/* Logo */}
-          <div className="flex items-center gap-3 px-3 py-4 mb-6 border-b border-slate-800/80">
-            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
-              <School className="w-6 h-6" />
+          {/* Logo & Marca Institucional */}
+          <div className="px-2 py-3 mb-6 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-trujillo-navy text-white ring-2 ring-trujillo-sky/30 shadow-md">
+                <GraduationCap className="w-6 h-6 text-trujillo-sky" />
+              </div>
+              <div>
+                <h2 className="font-extrabold text-base tracking-tight text-white leading-tight">
+                  Disciplina<span className="text-trujillo-sky font-black">+</span>
+                </h2>
+                <p className="text-[11px] font-medium text-slate-400">
+                  IE Trujillo
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="font-bold text-sm text-white leading-tight">Disciplina Web</h2>
-              <span className="text-xs text-indigo-400 font-medium">Rectoria & Consejo</span>
+            <div className="mt-3 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/80 text-[11px] text-trujillo-sky font-semibold flex items-center justify-between">
+              <span>Rectoría Institucional</span>
+              <span className="w-2 h-2 rounded-full bg-trujillo-laurel"></span>
             </div>
           </div>
 
-          {/* Navegacion */}
+          {/* Menú de Navegación Estratégico */}
           <nav className="space-y-1.5">
-            <Link
-              to="/rectoria/dashboard"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 font-medium text-sm transition-all"
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span>Tablero Analitico</span>
-            </Link>
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 text-sm transition-all opacity-70 cursor-not-allowed">
-              <ShieldAlert className="w-4 h-4" />
-              <span>Faltas Graves (Tipo III)</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Sprint 3</span>
-            </div>
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 text-sm transition-all opacity-70 cursor-not-allowed">
-              <ScrollText className="w-4 h-4" />
-              <span>Auditoria Forense</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Sprint 3</span>
-            </div>
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 text-sm transition-all opacity-70 cursor-not-allowed">
-              <FileCheck className="w-4 h-4 text-cyan-400" />
-              <span>Actas & Reportes PDF</span>
-              <span className="ml-auto text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded">Sprint 6</span>
-            </div>
+            <NavLink to="/rectoria/dashboard" className={navItemClass}>
+              <BarChart3 className="w-4 h-4 shrink-0" />
+              <span>Tablero Estratégico</span>
+            </NavLink>
+
+            <NavLink to="/rectoria/faltas-graves" className={navItemClass}>
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              <span>Faltas Tipo III & Ruta</span>
+            </NavLink>
+
+            <NavLink to="/rectoria/auditoria" className={navItemClass}>
+              <ScrollText className="w-4 h-4 shrink-0" />
+              <span>Auditoría Forense</span>
+            </NavLink>
+
+            <NavLink to="/rectoria/reportes" className={navItemClass}>
+              <FileCheck className="w-4 h-4 shrink-0" />
+              <span>Actas & Resoluciones</span>
+            </NavLink>
           </nav>
         </div>
 
-        {/* Perfil y Logout */}
-        <div className="pt-4 border-t border-slate-800">
-          <div className="flex items-center gap-3 px-2 mb-3">
-            <div className="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xs">
-              <Award className="w-4 h-4" />
+        {/* Sección Inferior: Usuario & Acciones */}
+        <div className="pt-4 border-t border-slate-800 space-y-3">
+          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-trujillo-navy flex items-center justify-center text-white font-bold text-xs shrink-0 ring-1 ring-trujillo-sky/40">
+              {user?.nombres?.charAt(0) || 'R'}{user?.apellidos?.charAt(0) || 'T'}
             </div>
-            <div className="overflow-hidden">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-white truncate">
                 {user?.nombres} {user?.apellidos}
               </p>
-              <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
+              <p className="text-[11px] text-slate-400 truncate">
+                {user?.email}
+              </p>
             </div>
           </div>
+
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-500/20 text-xs font-medium transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-rose-950/40 hover:text-rose-300 text-slate-400 border border-slate-800 hover:border-rose-900/50 text-xs font-medium transition-all duration-150 cursor-pointer active:scale-[0.98]"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Cerrar Sesion</span>
+            <span>Cerrar Sesión</span>
           </button>
         </div>
       </aside>
 
-      {/* Contenido Principal */}
-      <main className="flex-1 overflow-y-auto p-8">
-        <Outlet />
-      </main>
+      {/* Área Principal de Trabajo */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+        {/* Barra Superior Institucional */}
+        <header className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Institución Educativa Trujillo
+            </span>
+            <span className="text-slate-300">•</span>
+            <span className="text-xs font-medium text-trujillo-navy">
+              Despacho de Rectoría & Consejo Directivo
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="p-2 rounded-lg text-slate-500 hover:text-trujillo-navy hover:bg-slate-100 transition-all text-xs flex items-center gap-1.5" title="Notificaciones Institucionales">
+              <Bell className="w-4 h-4" />
+            </button>
+            <button className="p-2 rounded-lg text-slate-500 hover:text-trujillo-navy hover:bg-slate-100 transition-all text-xs flex items-center gap-1.5" title="Marco Normativo Ley 1620">
+              <HelpCircle className="w-4 h-4" />
+            </button>
+            <span className="px-2.5 py-1 rounded-full bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200">
+              Vigencia 2026
+            </span>
+          </div>
+        </header>
+
+        {/* Contenido de la Página */}
+        <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
