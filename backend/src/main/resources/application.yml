@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: /api/v1
 
@@ -39,8 +39,8 @@ spring:
 
 app:
   jwt:
-    secret: c2VjcmV0X3Bhc3N3b3JkX2Rpc2NpcGxpbmFfd2ViXzIwMjZfaG1hY19zaGEyNTZfc2VjdXJlX2tleV9mb3Jfand0X2F1dGhlbnRpY2F0aW9u
-    expiration-ms: 28800000 # 8 horas en milisegundos
+    secret: ${JWT_SECRET:c2VjcmV0X3Bhc3N3b3JkX2Rpc2NpcGxpbmFfd2ViXzIwMjZfaG1hY19zaGEyNTZfc2VjdXJlX2tleV9mb3Jfand0X2F1dGhlbnRpY2F0aW9u}
+    expiration-ms: ${JWT_EXPIRATION_MS:28800000}
 
 logging:
   level:
