@@ -3,6 +3,7 @@ import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
 import { 
   FileText, 
+  FileSpreadsheet, 
   Users, 
   LogOut, 
   Sparkles,
@@ -61,7 +62,12 @@ export const OrientadorLayout: React.FC = () => {
           <nav className="space-y-1.5">
             <NavLink to="/orientador/incidentes" className={navItemClass}>
               <FileText className="w-4 h-4 shrink-0" />
-              <span>Bitacora de Incidentes</span>
+              <span>Bitácora de Incidentes</span>
+            </NavLink>
+
+            <NavLink to="/orientador/matriculas" className={navItemClass}>
+              <FileSpreadsheet className="w-4 h-4 shrink-0 text-trujillo-sky" />
+              <span>Carga de Matrículas</span>
             </NavLink>
 
             <NavLink to="/orientador/expedientes" className={navItemClass}>

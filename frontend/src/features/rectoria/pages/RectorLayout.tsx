@@ -5,6 +5,7 @@ import {
   BarChart3, 
   ShieldAlert, 
   FileCheck, 
+  FileSpreadsheet, 
   LogOut, 
   ScrollText,
   Bell,
@@ -62,6 +63,11 @@ export const RectorLayout: React.FC = () => {
             <NavLink to="/rectoria/dashboard" className={navItemClass}>
               <BarChart3 className="w-4 h-4 shrink-0" />
               <span>Tablero Estratégico</span>
+            </NavLink>
+
+            <NavLink to="/rectoria/matriculas" className={navItemClass}>
+              <FileSpreadsheet className="w-4 h-4 shrink-0 text-trujillo-sky" />
+              <span>Carga de Matrículas</span>
             </NavLink>
 
             <NavLink to="/rectoria/faltas-graves" className={navItemClass}>
