@@ -118,8 +118,8 @@ public class SecurityConfig {
                         .requestMatchers("/rectoria/**", "/api/v1/rectoria/**").hasAuthority("ROLE_RECTOR")
                         .requestMatchers("/orientador/**", "/api/v1/orientador/**").hasAuthority("ROLE_ORIENTADOR")
                         
-                        // Rutas compartidas de incidentes, matriculas y expedientes
-                        .requestMatchers("/matriculas/**", "/api/v1/matriculas/**", "/api/v1/**").hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
+                        // Rutas compartidas de incidentes, catalogos, matriculas y expedientes
+                        .requestMatchers("/matriculas/**", "/api/v1/matriculas/**", "/catalogos/**", "/api/v1/catalogos/**", "/incidentes/**", "/api/v1/incidentes/**", "/api/v1/**").hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
                         
                         .anyRequest().authenticated()
                 )

@@ -96,4 +96,8 @@ public class Usuario {
     public void preUpdate() {
         this.updatedAt = OffsetDateTime.now();
     }
+
+    public String getNombreCompleto() {
+        return (nombres + " " + apellidos).trim();
+    }
 }

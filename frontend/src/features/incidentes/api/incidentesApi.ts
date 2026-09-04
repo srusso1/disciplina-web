@@ -1,0 +1,80 @@
+import { apiClient } from '../../../core/api/apiClient';
+import {
+  DocenteCatalogo,
+  LugarCatalogo,
+  CatalogoFalta,
+  RegistrarIncidenteData,
+  Incidente,
+  ActualizarEstadoData,
+  ActualizarDescargoData,
+  EstadisticasIncidentes,
+  PaginaIncidentes,
+  EstadoProceso,
+  ClasificacionLey,
+  GravedadInstitucional,
+} from '../types/incidente.types';
+
+export const incidentesApi = {
+  // Catalogos
+  listarDocentes: async (): Promise<DocenteCatalogo[]> => {
+    const response = await apiClient.get<DocenteCatalogo[]>('/catalogos/docentes');
+    return response.data;
+  },
+
+  listarLugares: async (): Promise<LugarCatalogo[]> => {
+    const response = await apiClient.get<LugarCatalogo[]>('/catalogos/lugares');
+    return response.data;
+  },
+
+  listarFaltas: async (params?: {
+    tipoLey?: ClasificacionLey;
+    gravedad?: GravedadInstitucional;
+  }): Promise<CatalogoFalta[]> => {
+    const response = await apiClient.get<CatalogoFalta[]>('/catalogos/faltas', { params });
+    return response.data;
+  },
+
+  // Incidentes
+  registrar: async (data: RegistrarIncidenteData): Promise<Incidente> => {
+    const response = await apiClient.post<Incidente>('/incidentes', data);
+    return response.data;
+  },
+
+  listar: async (params?: {
+    page?: number;
+    size?: number;
+    estado?: EstadoProceso;
+    tipoLey?: ClasificacionLey;
+    busqueda?: string;
+  }): Promise<PaginaIncidentes> => {
+    const response = await apiClient.get<PaginaIncidentes>('/incidentes', { params });
+    return response.data;
+  },
+
+  obtenerPorId: async (id: number): Promise<Incidente> => {
+    const response = await apiClient.get<Incidente>(`/incidentes/${id}`);
+    return response.data;
+  },
+
+  actualizarEstado: async (id: number, data: ActualizarEstadoData): Promise<Incidente> => {
+    const response = await apiClient.patch<Incidente>(`/incidentes/${id}/estado`, data);
+    return response.data;
+  },
+
+  actualizarDescargo: async (
+    incidenteId: number,
+    estudianteId: number,
+    data: ActualizarDescargoData
+  ): Promise<Incidente> => {
+    const response = await apiClient.put<Incidente>(
+      `/incidentes/${incidenteId}/estudiantes/${estudianteId}/descargo`,
+      data
+    );
+    return response.data;
+  },
+
+  obtenerEstadisticas: async (): Promise<EstadisticasIncidentes> => {
+    const response = await apiClient.get<EstadisticasIncidentes>('/incidentes/estadisticas');
+    return response.data;
+  },
+};
