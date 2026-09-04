@@ -1,10 +1,12 @@
 package com.disciplina.controller;
 
 import com.disciplina.dto.common.PaginaRespuestaDTO;
+import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
 import com.disciplina.dto.matricula.ImportacionMatriculasResumenDTO;
 import com.disciplina.service.EstudianteService;
 import com.disciplina.service.ImportadorMatriculasService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -75,5 +77,15 @@ public class MatriculaController {
                 "anioLectivo", anioLectivo != null ? anioLectivo : 2026,
                 "totalMatriculados", total
         ));
+    }
+
+    @PutMapping("/estudiantes/{id}")
+    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    public ResponseEntity<EstudianteMatriculaResponseDTO> actualizarEstudiante(
+            @PathVariable("id") Integer id,
+            @Valid @RequestBody ActualizarEstudianteDTO dto) {
+
+        EstudianteMatriculaResponseDTO actualizado = estudianteService.actualizarEstudiante(id, dto);
+        return ResponseEntity.ok(actualizado);
     }
 }

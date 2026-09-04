@@ -17,8 +17,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Pencil
 } from 'lucide-react';
+import { EditarEstudianteModal } from '../components/EditarEstudianteModal';
 
 export const CargaMatriculasPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -37,7 +39,27 @@ export const CargaMatriculasPage: React.FC = () => {
   const [totalPaginas, setTotalPaginas] = useState<number>(0);
   const [isLoadingEstudiantes, setIsLoadingEstudiantes] = useState(false);
 
+  // Estado del Modal de Edición
+  const [estudianteAEditar, setEstudianteAEditar] = useState<EstudianteMatricula | null>(null);
+  const [isModalEditarOpen, setIsModalEditarOpen] = useState<boolean>(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAbrirEditar = (est: EstudianteMatricula) => {
+    setEstudianteAEditar(est);
+    setIsModalEditarOpen(true);
+  };
+
+  const handleCerrarEditar = () => {
+    setIsModalEditarOpen(false);
+    setEstudianteAEditar(null);
+  };
+
+  const handleEstudianteActualizado = (actualizado: EstudianteMatricula) => {
+    setEstudiantes((prev) =>
+      prev.map((e) => (e.id === actualizado.id ? actualizado : e))
+    );
+  };
 
   // Cargar estudiantes matriculados con paginación de backend
   const cargarEstudiantes = async (grado: string, search: string, page: number, size: number) => {
@@ -420,19 +442,20 @@ export const CargaMatriculasPage: React.FC = () => {
                 <th className="px-3 py-2.5">Acudiente</th>
                 <th className="px-3 py-2.5">Teléfono Contacto</th>
                 <th className="px-3 py-2.5">Estado</th>
+                <th className="px-3 py-2.5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoadingEstudiantes ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
                     <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-trujillo-navy" />
                     <span>Consultando base de datos...</span>
                   </td>
                 </tr>
               ) : estudiantes.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                     No se encontraron estudiantes para los filtros seleccionados.
                   </td>
                 </tr>
@@ -464,6 +487,17 @@ export const CargaMatriculasPage: React.FC = () => {
                         <CheckCircle2 className="w-3 h-3" />
                         <span>{est.estadoMatricula}</span>
                       </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleAbrirEditar(est)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-trujillo-navy hover:text-white bg-sky-50 hover:bg-trujillo-navy rounded-lg border border-sky-200 hover:border-trujillo-navy transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                        title="Editar datos del estudiante"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Editar</span>
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -545,6 +579,14 @@ export const CargaMatriculasPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Edición de Datos de Estudiante */}
+      <EditarEstudianteModal
+        estudiante={estudianteAEditar}
+        isOpen={isModalEditarOpen}
+        onClose={handleCerrarEditar}
+        onSuccess={handleEstudianteActualizado}
+      />
     </div>
   );
 };

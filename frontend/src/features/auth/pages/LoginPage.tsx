@@ -76,7 +76,7 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Tarjeta de Inicio de Sesi�n */}
+        {/* Tarjeta de Inicio de Sesion */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-elevated transition-all">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
             <div>

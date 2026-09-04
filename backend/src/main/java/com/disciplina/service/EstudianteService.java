@@ -1,10 +1,14 @@
 package com.disciplina.service;
 
+import com.disciplina.common.exception.ConflictoEntidadException;
+import com.disciplina.common.exception.RecursoNoEncontradoException;
+import com.disciplina.domain.enums.EstadoMatricula;
 import com.disciplina.domain.model.Estudiante;
 import com.disciplina.domain.model.MatriculaEstudiante;
 import com.disciplina.domain.repository.EstudianteRepository;
 import com.disciplina.domain.repository.MatriculaEstudianteRepository;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
+import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,6 +77,59 @@ public class EstudianteService {
                 })
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public EstudianteMatriculaResponseDTO actualizarEstudiante(Integer estudianteId, ActualizarEstudianteDTO dto) {
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
+
+        String nuevoDoc = dto.getDocumento().trim();
+        if (!estudiante.getDocumento().equalsIgnoreCase(nuevoDoc)) {
+            if (estudianteRepository.existsByDocumento(nuevoDoc)) {
+                throw new ConflictoEntidadException("Ya existe un estudiante registrado con el documento: " + nuevoDoc);
+            }
+            estudiante.setDocumento(nuevoDoc);
+        }
+
+        estudiante.setNombres(dto.getNombres().trim().toUpperCase());
+        estudiante.setApellidos(dto.getApellidos().trim().toUpperCase());
+        estudiante.setNombreAcudiente(dto.getNombreAcudiente().trim().toUpperCase());
+        estudiante.setTelefonoAcudiente(dto.getTelefonoAcudiente().trim());
+
+        estudiante = estudianteRepository.save(estudiante);
+
+        int anio = (dto.getAnioLectivo() != null && dto.getAnioLectivo() > 2000) ? dto.getAnioLectivo() : LocalDate.now().getYear();
+        Optional<MatriculaEstudiante> matriculaOpt = matriculaEstudianteRepository.findByEstudianteAndAnioLectivo(estudiante, anio);
+        MatriculaEstudiante matricula;
+        if (matriculaOpt.isPresent()) {
+            matricula = matriculaOpt.get();
+            if (dto.getGrado() != null && !dto.getGrado().trim().isEmpty()) {
+                matricula.setGrado(dto.getGrado().trim());
+            }
+            if (dto.getGrupo() != null && !dto.getGrupo().trim().isEmpty()) {
+                matricula.setGrupo(dto.getGrupo().trim());
+            }
+            if (dto.getJornada() != null && !dto.getJornada().trim().isEmpty()) {
+                matricula.setJornada(dto.getJornada().trim());
+            }
+            if (dto.getEstadoMatricula() != null) {
+                matricula.setEstadoMatricula(dto.getEstadoMatricula());
+            }
+            matricula = matriculaEstudianteRepository.save(matricula);
+        } else {
+            matricula = MatriculaEstudiante.builder()
+                    .estudiante(estudiante)
+                    .anioLectivo(anio)
+                    .grado(dto.getGrado() != null ? dto.getGrado().trim() : "0")
+                    .grupo(dto.getGrupo() != null ? dto.getGrupo().trim() : "0")
+                    .jornada(dto.getJornada() != null ? dto.getJornada().trim() : "MANANA")
+                    .estadoMatricula(dto.getEstadoMatricula() != null ? dto.getEstadoMatricula() : EstadoMatricula.ACTIVO)
+                    .build();
+            matricula = matriculaEstudianteRepository.save(matricula);
+        }
+
+        return mapToDTO(matricula);
     }
 
     public long contarMatriculasPorAnio(Integer anioLectivo) {

@@ -24,10 +24,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import com.disciplina.domain.enums.EstadoMatricula;
+import com.disciplina.domain.model.Estudiante;
+import com.disciplina.domain.model.MatriculaEstudiante;
+import com.disciplina.domain.repository.EstudianteRepository;
+import com.disciplina.domain.repository.MatriculaEstudianteRepository;
+import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,6 +59,15 @@ class MatriculaControllerTest {
 
     @Autowired
     private ImportadorMatriculasService importadorMatriculasService;
+
+    @Autowired
+    private EstudianteRepository estudianteRepository;
+
+    @Autowired
+    private MatriculaEstudianteRepository matriculaEstudianteRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private String tokenRector;
     private String tokenOrientador;
@@ -224,5 +243,116 @@ class MatriculaControllerTest {
         mockMvc.perform(multipart("/api/v1/matriculas/importar-masivo")
                         .file(file))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Debe actualizar exitosamente los datos de un estudiante y transformar acudiente a mayúsculas")
+    void testActualizarEstudianteExitoso() throws Exception {
+        Estudiante est = estudianteRepository.save(Estudiante.builder()
+                .documento("DOC_TEST_EDIT_1")
+                .nombres("Pepito")
+                .apellidos("Perez")
+                .nombreAcudiente("Acudiente Inicial")
+                .telefonoAcudiente("3101112233")
+                .build());
+
+        matriculaEstudianteRepository.save(MatriculaEstudiante.builder()
+                .estudiante(est)
+                .anioLectivo(2026)
+                .grado("10")
+                .grupo("1001")
+                .jornada("MANANA")
+                .estadoMatricula(EstadoMatricula.ACTIVO)
+                .build());
+
+        ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
+                .documento("1005554443")
+                .nombres("pepito antonio")
+                .apellidos("perez gomez")
+                .nombreAcudiente("maria gomez")
+                .telefonoAcudiente("3114165509")
+                .grado("11")
+                .grupo("1102")
+                .jornada("TARDE")
+                .estadoMatricula(EstadoMatricula.ACTIVO)
+                .anioLectivo(2026)
+                .build();
+
+        mockMvc.perform(put("/api/v1/matriculas/estudiantes/" + est.getId())
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.documento", is("1005554443")))
+                .andExpect(jsonPath("$.nombres", is("PEPITO ANTONIO")))
+                .andExpect(jsonPath("$.apellidos", is("PEREZ GOMEZ")))
+                .andExpect(jsonPath("$.nombreAcudiente", is("MARIA GOMEZ")))
+                .andExpect(jsonPath("$.telefonoAcudiente", is("3114165509")))
+                .andExpect(jsonPath("$.grado", is("11")))
+                .andExpect(jsonPath("$.grupo", is("1102")));
+    }
+
+    @Test
+    @DisplayName("Debe rechazar teléfono que no cumple formato de 10 dígitos celular colombiano con 400")
+    void testActualizarEstudianteTelefonoInvalido() throws Exception {
+        Estudiante est = estudianteRepository.save(Estudiante.builder()
+                .documento("DOC_TEST_EDIT_2")
+                .nombres("Laura")
+                .apellidos("Jimenez")
+                .nombreAcudiente("PADRE INICIAL")
+                .telefonoAcudiente("3101112233")
+                .build());
+
+        ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
+                .documento("DOC_TEST_EDIT_2")
+                .nombres("Laura")
+                .apellidos("Jimenez")
+                .nombreAcudiente("CARLOS JIMENEZ")
+                .telefonoAcudiente("12345")
+                .grado("09")
+                .grupo("0901")
+                .anioLectivo(2026)
+                .build();
+
+        mockMvc.perform(put("/api/v1/matriculas/estudiantes/" + est.getId())
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.telefonoAcudiente", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("Debe rechazar cambio de documento si colisiona con otro estudiante con 409 Conflict")
+    void testActualizarEstudianteDocumentoDuplicado() throws Exception {
+        estudianteRepository.save(Estudiante.builder()
+                .documento("DOC_EXISTENTE_UNICO")
+                .nombres("Existente")
+                .apellidos("Uno")
+                .build());
+
+        Estudiante est2 = estudianteRepository.save(Estudiante.builder()
+                .documento("DOC_TEST_EDIT_3")
+                .nombres("Otro")
+                .apellidos("Dos")
+                .build());
+
+        ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
+                .documento("DOC_EXISTENTE_UNICO")
+                .nombres("Otro")
+                .apellidos("Dos")
+                .nombreAcudiente("ACUDIENTE")
+                .telefonoAcudiente("3159998877")
+                .grado("10")
+                .grupo("1001")
+                .anioLectivo(2026)
+                .build();
+
+        mockMvc.perform(put("/api/v1/matriculas/estudiantes/" + est2.getId())
+                        .header("Authorization", "Bearer " + tokenRector)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message", containsString("Ya existe un estudiante")));
     }
 }

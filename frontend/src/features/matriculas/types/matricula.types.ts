@@ -39,6 +39,19 @@ export interface EstudianteMatricula {
   estadoMatricula: string;
 }
 
+export interface ActualizarEstudianteData {
+  documento: string;
+  nombres: string;
+  apellidos: string;
+  nombreAcudiente: string;
+  telefonoAcudiente: string;
+  grado: string;
+  grupo: string;
+  jornada?: string;
+  estadoMatricula?: string;
+  anioLectivo?: number;
+}
+
 export interface PaginaRespuesta<T> {
   contenido: T[];
   pagina: number;
