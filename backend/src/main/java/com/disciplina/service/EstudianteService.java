@@ -4,8 +4,12 @@ import com.disciplina.domain.model.Estudiante;
 import com.disciplina.domain.model.MatriculaEstudiante;
 import com.disciplina.domain.repository.EstudianteRepository;
 import com.disciplina.domain.repository.MatriculaEstudianteRepository;
+import com.disciplina.dto.common.PaginaRespuestaDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +24,30 @@ public class EstudianteService {
 
     private final EstudianteRepository estudianteRepository;
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
+
+    public PaginaRespuestaDTO<EstudianteMatriculaResponseDTO> listarEstudiantesPaginados(
+            Integer anioLectivo,
+            String grado,
+            String grupo,
+            String busqueda,
+            int page,
+            int size) {
+
+        int anio = (anioLectivo != null && anioLectivo > 2000) ? anioLectivo : LocalDate.now().getYear();
+        int paginaValida = Math.max(0, page);
+        int tamanoValido = (size > 0 && size <= 100) ? size : 15;
+
+        Pageable pageable = PageRequest.of(paginaValida, tamanoValido);
+        String filtro = (busqueda != null && !busqueda.trim().isEmpty()) ? busqueda.trim() : null;
+        String g = (grado != null && !grado.trim().isEmpty()) ? grado.trim() : null;
+        String grp = (grupo != null && !grupo.trim().isEmpty()) ? grupo.trim() : null;
+
+        Page<MatriculaEstudiante> pagina = matriculaEstudianteRepository
+                .buscarMatriculasPaginadas(anio, g, grp, filtro, pageable);
+
+        Page<EstudianteMatriculaResponseDTO> paginaDTO = pagina.map(this::mapToDTO);
+        return PaginaRespuestaDTO.de(paginaDTO);
+    }
 
     public List<EstudianteMatriculaResponseDTO> listarEstudiantesPorMatricula(Integer anioLectivo, String grado, String grupo, String busqueda) {
         int anio = (anioLectivo != null && anioLectivo > 2000) ? anioLectivo : LocalDate.now().getYear();

@@ -1,5 +1,5 @@
 import { apiClient } from '../../../core/api/apiClient';
-import { ImportacionMatriculasResumen, EstudianteMatricula } from '../types/matricula.types';
+import { ImportacionMatriculasResumen, EstudianteMatricula, PaginaRespuesta } from '../types/matricula.types';
 
 export const matriculasApi = {
   importarMasivo: async (file: File, anioLectivo?: number): Promise<ImportacionMatriculasResumen> => {
@@ -22,12 +22,14 @@ export const matriculasApi = {
   },
 
   listarEstudiantes: async (params?: {
+    page?: number;
+    size?: number;
     anioLectivo?: number;
     grado?: string;
     grupo?: string;
     busqueda?: string;
-  }): Promise<EstudianteMatricula[]> => {
-    const response = await apiClient.get<EstudianteMatricula[]>('/matriculas/estudiantes', {
+  }): Promise<PaginaRespuesta<EstudianteMatricula>> => {
+    const response = await apiClient.get<PaginaRespuesta<EstudianteMatricula>>('/matriculas/estudiantes', {
       params,
     });
     return response.data;

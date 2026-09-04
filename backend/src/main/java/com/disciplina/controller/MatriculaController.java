@@ -1,5 +1,6 @@
 package com.disciplina.controller;
 
+import com.disciplina.dto.common.PaginaRespuestaDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
 import com.disciplina.dto.matricula.ImportacionMatriculasResumenDTO;
 import com.disciplina.service.EstudianteService;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -52,15 +52,17 @@ public class MatriculaController {
 
     @GetMapping("/estudiantes")
     @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
-    public ResponseEntity<List<EstudianteMatriculaResponseDTO>> listarEstudiantes(
+    public ResponseEntity<PaginaRespuestaDTO<EstudianteMatriculaResponseDTO>> listarEstudiantes(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "15") int size,
             @RequestParam(value = "anioLectivo", required = false) Integer anioLectivo,
             @RequestParam(value = "grado", required = false) String grado,
             @RequestParam(value = "grupo", required = false) String grupo,
             @RequestParam(value = "busqueda", required = false) String busqueda) {
 
-        List<EstudianteMatriculaResponseDTO> lista = estudianteService
-                .listarEstudiantesPorMatricula(anioLectivo, grado, grupo, busqueda);
-        return ResponseEntity.ok(lista);
+        PaginaRespuestaDTO<EstudianteMatriculaResponseDTO> pagina = estudianteService
+                .listarEstudiantesPaginados(anioLectivo, grado, grupo, busqueda, page, size);
+        return ResponseEntity.ok(pagina);
     }
 
     @GetMapping("/resumen")

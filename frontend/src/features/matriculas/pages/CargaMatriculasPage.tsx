@@ -13,7 +13,11 @@ import {
   X, 
   Loader2,
   FileCheck,
-  ShieldAlert
+  ShieldAlert,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 
 export const CargaMatriculasPage: React.FC = () => {
@@ -23,24 +27,32 @@ export const CargaMatriculasPage: React.FC = () => {
   const [resumen, setResumen] = useState<ImportacionMatriculasResumen | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Explorador de Estudiantes
+  // Explorador y Paginación en Base de Datos
   const [estudiantes, setEstudiantes] = useState<EstudianteMatricula[]>([]);
   const [filtroGrado, setFiltroGrado] = useState<string>('');
   const [busqueda, setBusqueda] = useState<string>('');
+  const [paginaActual, setPaginaActual] = useState<number>(0);
+  const [tamanoPagina, setTamanoPagina] = useState<number>(15);
+  const [totalElementos, setTotalElementos] = useState<number>(0);
+  const [totalPaginas, setTotalPaginas] = useState<number>(0);
   const [isLoadingEstudiantes, setIsLoadingEstudiantes] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Cargar estudiantes matriculados
-  const cargarEstudiantes = async (grado?: string, search?: string) => {
+  // Cargar estudiantes matriculados con paginación de backend
+  const cargarEstudiantes = async (grado: string, search: string, page: number, size: number) => {
     setIsLoadingEstudiantes(true);
     try {
       const data = await matriculasApi.listarEstudiantes({
+        page,
+        size,
         anioLectivo: 2026,
         grado: grado || undefined,
         busqueda: search || undefined,
       });
-      setEstudiantes(data);
+      setEstudiantes(data.contenido);
+      setTotalElementos(data.totalElementos);
+      setTotalPaginas(data.totalPaginas);
     } catch (err) {
       console.error('Error cargando estudiantes', err);
     } finally {
@@ -48,13 +60,26 @@ export const CargaMatriculasPage: React.FC = () => {
     }
   };
 
+  // Efecto cuando cambia grado, página o tamaño
   useEffect(() => {
-    cargarEstudiantes(filtroGrado, busqueda);
-  }, [filtroGrado]);
+    cargarEstudiantes(filtroGrado, busqueda, paginaActual, tamanoPagina);
+  }, [filtroGrado, paginaActual, tamanoPagina]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    cargarEstudiantes(filtroGrado, busqueda);
+    setPaginaActual(0);
+    cargarEstudiantes(filtroGrado, busqueda, 0, tamanoPagina);
+  };
+
+  const handleGradoChange = (g: string) => {
+    setFiltroGrado(g);
+    setPaginaActual(0);
+  };
+
+  const handlePageChange = (nuevaPagina: number) => {
+    if (nuevaPagina >= 0 && nuevaPagina < totalPaginas) {
+      setPaginaActual(nuevaPagina);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -105,7 +130,8 @@ export const CargaMatriculasPage: React.FC = () => {
     try {
       const resultado = await matriculasApi.importarMasivo(file, 2026);
       setResumen(resultado);
-      cargarEstudiantes(filtroGrado, busqueda);
+      setPaginaActual(0);
+      cargarEstudiantes(filtroGrado, busqueda, 0, tamanoPagina);
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Ocurrió un error al procesar la planilla. Verifique el formato e intente nuevamente.';
       setErrorMessage(msg);
@@ -121,6 +147,9 @@ export const CargaMatriculasPage: React.FC = () => {
   };
 
   const gradosDisponibles = ['', '6', '7', '8', '9', '10', '11'];
+
+  const desdeRegistro = totalElementos === 0 ? 0 : paginaActual * tamanoPagina + 1;
+  const hastaRegistro = Math.min((paginaActual + 1) * tamanoPagina, totalElementos);
 
   return (
     <div className="space-y-6">
@@ -335,7 +364,7 @@ export const CargaMatriculasPage: React.FC = () => {
         </div>
       )}
 
-      {/* Explorador de Estudiantes Matriculados */}
+      {/* Explorador de Estudiantes Matriculados Paginado */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-card space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
@@ -344,7 +373,7 @@ export const CargaMatriculasPage: React.FC = () => {
               <span>Estudiantes Matriculados en Vigencia 2026</span>
             </h2>
             <p className="text-xs text-slate-500">
-              Población activa disponible para registro de incidentes y seguimiento de convivencia.
+              Total de alumnos activos: <span className="font-bold text-trujillo-navy">{totalElementos}</span>
             </p>
           </div>
 
@@ -367,7 +396,7 @@ export const CargaMatriculasPage: React.FC = () => {
             <button
               key={g}
               type="button"
-              onClick={() => setFiltroGrado(g)}
+              onClick={() => handleGradoChange(g)}
               className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 filtroGrado === g
                   ? 'bg-trujillo-navy text-white shadow-xs'
@@ -398,7 +427,7 @@ export const CargaMatriculasPage: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
                     <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-trujillo-navy" />
-                    <span>Cargando estudiantes...</span>
+                    <span>Consultando base de datos...</span>
                   </td>
                 </tr>
               ) : estudiantes.length === 0 ? (
@@ -441,6 +470,79 @@ export const CargaMatriculasPage: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Barra de Paginación Inteligente */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-xs text-slate-600">
+          <div className="flex items-center gap-4">
+            <span>
+              Mostrando <span className="font-semibold text-trujillo-dark">{desdeRegistro}</span> a{' '}
+              <span className="font-semibold text-trujillo-dark">{hastaRegistro}</span> de{' '}
+              <span className="font-semibold text-trujillo-dark">{totalElementos}</span> estudiantes
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-400">Por página:</span>
+              <select
+                value={tamanoPagina}
+                onChange={(e) => {
+                  setTamanoPagina(Number(e.target.value));
+                  setPaginaActual(0);
+                }}
+                className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-trujillo-navy"
+              >
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => handlePageChange(0)}
+              disabled={paginaActual === 0 || isLoadingEstudiantes}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              title="Primera página"
+            >
+              <ChevronsLeft className="w-4 h-4 text-slate-600" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePageChange(paginaActual - 1)}
+              disabled={paginaActual === 0 || isLoadingEstudiantes}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              title="Página anterior"
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-600" />
+            </button>
+
+            <span className="px-3 py-1 font-semibold text-trujillo-navy bg-trujillo-ice border border-sky-200 rounded-lg">
+              Página {totalPaginas === 0 ? 0 : paginaActual + 1} de {totalPaginas}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => handlePageChange(paginaActual + 1)}
+              disabled={paginaActual >= totalPaginas - 1 || isLoadingEstudiantes}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              title="Página siguiente"
+            >
+              <ChevronRight className="w-4 h-4 text-slate-600" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePageChange(totalPaginas - 1)}
+              disabled={paginaActual >= totalPaginas - 1 || isLoadingEstudiantes}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              title="Última página"
+            >
+              <ChevronsRight className="w-4 h-4 text-slate-600" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

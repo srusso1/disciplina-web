@@ -180,13 +180,19 @@ class MatriculaControllerTest {
     }
 
     @Test
-    @DisplayName("Debe permitir listar estudiantes filtrados por año y grado")
+    @DisplayName("Debe permitir listar estudiantes paginados con metadatos de pagina")
     void testListarEstudiantes() throws Exception {
         mockMvc.perform(get("/api/v1/matriculas/estudiantes")
                         .param("anioLectivo", "2026")
+                        .param("page", "0")
+                        .param("size", "10")
                         .header("Authorization", "Bearer " + tokenOrientador))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", notNullValue()));
+                .andExpect(jsonPath("$.contenido", notNullValue()))
+                .andExpect(jsonPath("$.pagina", is(0)))
+                .andExpect(jsonPath("$.tamanoPagina", is(10)))
+                .andExpect(jsonPath("$.totalElementos", greaterThanOrEqualTo(0)))
+                .andExpect(jsonPath("$.totalPaginas", greaterThanOrEqualTo(0)));
     }
 
     @Test

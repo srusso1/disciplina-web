@@ -38,3 +38,13 @@ export interface EstudianteMatricula {
   anioLectivo: number;
   estadoMatricula: string;
 }
+
+export interface PaginaRespuesta<T> {
+  contenido: T[];
+  pagina: number;
+  tamanoPagina: number;
+  totalElementos: number;
+  totalPaginas: number;
+  primera: boolean;
+  ultima: boolean;
+}
