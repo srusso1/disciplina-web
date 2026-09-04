@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
-import { ShieldCheck, Lock, User, AlertCircle, Loader2, GraduationCap, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Lock, User, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -53,10 +53,14 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-trujillo-ice via-sky-50/50 to-slate-100 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
-        {/* Encabezado Institucional */}
+        {/* Encabezado Institucional con Escudo Oficial */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-trujillo-navy text-white shadow-lg shadow-trujillo-navy/20 mb-4 ring-4 ring-trujillo-sky/30">
-            <GraduationCap className="w-9 h-9 text-trujillo-sky" />
+          <div className="inline-flex items-center justify-center w-24 h-24 mb-3 transition-transform duration-200 hover:scale-105">
+            <img 
+              src="/escudo-ie-trujillo.png" 
+              alt="Escudo InstituciÃ³n Educativa Trujillo" 
+              className="w-full h-full object-contain drop-shadow-md"
+            />
           </div>
           
           <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-2 rounded-full bg-white border border-slate-200 text-xs text-trujillo-navy font-semibold shadow-sm">
@@ -72,7 +76,7 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Tarjeta de Inicio de Sesión */}
+        {/* Tarjeta de Inicio de Sesiï¿½n */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-elevated transition-all">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
             <div>

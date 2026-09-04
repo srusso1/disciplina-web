@@ -5,7 +5,6 @@ import {
   FileText, 
   Users, 
   LogOut, 
-  GraduationCap, 
   Sparkles,
   Layers,
   HelpCircle,
@@ -36,8 +35,12 @@ export const OrientadorLayout: React.FC = () => {
           {/* Logo & Marca Institucional */}
           <div className="px-2 py-3 mb-6 border-b border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-trujillo-navy text-white ring-2 ring-trujillo-sky/30 shadow-md">
-                <GraduationCap className="w-6 h-6 text-trujillo-sky" />
+              <div className="w-10 h-10 rounded-xl bg-white/10 p-1 flex items-center justify-center shrink-0 shadow-sm ring-1 ring-white/10">
+                <img 
+                  src="/escudo-ie-trujillo.png" 
+                  alt="Escudo IE Trujillo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <div>
                 <h2 className="font-extrabold text-base tracking-tight text-white leading-tight">
@@ -54,7 +57,7 @@ export const OrientadorLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Menú de Navegación Operativo */}
+          {/* Menï¿½ de Navegaciï¿½n Operativo */}
           <nav className="space-y-1.5">
             <NavLink to="/orientador/incidentes" className={navItemClass}>
               <FileText className="w-4 h-4 shrink-0" />
@@ -78,7 +81,7 @@ export const OrientadorLayout: React.FC = () => {
           </nav>
         </div>
 
-        {/* Sección Inferior: Usuario & Acciones */}
+        {/* Secciï¿½n Inferior: Usuario & Acciones */}
         <div className="pt-4 border-t border-slate-800 space-y-3">
           <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-trujillo-navy flex items-center justify-center text-white font-bold text-xs shrink-0 ring-1 ring-trujillo-sky/40">
@@ -104,7 +107,7 @@ export const OrientadorLayout: React.FC = () => {
         </div>
       </aside>
 
-      {/* Área Principal de Trabajo */}
+      {/* ï¿½rea Principal de Trabajo */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
         {/* Barra Superior Institucional */}
         <header className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
@@ -112,7 +115,7 @@ export const OrientadorLayout: React.FC = () => {
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Institucion Educativa Trujillo
             </span>
-            <span className="text-slate-300">•</span>
+            <span className="text-slate-300">ï¿½</span>
             <span className="text-xs font-medium text-trujillo-navy">
               Sistema de Convivencia Escolar
             </span>
@@ -131,7 +134,7 @@ export const OrientadorLayout: React.FC = () => {
           </div>
         </header>
 
-        {/* Contenido de la Página */}
+        {/* Contenido de la Pï¿½gina */}
         <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
