@@ -1,0 +1,131 @@
+package com.disciplina.controller;
+
+import com.disciplina.domain.enums.RolUsuario;
+import com.disciplina.domain.model.Usuario;
+import com.disciplina.domain.repository.UsuarioRepository;
+import com.disciplina.dto.auth.LoginRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class AuthControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void setUp() {
+        if (usuarioRepository.findByUsername("test_rector").isEmpty()) {
+            Usuario rector = Usuario.builder()
+                    .username("test_rector")
+                    .passwordHash(passwordEncoder.encode("Password123!"))
+                    .nombres("Test")
+                    .apellidos("Rector")
+                    .email("test.rector@disciplina.edu.co")
+                    .rol(RolUsuario.ROLE_RECTOR)
+                    .activo(true)
+                    .build();
+            usuarioRepository.save(rector);
+        }
+    }
+
+    @Test
+    @DisplayName("Debe autenticar exitosamente y retornar token JWT para credenciales validas")
+    void testLoginExitoso() throws Exception {
+        LoginRequest request = LoginRequest.builder()
+                .username("test_rector")
+                .password("Password123!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", notNullValue()))
+                .andExpect(jsonPath("$.type", is("Bearer")))
+                .andExpect(jsonPath("$.username", is("test_rector")))
+                .andExpect(jsonPath("$.rol", is("ROLE_RECTOR")))
+                .andExpect(jsonPath("$.expiresIn", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("Debe fallar con 401 si la contrasena es incorrecta")
+    void testLoginPasswordIncorrecto() throws Exception {
+        LoginRequest request = LoginRequest.builder()
+                .username("test_rector")
+                .password("WrongPassword999!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.message", containsString("Credenciales invalidas")));
+    }
+
+    @Test
+    @DisplayName("Debe fallar con 401 si el usuario no existe")
+    void testLoginUsuarioInexistente() throws Exception {
+        LoginRequest request = LoginRequest.builder()
+                .username("usuario_fantasma")
+                .password("Password123!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)));
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 Bad Request si los campos vienen en blanco")
+    void testLoginCamposEnBlanco() throws Exception {
+        LoginRequest request = LoginRequest.builder()
+                .username("")
+                .password("")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.fieldErrors.username", notNullValue()))
+                .andExpect(jsonPath("$.fieldErrors.password", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("Rutas protegidas deben rechazar peticiones sin token con 401 o 403")
+    void testRutaProtegidaSinToken() throws Exception {
+        mockMvc.perform(get("/api/v1/incidentes"))
+                .andExpect(status().isForbidden());
+    }
+}

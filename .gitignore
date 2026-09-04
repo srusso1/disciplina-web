@@ -1,0 +1,18 @@
+# Target / Build directories
+backend/target/
+frontend/dist/
+frontend/node_modules/
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local

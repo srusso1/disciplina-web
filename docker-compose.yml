@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: disciplina-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: disciplina_db
+      POSTGRES_USER: admin_disciplina
+      POSTGRES_PASSWORD: secret_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - disciplina-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin_disciplina -d disciplina_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: disciplina-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@disciplina.local
+      PGADMIN_DEFAULT_PASSWORD: admin_disciplina_2026
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - disciplina-net
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  disciplina-net:
+    driver: bridge
