@@ -8,6 +8,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtTokenProviderTest {
@@ -21,6 +22,7 @@ class JwtTokenProviderTest {
         tokenProvider = new JwtTokenProvider();
         ReflectionTestUtils.setField(tokenProvider, "jwtSecret", secret);
         ReflectionTestUtils.setField(tokenProvider, "jwtExpirationMs", expirationMs);
+        tokenProvider.initKey();
     }
 
     @Test
@@ -49,5 +51,15 @@ class JwtTokenProviderTest {
     void testNullOrEmptyToken() {
         assertFalse(tokenProvider.validateToken(null));
         assertFalse(tokenProvider.validateToken("   "));
+    }
+
+    @Test
+    @DisplayName("Debe fallar al iniciar si la clave secreta es menor a 256 bits (fail-fast)")
+    void testFailFastOnWeakKey() {
+        JwtTokenProvider weakProvider = new JwtTokenProvider();
+        ReflectionTestUtils.setField(weakProvider, "jwtSecret", "short_weak_key_123");
+        ReflectionTestUtils.setField(weakProvider, "jwtExpirationMs", 3600000L);
+
+        assertThrows(IllegalStateException.class, weakProvider::initKey);
     }
 }

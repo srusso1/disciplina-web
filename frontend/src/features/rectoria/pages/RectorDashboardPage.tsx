@@ -1,83 +1,194 @@
 import React from 'react';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
-import { BarChart3, ShieldCheck, AlertTriangle, Users } from 'lucide-react';
+import { 
+  BarChart3, 
+  ShieldAlert, 
+  AlertTriangle, 
+  Clock, 
+  CheckCircle2, 
+  FileSpreadsheet, 
+  ShieldCheck, 
+  Users, 
+  BookOpenCheck,
+  Scale
+} from 'lucide-react';
 
 export const RectorDashboardPage: React.FC = () => {
   const { user } = useAuthStore();
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Cabecera Directiva */}
-      <div className="bg-gradient-to-r from-indigo-950/40 via-slate-800/40 to-slate-800/20 border border-indigo-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Banner Directivo Institucional */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
-            Panel de Control Estrategico
-          </span>
-          <h1 className="text-2xl font-bold text-white mt-2">
-            Despacho de Rectoria: {user?.nombres}
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-trujillo-ice text-trujillo-navy text-xs font-semibold border border-sky-200">
+            <Scale className="w-3.5 h-3.5 text-trujillo-sky" />
+            <span>Debido Proceso & Supervisión Estratégica</span>
+          </div>
+          <h1 className="text-2xl font-extrabold text-trujillo-dark mt-2 tracking-tight">
+            Despacho de Rectoría: {user?.nombres} {user?.apellidos}
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Supervision institucional, mapas de convivencia y analitica de reincidencia.
+          <p className="text-sm text-slate-500 mt-0.5">
+            Supervisión directiva, observatorio de convivencia escolar y garantías constitucionales.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-medium px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Vigencia Academica: 2026</span>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-sm font-semibold shadow-md shadow-trujillo-navy/20 transition-all duration-150 active:scale-[0.98] cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-trujillo-sky" />
+            <span>Exportar Informe Ejecutivo</span>
+          </button>
         </div>
       </div>
 
-      {/* Indicadores Directivos Clave */}
+      {/* Indicadores Clave del Semáforo de Convivencia */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-indigo-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Incidentes</span>
-            <BarChart3 className="w-4 h-4" />
+        {/* Total Casos */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
+          <div className="flex items-center justify-between text-trujillo-navy mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Expedientes</span>
+            <div className="p-2 rounded-xl bg-trujillo-ice">
+              <BarChart3 className="w-4 h-4 text-trujillo-navy" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Registrados en 2026</p>
+          <p className="text-3xl font-black text-trujillo-dark">0</p>
+          <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-trujillo-laurel" />
+            <span>Vigencia escolar 2026 activa</span>
+          </p>
         </div>
 
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-yellow-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Faltas Tipo I</span>
-            <AlertTriangle className="w-4 h-4" />
+        {/* Faltas Tipo I */}
+        <div className="bg-white border border-yellow-200 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all border-l-4 border-l-yellow-400">
+          <div className="flex items-center justify-between text-yellow-800 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">Faltas Tipo I (Leves)</span>
+            <div className="p-2 rounded-xl bg-yellow-100/70">
+              <AlertTriangle className="w-4 h-4 text-yellow-700" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Leves / Manejo en aula</p>
+          <p className="text-3xl font-black text-yellow-900">0</p>
+          <p className="text-xs text-slate-500 mt-1">Acuerdos pedagógicos de aula</p>
         </div>
 
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-orange-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Faltas Tipo II</span>
-            <AlertTriangle className="w-4 h-4" />
+        {/* Faltas Tipo II */}
+        <div className="bg-white border border-orange-200 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all border-l-4 border-l-orange-400">
+          <div className="flex items-center justify-between text-orange-800 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">Faltas Tipo II (Graves)</span>
+            <div className="p-2 rounded-xl bg-orange-100/70">
+              <Clock className="w-4 h-4 text-orange-600" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Graves / Con acudiente</p>
+          <p className="text-3xl font-black text-orange-900">0</p>
+          <p className="text-xs text-slate-500 mt-1">Intervención de comité & acudientes</p>
         </div>
 
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-rose-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Faltas Tipo III</span>
-            <AlertTriangle className="w-4 h-4" />
+        {/* Faltas Tipo III */}
+        <div className="bg-white border border-rose-200 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all border-l-4 border-l-rose-400">
+          <div className="flex items-center justify-between text-rose-800 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">Faltas Tipo III (Gravísimas)</span>
+            <div className="p-2 rounded-xl bg-rose-100/70">
+              <ShieldAlert className="w-4 h-4 text-rose-600" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Ruta de Atencion Integral</p>
+          <p className="text-3xl font-black text-rose-900">0</p>
+          <p className="text-xs text-slate-500 mt-1">Activación Ruta de Atención Integral</p>
         </div>
       </div>
 
-      {/* Contenedor Informativo del Sprint 1 */}
-      <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-2">
-          Gobernanza y Analitica de Rectoria
-        </h2>
-        <p className="text-sm text-slate-300">
-          El modulo de Rectoria cuenta con RBAC estricto (<code className="text-indigo-300">ROLE_RECTOR</code>). Los datos analiticos consolidados se renderizaran dinamicamente en el Sprint 6 mediante visualizaciones con Recharts y streaming de reportes en PDF.
-        </p>
-        <div className="mt-4 flex items-center gap-3 p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-400">
-          <Users className="w-5 h-5 text-indigo-400 shrink-0" />
-          <span>
-            Usuarios directivos activos: Rector Institucional y Orientador Escolar con llaves JWT criptograficas verificadas con expiracion de 8 horas.
-          </span>
+      {/* Gobernanza Institucional & Garantía de Debido Proceso */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Panel Izquierdo: Ruta de Atención Integral */}
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-card space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-trujillo-navy text-white">
+                <BookOpenCheck className="w-5 h-5 text-trujillo-sky" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-trujillo-dark">
+                  Ruta de Atención Integral para la Convivencia
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Marco legal de la Ley 1620 de 2013 y Decreto 1965 de 2013
+                </p>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+              Protocolo Activo
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-600 leading-relaxed">
+            La plataforma <span className="font-semibold text-trujillo-navy">Disciplina+</span> garantiza la custodia probatoria de cada proceso disciplinario. Toda actuación incorpora snapshots inmutables del estudiante (matrícula, acudiente y grado) para salvaguardar el debido proceso ante el Comité Escolar de Convivencia y entidades de inspección educativa.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <p className="text-xs font-bold text-trujillo-dark flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-trujillo-laurel" />
+                <span>Seguridad Jurídica</span>
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                Snapshots inmutables que impiden alteraciones de registros históricos ante traslados o cambios de curso.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <p className="text-xs font-bold text-trujillo-dark flex items-center gap-1.5">
+                <Scale className="w-4 h-4 text-trujillo-navy" />
+                <span>Debido Proceso Constitucional</span>
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                Registro obligatorio de citaciones a acudientes, descargos del estudiante y actas de conciliación.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Panel Derecho: Estado del Comité Escolar de Convivencia */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3 mb-4">
+              <div className="p-2 rounded-xl bg-sky-50 text-trujillo-navy border border-sky-100">
+                <Users className="w-5 h-5 text-trujillo-navy" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-trujillo-dark">
+                  Comité de Convivencia
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Instancia de concertación institucional
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="font-medium text-slate-600">Rector / Presidente</span>
+                <span className="font-bold text-trujillo-navy">Verificado</span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="font-medium text-slate-600">Orientación Escolar</span>
+                <span className="font-bold text-trujillo-laurel">En Línea</span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="font-medium text-slate-600">Personería Estudiantil</span>
+                <span className="font-medium text-slate-500">Convocado</span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="font-medium text-slate-600">Rep. Consejo Padres</span>
+                <span className="font-medium text-slate-500">Convocado</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <span>Próxima Sesión Ordinaria</span>
+            <span className="font-bold text-trujillo-navy">Marzo 2026</span>
+          </div>
         </div>
       </div>
     </div>

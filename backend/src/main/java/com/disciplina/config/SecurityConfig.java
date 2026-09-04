@@ -1,9 +1,13 @@
 package com.disciplina.config;
 
+import com.disciplina.common.exception.ErrorResponse;
 import com.disciplina.security.JwtAuthenticationFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,12 +20,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +41,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -54,14 +63,65 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+            ErrorResponse error = ErrorResponse.builder()
+                    .timestamp(LocalDateTime.now())
+                    .status(HttpServletResponse.SC_UNAUTHORIZED)
+                    .error("Unauthorized")
+                    .message("Acceso no autenticado. Se requiere un token Bearer JWT valido.")
+                    .path(request.getRequestURI())
+                    .build();
+
+            response.getWriter().write(objectMapper.writeValueAsString(error));
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler customAccessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+            ErrorResponse error = ErrorResponse.builder()
+                    .timestamp(LocalDateTime.now())
+                    .status(HttpServletResponse.SC_FORBIDDEN)
+                    .error("Forbidden")
+                    .message("Acceso denegado. No posee privilegios suficientes para este recurso institucional.")
+                    .path(request.getRequestURI())
+                    .build();
+
+            response.getWriter().write(objectMapper.writeValueAsString(error));
+        };
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(customAuthenticationEntryPoint())
+                        .accessDeniedHandler(customAccessDeniedHandler())
+                )
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints publicos de autenticacion y error
                         .requestMatchers("/auth/**", "/api/v1/auth/**", "/error").permitAll()
-                        .anyRequest().hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
+                        
+                        // Defensa en profundidad a nivel de rutas directivas
+                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**").hasAuthority("ROLE_RECTOR")
+                        .requestMatchers("/orientador/**", "/api/v1/orientador/**").hasAuthority("ROLE_ORIENTADOR")
+                        
+                        // Rutas compartidas de incidentes, matriculas y expedientes
+                        .requestMatchers("/api/v1/**").hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
+                        
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

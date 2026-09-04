@@ -30,11 +30,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        log.info("Intento de inicio de sesion para usuario: {}", loginRequest.getUsername());
+        String normalizedUsername = loginRequest.getUsername().trim();
+        log.info("Intento de inicio de sesion para usuario: {}", normalizedUsername);
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername().trim(),
+                        normalizedUsername,
                         loginRequest.getPassword()
                 )
         );
@@ -43,7 +44,7 @@ public class AuthController {
 
         String jwt = jwtTokenProvider.generateToken(authentication);
 
-        Usuario usuario = usuarioRepository.findByUsername(loginRequest.getUsername().trim())
+        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(normalizedUsername)
                 .orElseThrow(() -> new IllegalStateException("Usuario autenticado no encontrado en base de datos"));
 
         JwtResponse response = JwtResponse.builder()

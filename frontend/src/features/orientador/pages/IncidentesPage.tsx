@@ -1,90 +1,149 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
-import { FileText, Clock, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { 
+  FileText, 
+  Clock, 
+  PlusCircle, 
+  ShieldAlert, 
+  Filter, 
+  Search, 
+  CheckCircle2,
+  Calendar,
+  AlertTriangle
+} from 'lucide-react';
 
 export const IncidentesPage: React.FC = () => {
   const { user } = useAuthStore();
+  const [searchTerm, setSearchTerm] = useState('');
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Banner de Bienvenida Operativo */}
-      <div className="bg-gradient-to-r from-emerald-950/40 via-slate-800/40 to-slate-800/20 border border-emerald-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-            Modulo de Convivencia Escolar Activo
-          </span>
-          <h1 className="text-2xl font-bold text-white mt-2">
-            Bienvenido, {user?.nombres}
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-trujillo-ice text-trujillo-navy text-xs font-semibold border border-sky-200">
+            <ShieldAlert className="w-3.5 h-3.5 text-trujillo-sky" />
+            <span>Debido Proceso & Convivencia Escolar</span>
+          </div>
+          <h1 className="text-2xl font-extrabold text-trujillo-dark mt-2 tracking-tight">
+            Bitacora General de Incidentes
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Gestion operativa del debido proceso, descargos y compromisos disciplinarios.
+          <p className="text-sm text-slate-500 mt-0.5">
+            Bienvenido, <span className="font-semibold text-slate-700">{user?.nombres} {user?.apellidos}</span>. Registro y seguimiento formativo de casos disciplinarios.
           </p>
         </div>
+
         <button
           type="button"
-          disabled
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/50 text-emerald-200 text-sm font-medium opacity-60 cursor-not-allowed"
-          title="Habilitado en Sprint 3"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-sm font-semibold shadow-md shadow-trujillo-navy/20 transition-all duration-150 active:scale-[0.98] cursor-pointer shrink-0"
         >
-          <PlusCircle className="w-4 h-4" />
-          <span>Registrar Incidente (Sprint 3)</span>
+          <PlusCircle className="w-4 h-4 text-trujillo-sky" />
+          <span>Registrar Nuevo Incidente</span>
         </button>
       </div>
 
-      {/* Tarjetas de Resumen de Estados de Debido Proceso */}
+      {/* Tarjetas de Semáforo de Convivencia Institucional */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-amber-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Reportados</span>
-            <Clock className="w-4 h-4" />
+        {/* Total Casos */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
+          <div className="flex items-center justify-between text-trujillo-navy mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Expedientes 2026</span>
+            <div className="p-2 rounded-xl bg-trujillo-ice">
+              <FileText className="w-4 h-4 text-trujillo-navy" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Pendientes de apertura</p>
+          <p className="text-3xl font-black text-trujillo-dark">0</p>
+          <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-trujillo-laurel" />
+            <span>Casos bajo debido proceso activo</span>
+          </p>
         </div>
 
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-indigo-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">En Indagacion</span>
-            <FileText className="w-4 h-4" />
+        {/* Tipo I - Leve */}
+        <div className="bg-white border border-yellow-200 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all border-l-4 border-l-yellow-400">
+          <div className="flex items-center justify-between text-yellow-800 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">Faltas Tipo I (Leve)</span>
+            <div className="p-2 rounded-xl bg-yellow-100/70">
+              <AlertTriangle className="w-4 h-4 text-yellow-700" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Recoleccion de descargos</p>
+          <p className="text-3xl font-black text-yellow-900">0</p>
+          <p className="text-xs text-slate-500 mt-1">Manejo formativo en aula</p>
         </div>
 
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-cyan-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Intervencion</span>
-            <Clock className="w-4 h-4" />
+        {/* Tipo II - Grave */}
+        <div className="bg-white border border-orange-200 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all border-l-4 border-l-orange-400">
+          <div className="flex items-center justify-between text-orange-800 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">Faltas Tipo II (Grave)</span>
+            <div className="p-2 rounded-xl bg-orange-100/70">
+              <Clock className="w-4 h-4 text-orange-600" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Planes activos en seguimiento</p>
+          <p className="text-3xl font-black text-orange-900">0</p>
+          <p className="text-xs text-slate-500 mt-1">Citacion acudiente y descargos</p>
         </div>
 
-        <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5">
-          <div className="flex items-center justify-between text-emerald-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Cerrados</span>
-            <CheckCircle2 className="w-4 h-4" />
+        {/* Tipo III - Gravísima */}
+        <div className="bg-white border border-rose-200 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all border-l-4 border-l-rose-400">
+          <div className="flex items-center justify-between text-rose-800 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">Faltas Tipo III</span>
+            <div className="p-2 rounded-xl bg-rose-100/70">
+              <ShieldAlert className="w-4 h-4 text-rose-600" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-white">0</p>
-          <p className="text-xs text-slate-400 mt-1">Debido proceso concluido</p>
+          <p className="text-3xl font-black text-rose-900">0</p>
+          <p className="text-xs text-slate-500 mt-1">Ruta de Atencion Integral</p>
         </div>
       </div>
 
-      {/* Contenedor Informativo del Sprint 1 */}
-      <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-2">
-          Estado del Sistema: Sprint 1 Completado
-        </h2>
-        <p className="text-sm text-slate-300">
-          La infraestructura de persistencia, conexion con PostgreSQL 16 y el motor de autenticacion con JWT y roles directivos estan 100% operativos.
-        </p>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-400">
-          <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-            <span className="text-emerald-400 font-semibold">Autenticacion Activa:</span> Sesion iniciada como Orientador con rol <code className="text-emerald-300">ROLE_ORIENTADOR</code>.
+      {/* Barra de Filtros y Búsqueda */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-card flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="relative w-full md:w-96">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por estudiante, documento o falta..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-1 focus:ring-trujillo-navy/20 transition-all"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-all cursor-pointer">
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <span>Filtrar por Tipologia</span>
+          </button>
+
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-all cursor-pointer">
+            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+            <span>Vigencia 2026</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tabla / Bandeja de Incidentes */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-trujillo-dark">
+            Casos Registrados Recientemente
+          </h2>
+          <span className="text-xs text-slate-400">
+            Mostrando registros de la vigencia escolar
+          </span>
+        </div>
+
+        {/* Estado Vacío Institucional */}
+        <div className="p-12 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-trujillo-ice border border-trujillo-sky/30 text-trujillo-navy flex items-center justify-center mx-auto mb-3 shadow-inner">
+            <CheckCircle2 className="w-7 h-7 text-trujillo-laurel" />
           </div>
-          <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-            <span className="text-emerald-400 font-semibold">Base de Datos:</span> Migraciones Flyway V1 y V2 aplicadas con catalogos iniciales y reglas de snapshot.
-          </div>
+          <h3 className="text-base font-bold text-slate-800">
+            Sin incidentes pendientes de tramite
+          </h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+            No se registran faltas activas reportadas en esta jornada. Para abrir un expediente disciplinario o acta de descargos, utilice el boton de registro.
+          </p>
         </div>
       </div>
     </div>

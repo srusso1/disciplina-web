@@ -4,6 +4,7 @@ import com.disciplina.domain.enums.RolUsuario;
 import com.disciplina.domain.model.Usuario;
 import com.disciplina.domain.repository.UsuarioRepository;
 import com.disciplina.dto.auth.LoginRequest;
+import com.disciplina.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,6 +40,9 @@ class AuthControllerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @BeforeEach
     void setUp() {
         if (usuarioRepository.findByUsername("test_rector").isEmpty()) {
@@ -52,6 +56,19 @@ class AuthControllerTest {
                     .activo(true)
                     .build();
             usuarioRepository.save(rector);
+        }
+
+        if (usuarioRepository.findByUsername("test_orientador").isEmpty()) {
+            Usuario orientador = Usuario.builder()
+                    .username("test_orientador")
+                    .passwordHash(passwordEncoder.encode("Password123!"))
+                    .nombres("Test")
+                    .apellidos("Orientador")
+                    .email("test.orientador@disciplina.edu.co")
+                    .rol(RolUsuario.ROLE_ORIENTADOR)
+                    .activo(true)
+                    .build();
+            usuarioRepository.save(orientador);
         }
     }
 
@@ -72,6 +89,21 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.username", is("test_rector")))
                 .andExpect(jsonPath("$.rol", is("ROLE_RECTOR")))
                 .andExpect(jsonPath("$.expiresIn", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("Debe soportar inicio de sesion insensible a mayusculas/minusculas")
+    void testLoginCaseInsensitive() throws Exception {
+        LoginRequest request = LoginRequest.builder()
+                .username("TEST_RECTOR")
+                .password("Password123!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is("test_rector")));
     }
 
     @Test
@@ -123,9 +155,25 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("Rutas protegidas deben rechazar peticiones sin token con 401 o 403")
+    @DisplayName("Rutas protegidas sin token deben retornar 401 con AuthenticationEntryPoint personalizado")
     void testRutaProtegidaSinToken() throws Exception {
         mockMvc.perform(get("/api/v1/incidentes"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("Unauthorized")))
+                .andExpect(jsonPath("$.message", containsString("Acceso no autenticado")));
+    }
+
+    @Test
+    @DisplayName("Ruta exclusiva de Rectoria debe rechazar a Orientador con 403 y AccessDeniedHandler")
+    void testAccesoDenegadoPorRol() throws Exception {
+        String tokenOrientador = jwtTokenProvider.generateToken("test_orientador", "ROLE_ORIENTADOR");
+
+        mockMvc.perform(get("/api/v1/rectoria/metricas-dashboard")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.error", is("Forbidden")))
+                .andExpect(jsonPath("$.message", containsString("Acceso denegado")));
     }
 }

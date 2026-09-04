@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -27,7 +28,10 @@ public class JwtTokenProvider {
     @Value("${app.jwt.expiration-ms:28800000}")
     private long jwtExpirationMs;
 
-    private SecretKey getSigningKey() {
+    private SecretKey signingKey;
+
+    @PostConstruct
+    public void initKey() {
         byte[] keyBytes;
         try {
             keyBytes = Decoders.BASE64.decode(jwtSecret);
@@ -37,7 +41,17 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         }
-        return Keys.hmacShaKeyFor(keyBytes);
+
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT Secret must be at least 256 bits (32 bytes) for HMAC-SHA256 security standard");
+        }
+
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        log.info("JWT SigningKey initialized and validated successfully (HMAC-SHA256, {} bits)", keyBytes.length * 8);
+    }
+
+    public SecretKey getSigningKey() {
+        return this.signingKey;
     }
 
     public String generateToken(Authentication authentication) {

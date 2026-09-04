@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
-import { ShieldCheck, Lock, User, AlertCircle, Loader2, School } from 'lucide-react';
+import { ShieldCheck, Lock, User, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -27,7 +27,7 @@ export const LoginPage: React.FC = () => {
     clearError();
 
     if (!username.trim() || !password.trim()) {
-      setFormError('Por favor complete todos los campos obligatorios.');
+      setFormError('Por favor ingrese su usuario institucional y contrasena.');
       return;
     }
 
@@ -39,7 +39,7 @@ export const LoginPage: React.FC = () => {
         navigate('/orientador/incidentes');
       }
     } catch {
-      // El error queda en useAuthStore.error
+      // El error se maneja en el store
     }
   };
 
@@ -51,45 +51,61 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-trujillo-ice via-sky-50/50 to-slate-100 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
-        {/* Cabecera Institucional */}
+        {/* Encabezado Institucional con Escudo Oficial */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 mb-4 shadow-xl shadow-indigo-950/50">
-            <School className="w-8 h-8 text-indigo-400" />
+          <div className="inline-flex items-center justify-center w-24 h-24 mb-3 transition-transform duration-200 hover:scale-105">
+            <img 
+              src="/escudo-ie-trujillo.png" 
+              alt="Escudo InstituciÃ³n Educativa Trujillo" 
+              className="w-full h-full object-contain drop-shadow-md"
+            />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Disciplina Web
+          
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-2 rounded-full bg-white border border-slate-200 text-xs text-trujillo-navy font-semibold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-trujillo-laurel animate-pulse"></span>
+            <span>Institucion Educativa Trujillo</span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-trujillo-dark tracking-tight">
+            Disciplina<span className="text-trujillo-navy font-black">+</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Sistema de Convivencia Escolar y Analitica Disciplinaria
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xs mx-auto">
+            Plataforma Centralizada de Convivencia Escolar y Trazabilidad de Debido Proceso
           </p>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-3 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Ley 1620 | Protocolo de Debido Proceso</span>
-          </div>
         </div>
 
-        {/* Tarjeta de Formulario */}
-        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl">
-          <h2 className="text-lg font-semibold text-white mb-6">
-            Iniciar Sesion Directiva
-          </h2>
+        {/* Tarjeta de Inicio de Sesiï¿½n */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-elevated transition-all">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+            <div>
+              <h2 className="text-base font-bold text-trujillo-dark">
+                Acceso al Portal Directivo
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Ingrese sus credenciales de funcionario
+              </p>
+            </div>
+            <div className="p-2 rounded-lg bg-trujillo-ice text-trujillo-navy">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+          </div>
 
           {(formError || error) && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-rose-300 text-sm">
-              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-800 text-xs font-medium animate-fadeIn">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <span>{formError || error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Usuario Institucional
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <User className="w-4 h-4" />
                 </div>
                 <input
@@ -98,7 +114,7 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={isLoading}
                   placeholder="Ej: rector u orientador"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm disabled:opacity-50"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 transition-all duration-150"
                   autoComplete="username"
                   required
                 />
@@ -106,11 +122,11 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Contrasena
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -119,7 +135,7 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   placeholder="Ingrese su contrasena"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm disabled:opacity-50"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 transition-all duration-150"
                   autoComplete="current-password"
                   required
                 />
@@ -129,46 +145,55 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full mt-2 py-2.5 px-4 bg-trujillo-navy hover:bg-trujillo-navy-light active:scale-[0.98] text-white font-semibold rounded-xl shadow-md shadow-trujillo-navy/20 transition-all duration-150 flex items-center justify-center gap-2 text-sm disabled:opacity-60 cursor-pointer"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-trujillo-sky" />
                   <span>Validando credenciales...</span>
                 </>
               ) : (
-                <span>Ingresar al Sistema</span>
+                <>
+                  <span>Ingresar a Disciplina+</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
               )}
             </button>
           </form>
 
-          {/* Accesos Rapidos de Demostración Semilla */}
-          <div className="mt-8 pt-6 border-t border-slate-700/60">
-            <p className="text-xs text-slate-400 text-center mb-3">
-              Credenciales semilla preconfiguradas:
+          {/* Accesos Rapidos Institucionales */}
+          <div className="mt-6 pt-5 border-t border-slate-100">
+            <p className="text-[11px] font-medium text-slate-400 text-center mb-2.5">
+              Acceso rapido para demostracion institucional:
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickFill('rector')}
-                className="py-1.5 px-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 border border-slate-700/80 text-xs text-indigo-300 hover:text-indigo-200 transition-all text-center"
+                className="py-2 px-3 rounded-xl bg-trujillo-ice hover:bg-sky-100/80 border border-trujillo-sky/30 text-xs font-semibold text-trujillo-navy transition-all duration-150 active:scale-[0.98] text-center"
               >
-                Rector (Dashboard)
+                Rector Institucional
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickFill('orientador')}
-                className="py-1.5 px-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 border border-slate-700/80 text-xs text-emerald-300 hover:text-emerald-200 transition-all text-center"
+                className="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-xs font-semibold text-trujillo-laurel transition-all duration-150 active:scale-[0.98] text-center"
               >
-                Orientador (Casos)
+                Orientador Escolar
               </button>
             </div>
           </div>
         </div>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
-          Disciplina Web v3.0 | Acceso restringido unicamente a personal autorizado
-        </p>
+        {/* Pie de Pagina */}
+        <div className="text-center mt-6 text-xs text-slate-500 space-y-1">
+          <p className="font-medium text-slate-600">
+            Institucion Educativa Trujillo | Colombia
+          </p>
+          <p className="text-[11px] text-slate-400">
+            Marco normativo de convivencia escolar - Ley 1620 y Decreto 1965
+          </p>
+        </div>
       </div>
     </div>
   );
