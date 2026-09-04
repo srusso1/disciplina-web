@@ -36,15 +36,41 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
       setNombres(estudiante.nombres || '');
       setApellidos(estudiante.apellidos || '');
       setNombreAcudiente(estudiante.nombreAcudiente ? estudiante.nombreAcudiente.toUpperCase() : '');
-      setTelefonoAcudiente(estudiante.telefonoAcudiente || '');
-      setGrado(estudiante.grado || '');
+      
+      const telInicial = estudiante.telefonoAcudiente && estudiante.telefonoAcudiente !== 'SIN REGISTRO'
+        ? estudiante.telefonoAcudiente
+        : '';
+      setTelefonoAcudiente(telInicial);
+
+      setGrado(estudiante.grado || '6');
       setGrupo(estudiante.grupo || '');
-      setJornada(estudiante.jornada || 'JORNADA SECUNDARIA DIURNA');
+
+      let j = (estudiante.jornada || 'DIURNA').toUpperCase();
+      if (j.includes('DIURNA')) j = 'DIURNA';
+      else if (j.includes('MANANA') || j.includes('MAÑANA')) j = 'MANANA';
+      else if (j.includes('TARDE')) j = 'TARDE';
+      else if (j.includes('NOCTURNA')) j = 'NOCTURNA';
+      else if (j.includes('UNICA') || j.includes('ÚNICA')) j = 'UNICA';
+      else j = 'DIURNA';
+      setJornada(j);
+
       setEstadoMatricula(estudiante.estadoMatricula || 'ACTIVO');
       setErrorGlobal(null);
       setErroresCampos({});
     }
   }, [estudiante]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && !isSubmitting) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSubmitting, onClose]);
 
   if (!isOpen || !estudiante) return null;
 
@@ -135,7 +161,13 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
   const esDocumentoPendiente = estudiante.documento.startsWith('PENDIENTE_');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-editar-estudiante-title"
+    >
       <div 
         className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
@@ -147,7 +179,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
               <UserCheck className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Editar Datos del Estudiante</h2>
+              <h2 id="modal-editar-estudiante-title" className="text-sm font-bold text-slate-900">Editar Datos del Estudiante</h2>
               <p className="text-xs text-slate-500">ID del Registro: #{estudiante.id}</p>
             </div>
           </div>
@@ -362,13 +394,17 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Jornada
                 </label>
-                <input
-                  type="text"
+                <select
                   value={jornada}
                   onChange={(e) => setJornada(e.target.value)}
-                  placeholder="Jornada"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-trujillo-navy"
-                />
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-trujillo-navy font-semibold text-slate-700"
+                >
+                  <option value="DIURNA">DIURNA</option>
+                  <option value="MANANA">MAÑANA</option>
+                  <option value="TARDE">TARDE</option>
+                  <option value="NOCTURNA">NOCTURNA</option>
+                  <option value="UNICA">ÚNICA</option>
+                </select>
               </div>
 
               <div>
@@ -382,7 +418,6 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                 >
                   <option value="ACTIVO">ACTIVO</option>
                   <option value="RETIRADO">RETIRADO</option>
-                  <option value="TRASLADADO">TRASLADADO</option>
                   <option value="GRADUADO">GRADUADO</option>
                 </select>
               </div>

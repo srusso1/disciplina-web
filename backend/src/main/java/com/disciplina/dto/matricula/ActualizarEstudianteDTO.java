@@ -36,11 +36,14 @@ public class ActualizarEstudianteDTO {
     private String telefonoAcudiente;
 
     @NotBlank(message = "El grado es obligatorio")
+    @Size(max = 10, message = "El grado no puede superar 10 caracteres")
     private String grado;
 
     @NotBlank(message = "El grupo es obligatorio")
+    @Size(max = 10, message = "El grupo no puede superar 10 caracteres")
     private String grupo;
 
+    @Size(max = 20, message = "La jornada no puede superar 20 caracteres")
     private String jornada;
 
     private EstadoMatricula estadoMatricula;

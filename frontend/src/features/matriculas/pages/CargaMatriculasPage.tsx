@@ -33,6 +33,8 @@ export const CargaMatriculasPage: React.FC = () => {
   const [estudiantes, setEstudiantes] = useState<EstudianteMatricula[]>([]);
   const [filtroGrado, setFiltroGrado] = useState<string>('');
   const [busqueda, setBusqueda] = useState<string>('');
+  const [busquedaAplicada, setBusquedaAplicada] = useState<string>('');
+  const [recargarTrigger, setRecargarTrigger] = useState<number>(0);
   const [paginaActual, setPaginaActual] = useState<number>(0);
   const [tamanoPagina, setTamanoPagina] = useState<number>(15);
   const [totalElementos, setTotalElementos] = useState<number>(0);
@@ -61,36 +63,56 @@ export const CargaMatriculasPage: React.FC = () => {
     );
   };
 
-  // Cargar estudiantes matriculados con paginación de backend
-  const cargarEstudiantes = async (grado: string, search: string, page: number, size: number) => {
-    setIsLoadingEstudiantes(true);
-    try {
-      const data = await matriculasApi.listarEstudiantes({
-        page,
-        size,
-        anioLectivo: 2026,
-        grado: grado || undefined,
-        busqueda: search || undefined,
-      });
-      setEstudiantes(data.contenido);
-      setTotalElementos(data.totalElementos);
-      setTotalPaginas(data.totalPaginas);
-    } catch (err) {
-      console.error('Error cargando estudiantes', err);
-    } finally {
-      setIsLoadingEstudiantes(false);
-    }
-  };
-
-  // Efecto cuando cambia grado, página o tamaño
+  // Cargar estudiantes matriculados con protección contra condiciones de carrera
   useEffect(() => {
-    cargarEstudiantes(filtroGrado, busqueda, paginaActual, tamanoPagina);
-  }, [filtroGrado, paginaActual, tamanoPagina]);
+    let cancelado = false;
+
+    const cargar = async () => {
+      setIsLoadingEstudiantes(true);
+      try {
+        const data = await matriculasApi.listarEstudiantes({
+          page: paginaActual,
+          size: tamanoPagina,
+          anioLectivo: 2026,
+          grado: filtroGrado || undefined,
+          busqueda: busquedaAplicada || undefined,
+        });
+        if (!cancelado) {
+          setEstudiantes(data.contenido);
+          setTotalElementos(data.totalElementos);
+          setTotalPaginas(data.totalPaginas);
+        }
+      } catch (err) {
+        if (!cancelado) {
+          console.error('Error cargando estudiantes', err);
+        }
+      } finally {
+        if (!cancelado) {
+          setIsLoadingEstudiantes(false);
+        }
+      }
+    };
+
+    cargar();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [filtroGrado, busquedaAplicada, paginaActual, tamanoPagina, recargarTrigger]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPaginaActual(0);
-    cargarEstudiantes(filtroGrado, busqueda, 0, tamanoPagina);
+    setBusquedaAplicada(busqueda.trim());
+  };
+
+  const handleBusquedaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setBusqueda(val);
+    if (!val.trim() && busquedaAplicada) {
+      setBusquedaAplicada('');
+      setPaginaActual(0);
+    }
   };
 
   const handleGradoChange = (g: string) => {
@@ -153,7 +175,7 @@ export const CargaMatriculasPage: React.FC = () => {
       const resultado = await matriculasApi.importarMasivo(file, 2026);
       setResumen(resultado);
       setPaginaActual(0);
-      cargarEstudiantes(filtroGrado, busqueda, 0, tamanoPagina);
+      setRecargarTrigger((prev) => prev + 1);
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Ocurrió un error al procesar la planilla. Verifique el formato e intente nuevamente.';
       setErrorMessage(msg);
@@ -404,7 +426,7 @@ export const CargaMatriculasPage: React.FC = () => {
             <input
               type="text"
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
+              onChange={handleBusquedaChange}
               placeholder="Buscar por nombre, documento..."
               className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-1 focus:ring-trujillo-navy/20"
             />

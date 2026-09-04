@@ -7,6 +7,12 @@ spring:
   application:
     name: disciplina-backend
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 15MB
+
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/disciplina_db}
     username: ${SPRING_DATASOURCE_USERNAME:admin_disciplina}

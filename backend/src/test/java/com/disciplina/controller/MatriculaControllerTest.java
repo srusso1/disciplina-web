@@ -248,8 +248,11 @@ class MatriculaControllerTest {
     @Test
     @DisplayName("Debe actualizar exitosamente los datos de un estudiante y transformar acudiente a mayúsculas")
     void testActualizarEstudianteExitoso() throws Exception {
+        String docInicial = "DOC_INIT_" + System.nanoTime();
+        String docFinal = "DOC_FIN_" + System.nanoTime();
+
         Estudiante est = estudianteRepository.save(Estudiante.builder()
-                .documento("DOC_TEST_EDIT_1")
+                .documento(docInicial)
                 .nombres("Pepito")
                 .apellidos("Perez")
                 .nombreAcudiente("Acudiente Inicial")
@@ -266,7 +269,7 @@ class MatriculaControllerTest {
                 .build());
 
         ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
-                .documento("1005554443")
+                .documento(docFinal)
                 .nombres("pepito antonio")
                 .apellidos("perez gomez")
                 .nombreAcudiente("maria gomez")
@@ -283,7 +286,7 @@ class MatriculaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.documento", is("1005554443")))
+                .andExpect(jsonPath("$.documento", is(docFinal)))
                 .andExpect(jsonPath("$.nombres", is("PEPITO ANTONIO")))
                 .andExpect(jsonPath("$.apellidos", is("PEREZ GOMEZ")))
                 .andExpect(jsonPath("$.nombreAcudiente", is("MARIA GOMEZ")))
@@ -295,8 +298,9 @@ class MatriculaControllerTest {
     @Test
     @DisplayName("Debe rechazar teléfono que no cumple formato de 10 dígitos celular colombiano con 400")
     void testActualizarEstudianteTelefonoInvalido() throws Exception {
+        String doc = "DOC_TEL_" + System.nanoTime();
         Estudiante est = estudianteRepository.save(Estudiante.builder()
-                .documento("DOC_TEST_EDIT_2")
+                .documento(doc)
                 .nombres("Laura")
                 .apellidos("Jimenez")
                 .nombreAcudiente("PADRE INICIAL")
@@ -304,7 +308,7 @@ class MatriculaControllerTest {
                 .build());
 
         ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
-                .documento("DOC_TEST_EDIT_2")
+                .documento(doc)
                 .nombres("Laura")
                 .apellidos("Jimenez")
                 .nombreAcudiente("CARLOS JIMENEZ")
@@ -325,20 +329,23 @@ class MatriculaControllerTest {
     @Test
     @DisplayName("Debe rechazar cambio de documento si colisiona con otro estudiante con 409 Conflict")
     void testActualizarEstudianteDocumentoDuplicado() throws Exception {
+        String docExistente = "DOC_EX_" + System.nanoTime();
+        String docOtro = "DOC_OT_" + System.nanoTime();
+
         estudianteRepository.save(Estudiante.builder()
-                .documento("DOC_EXISTENTE_UNICO")
+                .documento(docExistente)
                 .nombres("Existente")
                 .apellidos("Uno")
                 .build());
 
         Estudiante est2 = estudianteRepository.save(Estudiante.builder()
-                .documento("DOC_TEST_EDIT_3")
+                .documento(docOtro)
                 .nombres("Otro")
                 .apellidos("Dos")
                 .build());
 
         ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
-                .documento("DOC_EXISTENTE_UNICO")
+                .documento(docExistente)
                 .nombres("Otro")
                 .apellidos("Dos")
                 .nombreAcudiente("ACUDIENTE")
@@ -354,5 +361,50 @@ class MatriculaControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message", containsString("Ya existe un estudiante")));
+    }
+
+    @Test
+    @DisplayName("Debe rechazar JSON con valor de enum invalido con 400 Bad Request")
+    void testActualizarEstudianteEnumInvalido() throws Exception {
+        String jsonInvalido = """
+            {
+                "documento": "100111222",
+                "nombres": "Ana",
+                "apellidos": "Lopez",
+                "nombreAcudiente": "MARIA LOPEZ",
+                "telefonoAcudiente": "3101112233",
+                "grado": "10",
+                "grupo": "1001",
+                "estadoMatricula": "VALOR_INEXISTENTE"
+            }
+            """;
+
+        mockMvc.perform(put("/api/v1/matriculas/estudiantes/1")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonInvalido))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("valores no permitidos")));
+    }
+
+    @Test
+    @DisplayName("Debe rechazar grado con longitud superior a 10 caracteres con 400 Bad Request")
+    void testActualizarEstudianteGradoDemasiadoLargo() throws Exception {
+        ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
+                .documento("100111222")
+                .nombres("Ana")
+                .apellidos("Lopez")
+                .nombreAcudiente("MARIA LOPEZ")
+                .telefonoAcudiente("3101112233")
+                .grado("GRADO_DEMASIADO_LARGO_MAS_DE_10")
+                .grupo("1001")
+                .build();
+
+        mockMvc.perform(put("/api/v1/matriculas/estudiantes/1")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.grado", containsString("10 caracteres")));
     }
 }
