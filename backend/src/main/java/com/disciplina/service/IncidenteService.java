@@ -4,6 +4,7 @@ import com.disciplina.common.exception.ConflictoEntidadException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
 import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
+import com.disciplina.domain.enums.RolEstudianteIncidente;
 import com.disciplina.domain.model.*;
 import com.disciplina.domain.repository.*;
 import com.disciplina.dto.catalogo.CatalogoFaltaResponseDTO;
@@ -74,7 +75,13 @@ public class IncidenteService {
                     .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + invDto.getEstudianteId()));
 
             CatalogoFalta falta = null;
-            if (invDto.getCatalogoFaltaId() != null) {
+            boolean esParteProtegida = invDto.getRolEstudiante() == RolEstudianteIncidente.VICTIMA
+                    || invDto.getRolEstudiante() == RolEstudianteIncidente.TESTIGO;
+
+            if (esParteProtegida && invDto.getCatalogoFaltaId() != null) {
+                log.warn("Salvaguarda Debido Proceso (Ley 1620): Se ignora catalogoFaltaId {} para estudiante {} con rol protegido {}",
+                        invDto.getCatalogoFaltaId(), estudiante.getId(), invDto.getRolEstudiante());
+            } else if (!esParteProtegida && invDto.getCatalogoFaltaId() != null) {
                 falta = catalogoFaltaRepository.findById(invDto.getCatalogoFaltaId())
                         .orElseThrow(() -> new RecursoNoEncontradoException("Falta disciplinaria no encontrada con ID: " + invDto.getCatalogoFaltaId()));
             }

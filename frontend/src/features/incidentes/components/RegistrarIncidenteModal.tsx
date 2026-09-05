@@ -2,55 +2,30 @@ import React, { useState, useEffect } from 'react';
 import {
   X,
   Plus,
-  Trash2,
-  Search,
   AlertTriangle,
-  UserCheck,
-  MapPin,
-  Calendar,
-  Clock,
   BookOpen,
   Users,
   Shield,
   Loader2,
-  GraduationCap,
-  Info,
-  Sparkles,
-  Wand2,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
-import { matriculasApi } from '../../matriculas/api/matriculasApi';
-import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
 import {
   DocenteCatalogo,
   LugarCatalogo,
   CatalogoFalta,
-  RolEstudianteIncidente,
+  ClasificacionLey,
   RegistrarIncidenteData,
   InvolucradoRequest,
-  ClasificacionLey,
   NarrativaProcesada,
 } from '../types/incidente.types';
+import { AsistenteIaPanel } from './AsistenteIaPanel';
+import { InvolucradoItemCard, InvolucradoItemData } from './InvolucradoItemCard';
+import { ContextoHechosSection } from './ContextoHechosSection';
 
 interface RegistrarIncidenteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-}
-
-interface InvolucradoFormState {
-  idTemp: string;
-  estudianteId: number | null;
-  estudianteSeleccionado: EstudianteMatricula | null;
-  busquedaEstudiante: string;
-  resultadosBusqueda: EstudianteMatricula[];
-  buscando: boolean;
-  catalogoFaltaId: number | null;
-  rolEstudiante: RolEstudianteIncidente;
-  descripcionIndividual: string;
 }
 
 const getTodayLocalDate = () => {
@@ -73,30 +48,29 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   onClose,
   onSuccess,
 }) => {
-  // Modo de caso: Individual (1 alumno) vs Colectivo (varios involucrados)
+  // Modo de caso: Individual vs Colectivo
   const [modoColectivo, setModoColectivo] = useState<boolean>(false);
 
+  // Catálogos
   const [docentes, setDocentes] = useState<DocenteCatalogo[]>([]);
   const [lugares, setLugares] = useState<LugarCatalogo[]>([]);
   const [faltas, setFaltas] = useState<CatalogoFalta[]>([]);
-
-  // Filtro de faltas para facilitar la selección sin dropdowns gigantes
   const [filtroTipoLeyFaltas, setFiltroTipoLeyFaltas] = useState<ClasificacionLey | 'TODAS'>('TODAS');
 
+  // Campos principales
   const [docenteReportaId, setDocenteReportaId] = useState<number | ''>('');
   const [lugarId, setLugarId] = useState<number | ''>('');
   const [fechaIncidente, setFechaIncidente] = useState<string>(getTodayLocalDate());
   const [horaIncidente, setHoraIncidente] = useState<string>(getCurrentLocalTime());
   const [descripcionHechos, setDescripcionHechos] = useState<string>('');
 
-  const [involucrados, setInvolucrados] = useState<InvolucradoFormState[]>([
+  // Estudiantes involucrados
+  const [involucrados, setInvolucrados] = useState<InvolucradoItemData[]>([
     {
       idTemp: '1',
       estudianteId: null,
       estudianteSeleccionado: null,
       busquedaEstudiante: '',
-      resultadosBusqueda: [],
-      buscando: false,
       catalogoFaltaId: null,
       rolEstudiante: 'AGRESOR_PRINCIPAL',
       descripcionIndividual: '',
@@ -107,15 +81,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   const [guardando, setGuardando] = useState<boolean>(false);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
 
-  // Asistente PLN Google Gemini / Heurístico State
-  const [panelIaAbierto, setPanelIaAbierto] = useState<boolean>(false);
-  const [relatoInformal, setRelatoInformal] = useState<string>('');
-  const [procesandoIa, setProcesandoIa] = useState<boolean>(false);
-  const [resultadoIa, setResultadoIa] = useState<NarrativaProcesada | null>(null);
-  const [errorIa, setErrorIa] = useState<string | null>(null);
-  const [aplicadoConExito, setAplicadoConExito] = useState<boolean>(false);
-
-  // 1. Lock body scroll when modal is open and handle Escape key
+  // Bloqueo de scroll y cierre con Escape
   useEffect(() => {
     if (!isOpen) return;
 
@@ -135,124 +101,15 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     };
   }, [isOpen, onClose]);
 
-  // 2. Load institutional catalogs
+  // Cargar catálogos al abrir modal
   useEffect(() => {
     if (isOpen) {
       cargarCatalogos();
       setErrorGlobal(null);
       setFechaIncidente(getTodayLocalDate());
       setHoraIncidente(getCurrentLocalTime());
-      setPanelIaAbierto(false);
-      setRelatoInformal('');
-      setResultadoIa(null);
-      setErrorIa(null);
-      setAplicadoConExito(false);
     }
   }, [isOpen]);
-
-  const handleProcesarRelatoIa = async () => {
-    if (!relatoInformal || relatoInformal.trim().length < 10) {
-      setErrorIa('El relato informal debe contener al menos 10 caracteres para que el asistente pueda estructurarlo.');
-      return;
-    }
-    setErrorIa(null);
-    setProcesandoIa(true);
-    setAplicadoConExito(false);
-    try {
-      const res = await incidentesApi.procesarNarrativa({
-        relato: relatoInformal.trim(),
-        anioLectivo: new Date().getFullYear(),
-      });
-      setResultadoIa(res);
-    } catch (err: unknown) {
-      const e = err as Error;
-      setErrorIa('No fue posible procesar la narrativa con el asistente: ' + e.message);
-    } finally {
-      setProcesandoIa(false);
-    }
-  };
-
-  const handleCargarEjemploRelato = () => {
-    setRelatoInformal(
-      'Durante el segundo descanso en el Patio Principal, el profesor Carlos Pérez observó que un estudiante empujó e insultó fuertemente a otro compañero frente a varios estudiantes luego de un partido.'
-    );
-  };
-
-  const handleAplicarResultadoIa = async () => {
-    if (!resultadoIa) return;
-
-    // 1. Redacción formal
-    if (resultadoIa.hechosEstandarizados) {
-      setDescripcionHechos(resultadoIa.hechosEstandarizados);
-    }
-
-    // 2. Docente informante
-    if (resultadoIa.docenteReportaId) {
-      setDocenteReportaId(resultadoIa.docenteReportaId);
-    }
-
-    // 3. Lugar sugerido
-    if (resultadoIa.lugarSugeridoId) {
-      setLugarId(resultadoIa.lugarSugeridoId);
-    }
-
-    // 4. Involucrados
-    if (resultadoIa.estudiantes && resultadoIa.estudiantes.length > 0) {
-      if (resultadoIa.estudiantes.length > 1) {
-        setModoColectivo(true);
-      }
-
-      // Buscar candidatos en matrícula automáticamente para los nombres que no tuvieron match directo
-      const promesasBusqueda = resultadoIa.estudiantes.map(async (estIa) => {
-        const nombre = estIa.nombreMencionado?.trim();
-        if (!estIa.estudianteId && nombre && nombre.length >= 2) {
-          try {
-            const res = await matriculasApi.listarEstudiantes({ busqueda: nombre, size: 8 });
-            return res.contenido || [];
-          } catch {
-            return [];
-          }
-        }
-        return [];
-      });
-
-      const resultadosList = await Promise.all(promesasBusqueda);
-
-      const nuevosInvolucrados: InvolucradoFormState[] = resultadoIa.estudiantes.map((estIa, idx) => {
-        const esAfectadoSinFalta = estIa.rolSugerido === 'VICTIMA' || estIa.rolSugerido === 'TESTIGO';
-        const resultados = resultadosList[idx] || [];
-
-        return {
-          idTemp: `${Date.now()}_${idx}`,
-          estudianteId: estIa.estudianteId || null,
-          estudianteSeleccionado: estIa.estudianteId ? {
-            id: estIa.estudianteId,
-            documento: estIa.documento || '',
-            nombres: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
-            apellidos: '',
-            nombreCompleto: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
-            nombreAcudiente: '',
-            telefonoAcudiente: '',
-            grado: estIa.gradoMomento || '',
-            grupo: estIa.grupoMomento || '',
-            jornada: 'MANANA',
-            anioLectivo: new Date().getFullYear(),
-            estadoMatricula: 'ACTIVO',
-          } : null,
-          busquedaEstudiante: estIa.estudianteId ? '' : (estIa.nombreMencionado || ''),
-          resultadosBusqueda: resultados,
-          buscando: false,
-          catalogoFaltaId: esAfectadoSinFalta ? null : (estIa.catalogoFaltaId || null),
-          rolEstudiante: estIa.rolSugerido || 'PARTICIPE',
-          descripcionIndividual: estIa.justificacionRol || '',
-        };
-      });
-
-      setInvolucrados(nuevosInvolucrados);
-    }
-
-    setAplicadoConExito(true);
-  };
 
   const cargarCatalogos = async () => {
     setCargandoCatalogos(true);
@@ -280,54 +137,58 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     }
   };
 
-  const buscarEstudiantes = async (indice: number, busqueda: string) => {
-    actualizarInvolucrado(indice, { busquedaEstudiante: busqueda });
-    if (!busqueda || busqueda.trim().length < 2) {
-      actualizarInvolucrado(indice, { resultadosBusqueda: [], buscando: false });
-      return;
+  const handleAplicarResultadoIa = (resultado: NarrativaProcesada) => {
+    if (resultado.hechosEstandarizados) {
+      setDescripcionHechos(resultado.hechosEstandarizados);
+    }
+    if (resultado.docenteReportaId) {
+      setDocenteReportaId(resultado.docenteReportaId);
+    }
+    if (resultado.lugarSugeridoId) {
+      setLugarId(resultado.lugarSugeridoId);
     }
 
-    actualizarInvolucrado(indice, { buscando: true });
-    try {
-      const res = await matriculasApi.listarEstudiantes({ busqueda: busqueda.trim(), size: 8 });
-      actualizarInvolucrado(indice, { resultadosBusqueda: res.contenido, buscando: false });
-    } catch {
-      actualizarInvolucrado(indice, { resultadosBusqueda: [], buscando: false });
+    if (resultado.estudiantes && resultado.estudiantes.length > 0) {
+      if (resultado.estudiantes.length > 1) {
+        setModoColectivo(true);
+      }
+
+      const nuevos: InvolucradoItemData[] = resultado.estudiantes.map((estIa, idx) => {
+        const esAfectadoSinFalta = estIa.rolSugerido === 'VICTIMA' || estIa.rolSugerido === 'TESTIGO';
+
+        return {
+          idTemp: `${Date.now()}_${idx}`,
+          estudianteId: estIa.estudianteId || null,
+          estudianteSeleccionado: estIa.estudianteId ? {
+            id: estIa.estudianteId,
+            documento: estIa.documento || '',
+            nombres: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
+            apellidos: '',
+            nombreCompleto: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
+            nombreAcudiente: '',
+            telefonoAcudiente: '',
+            grado: estIa.gradoMomento || '',
+            grupo: estIa.grupoMomento || '',
+            jornada: 'MANANA',
+            anioLectivo: new Date().getFullYear(),
+            estadoMatricula: 'ACTIVO',
+          } : null,
+          busquedaEstudiante: estIa.estudianteId ? '' : (estIa.nombreMencionado || ''),
+          catalogoFaltaId: esAfectadoSinFalta ? null : (estIa.catalogoFaltaId || null),
+          rolEstudiante: estIa.rolSugerido || 'PARTICIPE',
+          descripcionIndividual: estIa.justificacionRol || '',
+        };
+      });
+
+      setInvolucrados(nuevos);
     }
   };
 
-  const seleccionarEstudiante = (indice: number, est: EstudianteMatricula) => {
-    const yaExiste = involucrados.some(
-      (inv, idx) => idx !== indice && inv.estudianteId === est.id
-    );
-    if (yaExiste) {
-      setErrorGlobal(`El estudiante ${est.nombres} ${est.apellidos} ya está en la lista de involucrados.`);
-      return;
-    }
-
-    setErrorGlobal(null);
-    actualizarInvolucrado(indice, {
-      estudianteId: est.id,
-      estudianteSeleccionado: est,
-      busquedaEstudiante: '',
-      resultadosBusqueda: [],
-    });
-  };
-
-  const deseleccionarEstudiante = (indice: number) => {
-    actualizarInvolucrado(indice, {
-      estudianteId: null,
-      estudianteSeleccionado: null,
-      busquedaEstudiante: '',
-      resultadosBusqueda: [],
-    });
-  };
-
-  const actualizarInvolucrado = (indice: number, partial: Partial<InvolucradoFormState>) => {
+  const actualizarInvolucrado = (index: number, updated: Partial<InvolucradoItemData>) => {
     setInvolucrados((prev) => {
-      const clone = [...prev];
-      clone[indice] = { ...clone[indice], ...partial };
-      return clone;
+      const copy = [...prev];
+      copy[index] = { ...copy[index], ...updated };
+      return copy;
     });
   };
 
@@ -339,8 +200,6 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
         estudianteId: null,
         estudianteSeleccionado: null,
         busquedaEstudiante: '',
-        resultadosBusqueda: [],
-        buscando: false,
         catalogoFaltaId: null,
         rolEstudiante: 'PARTICIPE',
         descripcionIndividual: '',
@@ -356,7 +215,6 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   const cambiarModoCaso = (colectivo: boolean) => {
     setModoColectivo(colectivo);
     if (!colectivo && involucrados.length > 1) {
-      // Dejar únicamente el primer involucrado si vuelve a modo individual
       setInvolucrados([involucrados[0]]);
     }
   };
@@ -419,22 +277,12 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       onClose();
     } catch (err: unknown) {
       const e = err as {
-        response?: {
-          data?: {
-            message?: string;
-            fieldErrors?: Record<string, string>;
-          };
-        };
+        response?: { data?: { message?: string } };
         message?: string;
       };
-
-      if (e.response?.data?.fieldErrors) {
-        const errorList = Object.values(e.response.data.fieldErrors).join('. ');
-        setErrorGlobal(`Error de validación: ${errorList}`);
-      } else {
-        const msg = e.response?.data?.message || e.message || 'Error al registrar el expediente disciplinario.';
-        setErrorGlobal(msg);
-      }
+      setErrorGlobal(
+        e.response?.data?.message || e.message || 'Error inesperado al registrar el incidente.'
+      );
     } finally {
       setGuardando(false);
     }
@@ -444,373 +292,69 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 overflow-hidden animate-in fade-in duration-150"
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-registro-incidente-title"
     >
-      <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header Modal - Fixed */}
-        <div className="px-6 py-4.5 bg-trujillo-navy text-white flex items-center justify-between shrink-0 border-b border-trujillo-navy-light">
+      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        {/* Cabecera del Modal */}
+        <div className="bg-gradient-to-r from-trujillo-navy via-slate-900 to-trujillo-navy text-white px-6 py-5 flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/10 rounded-xl border border-white/15 shadow-inner">
-              <Shield className="w-5 h-5 text-trujillo-sky" />
+            <div className="w-10 h-10 rounded-2xl bg-trujillo-sky/20 border border-trujillo-sky/30 flex items-center justify-center text-trujillo-sky shadow-inner">
+              <Shield className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">
-                  Apertura de Expediente de Convivencia
-                </h2>
-                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-trujillo-sky/20 text-trujillo-sky border border-trujillo-sky/30">
-                  Ley 1620
-                </span>
-              </div>
+              <h2 id="modal-registro-incidente-title" className="text-base font-bold text-white tracking-tight">
+                Registrar Incidente de Convivencia Escolar
+              </h2>
               <p className="text-xs text-sky-200/80">
-                Garantía del debido proceso, tipificación y snapshot histórico
+                Sistema Integral de Debido Proceso y Tipificación según Ley 1620 de 2013
               </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-sky-200 hover:text-white hover:bg-white/10 transition-colors active:scale-95 cursor-pointer"
-            title="Cerrar ventana (Esc)"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition active:scale-[0.97] cursor-pointer"
+            aria-label="Cerrar ventana"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Body Formulario - Single Scroll Container */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 space-y-6"
-        >
+        {/* Formulario Principal */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {errorGlobal && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-3 animate-in fade-in duration-150">
-              <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-bold">No fue posible registrar el incidente</p>
-                <p className="text-xs mt-0.5 leading-relaxed">{errorGlobal}</p>
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-3 shadow-xs animate-in fade-in">
+              <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-bold text-rose-800">No fue posible registrar el incidente</p>
+                <p className="text-rose-600 leading-relaxed">{errorGlobal}</p>
               </div>
             </div>
           )}
 
-          {/* Asistente PLN Gemini / Heurístico Collapsible Card */}
-          <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/70 via-sky-50/40 to-white shadow-sm overflow-hidden transition-all duration-200">
-            <button
-              type="button"
-              onClick={() => setPanelIaAbierto((prev) => !prev)}
-              className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-indigo-100/40 transition cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-200">
-                  <Sparkles className="w-4 h-4 animate-pulse" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm font-bold text-indigo-950">
-                      Asistente PLN de Convivencia
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
-                      Google Gemini + Heurística
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500">
-                    Pega un relato informal del docente para estructurar redacción, lugares e involucrados
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-indigo-600">
-                <span className="text-xs font-semibold hidden sm:inline">
-                  {panelIaAbierto ? 'Ocultar asistente' : 'Usar asistente'}
-                </span>
-                {panelIaAbierto ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </div>
-            </button>
+          {/* Subcomponente 1: Panel de IA */}
+          <AsistenteIaPanel onAplicar={handleAplicarResultadoIa} />
 
-            {panelIaAbierto && (
-              <div className="p-5 border-t border-indigo-100/80 bg-white/70 space-y-4 animate-in fade-in duration-150">
-                {errorIa && (
-                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{errorIa}</span>
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                      <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
-                      Relato Informal del Docente o Coordinador
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleCargarEjemploRelato}
-                      className="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline font-medium cursor-pointer"
-                    >
-                      Cargar relato de ejemplo
-                    </button>
-                  </div>
-                  <textarea
-                    value={relatoInformal}
-                    onChange={(e) => setRelatoInformal(e.target.value)}
-                    placeholder="Escribe o pega el relato tal como te lo compartieron (ej: 'El profe Carlos Pérez avisó que en el descanso en la cancha Mateo Gómez empujó a su compañero...')"
-                    rows={3}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition text-slate-800 placeholder:text-slate-400 leading-relaxed"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                    <Info className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                    <span>Human-in-the-Loop: los datos estructurados son sugerencias editables antes de registrar.</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleProcesarRelatoIa}
-                    disabled={procesandoIa || !relatoInformal.trim()}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm hover:shadow transition active:scale-95 cursor-pointer"
-                  >
-                    {procesandoIa ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Analizando con IA...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="w-4 h-4" />
-                        <span>Estructurar con IA</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {resultadoIa && (
-                  <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/40 space-y-3 animate-in fade-in duration-200">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          resultadoIa.asistidoPorIa
-                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                            : 'bg-amber-100 text-amber-700 border border-amber-200'
-                        }`}>
-                          {resultadoIa.asistidoPorIa ? 'Procesado con Google Gemini' : 'Modo Heurístico Institucional'}
-                        </span>
-                        {resultadoIa.clasificacionLeySugerida && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
-                            Ley 1620: {resultadoIa.clasificacionLeySugerida.replace('_', ' ')}
-                          </span>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={handleAplicarResultadoIa}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-300 rounded-lg shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{aplicadoConExito ? '¡Aplicado al Formulario!' : 'Aplicar al Formulario'}</span>
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                      <div className="p-2 rounded-lg bg-white border border-indigo-100">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Docente Detectado</span>
-                        <span className="font-semibold text-slate-700 truncate block">
-                          {resultadoIa.docenteReportaNombre || 'No detectado'}
-                        </span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-white border border-indigo-100">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Lugar Detectado</span>
-                        <span className="font-semibold text-slate-700 truncate block">
-                          {resultadoIa.lugarNombre || 'No detectado'}
-                        </span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-white border border-indigo-100">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Involucrados Detectados</span>
-                        <span className="font-semibold text-slate-700 block">
-                          {resultadoIa.estudiantes?.length || 0} estudiante(s)
-                        </span>
-                      </div>
-                    </div>
-
-                    {resultadoIa.estudiantes && resultadoIa.estudiantes.length > 0 && (
-                      <div className="p-2.5 rounded-lg bg-white border border-indigo-100 space-y-2">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                          Identificación de Alumnos en Matrícula Institucional
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {resultadoIa.estudiantes.map((est, eIdx) => {
-                            const matriculado = Boolean(est.estudianteId);
-                            return (
-                              <div
-                                key={eIdx}
-                                className={`p-2 rounded-lg border text-xs flex items-center justify-between gap-2 ${
-                                  matriculado
-                                    ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
-                                    : 'bg-amber-50/70 border-amber-200 text-amber-900'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  {matriculado ? (
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                  ) : (
-                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                                  )}
-                                  <div className="truncate">
-                                    <p className="font-bold truncate">{est.nombreCompleto || est.nombreMencionado}</p>
-                                    <p className="text-[10px] opacity-80 truncate">
-                                      Rol: {est.rolSugerido} • {matriculado ? `Grado ${est.gradoMomento || ''}-${est.grupoMomento || ''}` : 'No encontrado en censo'}
-                                    </p>
-                                  </div>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
-                                  matriculado
-                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                    : 'bg-amber-100 text-amber-800 border border-amber-200'
-                                }`}>
-                                  {matriculado ? 'Matriculado' : 'Sin Matrícula'}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="p-2.5 rounded-lg bg-white border border-indigo-100">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                        Redacción Formal Estructurada
-                      </span>
-                      <p className="text-xs text-slate-700 leading-relaxed italic">
-                        "{resultadoIa.hechosEstandarizados}"
-                      </p>
-                    </div>
-
-                    {resultadoIa.mensajeAsistente && (
-                      <p className="text-[11px] text-indigo-700 leading-normal">
-                        {resultadoIa.mensajeAsistente}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Bloque 1: Contexto Institucional del Hecho */}
-          <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/90 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-trujillo-navy uppercase tracking-wider flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-trujillo-sky" />
-                1. Contexto Institucional del Suceso
-              </h3>
-              <span className="text-[11px] text-slate-400">Campos obligatorios marcados con *</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              {/* Docente Reporta */}
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-                  Docente o Funcionario Informante *
-                </label>
-                <select
-                  value={docenteReportaId}
-                  onChange={(e) => setDocenteReportaId(Number(e.target.value))}
-                  disabled={cargandoCatalogos}
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition font-medium text-slate-800"
-                  required
-                >
-                  <option value="">Seleccione docente informante...</option>
-                  {docentes.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.nombreCompleto} — {d.areaDesempeno}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Lugar */}
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  Lugar Institucional del Hecho *
-                </label>
-                <select
-                  value={lugarId}
-                  onChange={(e) => setLugarId(Number(e.target.value))}
-                  disabled={cargandoCatalogos}
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition font-medium text-slate-800"
-                  required
-                >
-                  <option value="">Seleccione lugar institucional...</option>
-                  {lugares.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.nombre} {l.descripcion ? `(${l.descripcion})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Fecha */}
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  Fecha del Hecho *
-                </label>
-                <input
-                  type="date"
-                  max={getTodayLocalDate()}
-                  value={fechaIncidente}
-                  onChange={(e) => setFechaIncidente(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
-                  required
-                />
-              </div>
-
-              {/* Hora */}
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  Hora Aproximada *
-                </label>
-                <input
-                  type="time"
-                  value={horaIncidente}
-                  onChange={(e) => setHoraIncidente(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Descripción de los Hechos */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Descripción Circunstanciada y Objetiva de los Hechos *
-                </label>
-                <span className={`text-[11px] font-medium ${descripcionHechos.length < 10 ? 'text-amber-600' : 'text-slate-400'}`}>
-                  {descripcionHechos.length}/5000 caracteres (mín. 10)
-                </span>
-              </div>
-              <textarea
-                value={descripcionHechos}
-                onChange={(e) => setDescripcionHechos(e.target.value)}
-                placeholder="Narre de manera cronológica qué sucedió, cómo se desarrolló la situación y quiénes intervinieron inicialmente..."
-                rows={3}
-                className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition placeholder:text-slate-400 text-slate-800 leading-relaxed"
-                required
-              />
-            </div>
-          </div>
+          {/* Subcomponente 2: Contexto Institucional (Docente, Lugar, Fecha, Hora, Hechos) */}
+          <ContextoHechosSection
+            docentes={docentes}
+            lugares={lugares}
+            cargandoCatalogos={cargandoCatalogos}
+            docenteReportaId={docenteReportaId}
+            setDocenteReportaId={setDocenteReportaId}
+            lugarId={lugarId}
+            setLugarId={setLugarId}
+            fechaIncidente={fechaIncidente}
+            setFechaIncidente={setFechaIncidente}
+            horaIncidente={horaIncidente}
+            setHoraIncidente={setHoraIncidente}
+            descripcionHechos={descripcionHechos}
+            setDescripcionHechos={setDescripcionHechos}
+          />
 
           {/* Bloque 2: Tipología y Selección de Involucrados */}
           <div className="space-y-4">
@@ -830,9 +374,9 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
                 <button
                   type="button"
                   onClick={() => cambiarModoCaso(false)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-[0.98] ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-[0.97] cursor-pointer ${
                     !modoColectivo
-                      ? 'bg-white text-trujillo-navy shadow-sm border border-slate-200'
+                      ? 'bg-white text-trujillo-navy shadow-xs border border-slate-200'
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -841,9 +385,9 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
                 <button
                   type="button"
                   onClick={() => cambiarModoCaso(true)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-[0.98] flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-[0.97] flex items-center gap-1.5 cursor-pointer ${
                     modoColectivo
-                      ? 'bg-trujillo-navy text-white shadow-sm'
+                      ? 'bg-trujillo-navy text-white shadow-xs'
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -864,9 +408,9 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
                   key={tipo}
                   type="button"
                   onClick={() => setFiltroTipoLeyFaltas(tipo)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all duration-150 active:scale-95 ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition active:scale-[0.97] cursor-pointer ${
                     filtroTipoLeyFaltas === tipo
-                      ? 'bg-trujillo-navy text-white border-trujillo-navy shadow-sm'
+                      ? 'bg-trujillo-navy text-white border-trujillo-navy shadow-xs'
                       : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -881,290 +425,61 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
               ))}
             </div>
 
-            {/* Lista de Estudiantes Involucrados */}
+            {/* Subcomponente 3: Lista Modular de Involucrados */}
             <div className="space-y-4">
               {involucrados.map((inv, idx) => (
-                <div
+                <InvolucradoItemCard
                   key={inv.idTemp}
-                  className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-slate-300 transition-colors space-y-4 relative"
-                >
-                  {/* Cabecera del Involucrado */}
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-trujillo-ice text-trujillo-navy text-xs font-black flex items-center justify-center border border-sky-200">
-                        {idx + 1}
-                      </div>
-                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-                        {modoColectivo ? `Involucrado #${idx + 1}` : 'Estudiante del Caso'}
-                      </span>
-                    </div>
-
-                    {modoColectivo && involucrados.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removerInvolucrado(idx)}
-                        className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition-colors active:scale-95"
-                        title="Quitar estudiante de la lista"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Selector o Ficha del Estudiante */}
-                  {inv.estudianteSeleccionado ? (
-                    /* Ficha de Estudiante Seleccionado */
-                    <div className="p-3.5 rounded-2xl bg-sky-50/70 border border-sky-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-trujillo-navy text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-sm ring-1 ring-sky-300">
-                          {inv.estudianteSeleccionado.nombres.charAt(0)}
-                          {inv.estudianteSeleccionado.apellidos.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-trujillo-navy">
-                            {inv.estudianteSeleccionado.nombres} {inv.estudianteSeleccionado.apellidos}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
-                            <span>Doc: <strong>{inv.estudianteSeleccionado.documento}</strong></span>
-                            <span>•</span>
-                            <span className="inline-flex items-center gap-1 font-semibold text-trujillo-navy bg-white px-2 py-0.5 rounded-md border border-sky-200 text-[11px]">
-                              <GraduationCap className="w-3 h-3 text-trujillo-sky" />
-                              Grado {inv.estudianteSeleccionado.grado} - Grupo {inv.estudianteSeleccionado.grupo}
-                            </span>
-                            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                              Matrícula 2026
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => deseleccionarEstudiante(idx)}
-                        className="self-start sm:self-auto px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl shadow-sm transition active:scale-95"
-                      >
-                        Cambiar Estudiante
-                      </button>
-                    </div>
-                  ) : (
-                    /* Buscador de Estudiante Combobox */
-                    <div className="relative">
-                      {/* Alerta contextual cuando la IA sugirió un nombre no matriculado */}
-                      {inv.busquedaEstudiante && !inv.estudianteId && (
-                        <div className="mb-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                          <div className="space-y-0.5">
-                            <p className="font-bold text-amber-900 flex items-center gap-1.5">
-                              <span>Estudiante pendiente de vincular:</span>
-                              <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">
-                                "{inv.busquedaEstudiante}"
-                              </span>
-                            </p>
-                            <p className="text-[11px] text-amber-700 leading-relaxed">
-                              La IA identificó este nombre en el relato, pero <strong>no coincide con ningún estudiante matriculado</strong> en el sistema institucional. Debe seleccionar a un alumno del censo para poder guardar el caso, o quitarlo si no es un estudiante del plantel.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Buscar Estudiante por Nombre, Apellido o Documento *
-                      </label>
-                      <div className="relative">
-                        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                        <input
-                          type="text"
-                          value={inv.busquedaEstudiante}
-                          onChange={(e) => buscarEstudiantes(idx, e.target.value)}
-                          placeholder="Escriba apellido, nombre o documento (ej: Gomez, 1066...)"
-                          className={`w-full pl-9 pr-9 py-2.5 text-xs sm:text-sm bg-white border rounded-xl focus:ring-2 transition placeholder:text-slate-400 ${
-                            inv.busquedaEstudiante && !inv.estudianteId
-                              ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
-                              : 'border-slate-300 focus:ring-trujillo-sky focus:border-trujillo-sky'
-                          }`}
-                        />
-                        {inv.buscando && (
-                          <Loader2 className="w-4 h-4 text-trujillo-sky animate-spin absolute right-3.5 top-3" />
-                        )}
-                      </div>
-
-                      {/* Dropdown de Resultados de Búsqueda */}
-                      {inv.resultadosBusqueda.length > 0 && (
-                        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
-                          {inv.resultadosBusqueda.map((est) => (
-                            <button
-                              key={est.id}
-                              type="button"
-                              onClick={() => seleccionarEstudiante(idx, est)}
-                              className="w-full px-4 py-2.5 text-left text-xs hover:bg-sky-50/70 transition flex items-center justify-between group cursor-pointer"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-trujillo-ice text-trujillo-navy font-bold text-xs flex items-center justify-center shrink-0">
-                                  {est.nombres.charAt(0)}
-                                </div>
-                                <div>
-                                  <p className="font-bold text-slate-800 group-hover:text-trujillo-navy">
-                                    {est.nombres} {est.apellidos}
-                                  </p>
-                                  <p className="text-[11px] text-slate-500">
-                                    Doc: {est.documento} • Grado: {est.grado}-{est.grupo} ({est.jornada || 'DIURNA'})
-                                  </p>
-                                </div>
-                              </div>
-                              <span className="px-2 py-1 rounded-lg bg-slate-100 group-hover:bg-trujillo-navy group-hover:text-white text-slate-700 text-[10px] font-bold transition">
-                                Seleccionar
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Ayuda contextual si no hay resultados */}
-                      {inv.busquedaEstudiante.trim().length >= 2 && !inv.buscando && inv.resultadosBusqueda.length === 0 && !inv.estudianteId && (
-                        <div className="mt-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-[11px] flex items-center gap-1.5">
-                          <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>No se encontraron estudiantes con "{inv.busquedaEstudiante}". Intente buscar por número de documento o apellido.</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Campos de Rol, Falta y Observación */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
-                    {/* Rol */}
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Rol en el Hecho *
-                      </label>
-                      <select
-                        value={inv.rolEstudiante}
-                        onChange={(e) => {
-                          const nuevoRol = e.target.value as RolEstudianteIncidente;
-                          const esAfectado = nuevoRol === 'VICTIMA' || nuevoRol === 'TESTIGO';
-                          actualizarInvolucrado(idx, {
-                            rolEstudiante: nuevoRol,
-                            catalogoFaltaId: esAfectado ? null : inv.catalogoFaltaId,
-                          });
-                        }}
-                        className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky transition font-medium text-slate-800"
-                      >
-                        <option value="AGRESOR_PRINCIPAL">Agresor Principal / Infractor</option>
-                        <option value="PARTICIPE">Partícipe / Coautor</option>
-                        <option value="VICTIMA">Afectado / Víctima</option>
-                        <option value="TESTIGO">Testigo Presencial</option>
-                      </select>
-                    </div>
-
-                    {/* Falta del Catálogo */}
-                    <div className="sm:col-span-1 lg:col-span-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
-                          <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-                          Falta Disciplinaria Tipificada
-                        </label>
-                        {(inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO') && (
-                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            Parte protegida (sin falta disciplinaria)
-                          </span>
-                        )}
-                      </div>
-                      <select
-                        value={inv.catalogoFaltaId || ''}
-                        disabled={inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO'}
-                        onChange={(e) =>
-                          actualizarInvolucrado(idx, {
-                            catalogoFaltaId: e.target.value ? Number(e.target.value) : null,
-                          })
-                        }
-                        className={`w-full px-3 py-2 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-trujillo-sky transition ${
-                          inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO'
-                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                            : 'bg-white text-slate-800 border-slate-300'
-                        }`}
-                      >
-                        <option value="">
-                          {inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO'
-                            ? 'No aplica falta disciplinaria (Afectado / Víctima / Testigo)'
-                            : 'Sin falta tipificada / Pendiente de indagación'}
-                        </option>
-                        {faltasFiltradas.map((f) => (
-                          <option key={f.id} value={f.id}>
-                            [{f.codigo}] {f.clasificacionLey} ({f.gravedadInstitucional}) — {f.descripcion.slice(0, 65)}...
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Observación Individual Inicial */}
-                    <div className="lg:col-span-3">
-                      <label className="block text-xs font-medium text-slate-500 mb-1">
-                        Observación individual inicial sobre la participación de este alumno (opcional):
-                      </label>
-                      <input
-                        type="text"
-                        value={inv.descripcionIndividual}
-                        onChange={(e) =>
-                          actualizarInvolucrado(idx, { descripcionIndividual: e.target.value })
-                        }
-                        placeholder="Ej: Inició provocación verbal / Fue quien intervino para mediar / Sufrió daño material..."
-                        className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:bg-white transition text-slate-800 placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-                </div>
+                  index={idx}
+                  data={inv}
+                  faltas={faltasFiltradas}
+                  modoColectivo={modoColectivo}
+                  totalInvolucrados={involucrados.length}
+                  onChange={(updated) => actualizarInvolucrado(idx, updated)}
+                  onRemover={() => removerInvolucrado(idx)}
+                  onErrorGlobal={setErrorGlobal}
+                />
               ))}
+
+              {modoColectivo && (
+                <button
+                  type="button"
+                  onClick={agregarInvolucrado}
+                  className="w-full py-3 border-2 border-dashed border-sky-300 hover:border-trujillo-sky rounded-2xl text-xs sm:text-sm font-bold text-trujillo-navy bg-sky-50/40 hover:bg-sky-50 flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-trujillo-sky" />
+                  <span>Vincular Otro Estudiante al Mismo Incidente Colectivo</span>
+                </button>
+              )}
             </div>
-
-            {/* Botón para agregar involucrado en caso colectivo */}
-            {modoColectivo && (
-              <button
-                type="button"
-                onClick={agregarInvolucrado}
-                className="w-full py-3 rounded-2xl border-2 border-dashed border-sky-300 bg-sky-50/50 hover:bg-sky-50 text-trujillo-navy text-xs font-bold flex items-center justify-center gap-2 transition active:scale-[0.99] cursor-pointer"
-              >
-                <Plus className="w-4 h-4 text-trujillo-sky" />
-                <span>Vincular Otro Estudiante a este Mismo Expediente</span>
-              </button>
-            )}
-          </div>
-        </form>
-
-        {/* Footer Actions - Fixed */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400">
-            <Info className="w-4 h-4" />
-            <span>Se generará automáticamente el folio histórico institucional.</span>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          {/* Botones de Acción */}
+          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"
               onClick={onClose}
               disabled={guardando}
-              className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-200/70 rounded-xl transition cursor-pointer"
+              className="px-5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-[0.97] cursor-pointer"
             >
               Cancelar
             </button>
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={guardando}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-trujillo-navy hover:bg-trujillo-navy-light rounded-xl shadow-md shadow-trujillo-navy/20 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-trujillo-navy hover:bg-slate-800 disabled:opacity-50 text-xs sm:text-sm font-bold text-white shadow-md transition active:scale-[0.97] cursor-pointer"
             >
               {guardando ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-trujillo-sky" />
-                  <span>Guardando Expediente...</span>
+                  <span>Guardando en Expediente...</span>
                 </>
               ) : (
-                <>
-                  <Shield className="w-4 h-4 text-trujillo-sky" />
-                  <span>Aperturar Expediente</span>
-                </>
+                <span>Registrar Incidente Oficial</span>
               )}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

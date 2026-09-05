@@ -121,7 +121,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-expediente-title"
@@ -132,7 +132,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="absolute top-5 right-5 p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition active:scale-[0.97] cursor-pointer"
             aria-label="Cerrar expediente"
           >
             <X className="w-5 h-5" />

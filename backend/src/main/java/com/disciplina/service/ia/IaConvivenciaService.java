@@ -45,7 +45,7 @@ public class IaConvivenciaService {
         List<MatriculaEstudiante> matriculas = matriculaEstudianteRepository.findByAnioLectivoConEstudiante(anio);
 
         if (geminiClient.isConfigurado()) {
-            String promptSistema = construirPromptSistemaNarrativa(lugares, docentes, faltas, matriculas);
+            String promptSistema = construirPromptSistemaNarrativa(lugares, docentes, faltas);
             Optional<String> respuestaIa = geminiClient.generarContenidoEstructurado(promptSistema, relato);
 
             if (respuestaIa.isPresent()) {
@@ -110,17 +110,12 @@ public class IaConvivenciaService {
     private String construirPromptSistemaNarrativa(
             List<Lugar> lugares,
             List<Docente> docentes,
-            List<CatalogoFalta> faltas,
-            List<MatriculaEstudiante> matriculas) {
+            List<CatalogoFalta> faltas) {
 
         String listaLugares = lugares.stream().map(Lugar::getNombre).collect(Collectors.joining(", "));
         String listaDocentes = docentes.stream().map(Docente::getNombreCompleto).collect(Collectors.joining(", "));
         String listaFaltas = faltas.stream()
                 .map(f -> f.getCodigo() + " (" + f.getClasificacionLey() + ": " + f.getDescripcion() + ")")
-                .collect(Collectors.joining("; "));
-        String listaEstudiantes = matriculas.stream()
-                .map(m -> m.getEstudiante().getNombreCompleto() + " [Doc: " + m.getEstudiante().getDocumento() + "] (Grado " + m.getGrado() + "-" + m.getGrupo() + ")")
-                .limit(100)
                 .collect(Collectors.joining("; "));
 
         return """
@@ -142,7 +137,6 @@ public class IaConvivenciaService {
             - Lugares: %s
             - Docentes: %s
             - Tipificación Faltas: %s
-            - Estudiantes matriculados: %s
 
             Debes responder OBLIGATORIAMENTE un JSON con esta estructura exacta:
             {
@@ -161,7 +155,7 @@ public class IaConvivenciaService {
                 }
               ]
             }
-            """.formatted(listaLugares, listaDocentes, listaFaltas, listaEstudiantes);
+            """.formatted(listaLugares, listaDocentes, listaFaltas);
     }
 
     private NarrativaProcesadaDTO parsearRespuestaIaNarrativa(
@@ -233,7 +227,9 @@ public class IaConvivenciaService {
                 RolEstudianteIncidente rol = RolEstudianteIncidente.PARTICIPE;
                 try {
                     rol = RolEstudianteIncidente.valueOf(rolTxt.trim().toUpperCase());
-                } catch (Exception ignored) {}
+                } catch (IllegalArgumentException e) {
+                    log.warn("Rol sugerido por IA '{}' no reconocido para {}. Asignando PARTICIPE por defecto.", rolTxt, nombreMencionado);
+                }
 
                 // Matching con la base de datos de estudiantes
                 MatriculaEstudiante matchMatricula = buscarMejorCoincidenciaEstudiante(nombreMencionado, matriculas);
