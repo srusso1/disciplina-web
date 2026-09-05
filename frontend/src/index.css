@@ -7,3 +7,12 @@ body {
   min-height: 100vh;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
+
+body.modal-open {
+  overflow: hidden !important;
+}
+
+body.modal-open #root > div > div.overflow-y-auto,
+body.modal-open main.overflow-y-auto {
+  overflow: hidden !important;
+}
