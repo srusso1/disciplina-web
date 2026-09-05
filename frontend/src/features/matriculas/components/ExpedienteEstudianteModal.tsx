@@ -22,7 +22,9 @@ import {
   Copy,
   Check,
   ExternalLink,
+  HeartHandshake,
 } from 'lucide-react';
+import { PlanesIntervencionTab } from './PlanesIntervencionTab';
 
 interface ExpedienteEstudianteModalProps {
   estudianteId: number | null;
@@ -30,7 +32,8 @@ interface ExpedienteEstudianteModalProps {
   onClose: () => void;
 }
 
-type TabExpediente = 'convivencia' | 'matriculas' | 'contacto';
+type TabExpediente = 'convivencia' | 'matriculas' | 'contacto' | 'planes';
+
 
 export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps> = ({
   estudianteId,
@@ -384,6 +387,21 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             <Phone className="w-4 h-4 text-trujillo-sky shrink-0" />
             <span>Acudiente & Notificaciones</span>
           </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tabActiva === 'planes'}
+            onClick={() => setTabActiva('planes')}
+            className={`py-3.5 border-b-2 flex items-center gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
+              tabActiva === 'planes'
+                ? 'border-trujillo-navy text-trujillo-navy font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <HeartHandshake className="w-4 h-4 text-trujillo-sky shrink-0" />
+            <span>Planes & Seguimiento</span>
+          </button>
         </div>
 
         {/* Cuerpo del Expediente con Scroll Independiente */}
@@ -691,6 +709,20 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                     constituyen prueba fehaciente de comunicación procesal ante el Comité de Convivencia Escolar.
                   </div>
                 </div>
+              )}
+
+              {/* Pestaña 4: Planes de Intervención & Seguimiento de Caso (RF-06, CU-06, CU-07) */}
+              {tabActiva === 'planes' && (
+                <PlanesIntervencionTab
+                  estudianteId={expediente.id}
+                  estudianteNombre={expediente.nombreCompleto}
+                  incidentes={expediente.historialIncidentes.map((inc) => ({
+                    incidenteId: inc.incidenteId,
+                    descripcion: inc.descripcionHechos,
+                    faltaCodigo: inc.falta?.codigo,
+                    fechaIncidente: inc.fechaIncidente,
+                  }))}
+                />
               )}
             </>
           )}
