@@ -1,5 +1,6 @@
 package com.disciplina.dto.incidente;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,6 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RegistrarIncidenteDTO {
 
     @NotNull(message = "El docente que reporta el hecho es obligatorio")

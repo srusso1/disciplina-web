@@ -88,6 +88,10 @@ public class IncidenteService {
                 grupoMomento = matriculaOpt.get().getGrupo();
             }
 
+            String descargoInicial = invDto.getDescargoEstudiante() != null
+                    ? invDto.getDescargoEstudiante().trim()
+                    : (invDto.getDescripcionIndividual() != null ? invDto.getDescripcionIndividual().trim() : null);
+
             IncidenteEstudiante ie = IncidenteEstudiante.builder()
                     .estudiante(estudiante)
                     .catalogoFalta(falta)
@@ -95,7 +99,7 @@ public class IncidenteService {
                     .gradoMomento(gradoMomento)
                     .grupoMomento(grupoMomento)
                     .rolEstudiante(invDto.getRolEstudiante())
-                    .descargoEstudiante(invDto.getDescargoEstudiante() != null ? invDto.getDescargoEstudiante().trim() : null)
+                    .descargoEstudiante(descargoInicial)
                     .compromisoIndividual(invDto.getCompromisoIndividual() != null ? invDto.getCompromisoIndividual().trim() : null)
                     .build();
 
