@@ -150,6 +150,23 @@ class IaControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/v1/ia/procesar-narrativa con docente y lugar no registrados no asigna IDs por omisión")
+    void procesarNarrativa_docenteYLugarNoRegistrados_noAsignaIds() throws Exception {
+        ProcesarNarrativaRequestDTO request = ProcesarNarrativaRequestDTO.builder()
+                .relato("En un parqueadero municipal fuera del colegio, el señor Roberto Gómez que pasaba por allí observó a dos muchachos discutir fuertemente.")
+                .anioLectivo(LocalDate.now().getYear())
+                .build();
+
+        mockMvc.perform(post("/api/v1/ia/procesar-narrativa")
+                        .header("Authorization", "Bearer " + tokenRector)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lugarSugeridoId", nullValue()))
+                .andExpect(jsonPath("$.docenteReportaId", nullValue()));
+    }
+
+    @Test
     @DisplayName("POST /api/v1/ia/procesar-narrativa con relato en blanco debe retornar 400")
     void procesarNarrativa_conRelatoVacio_debeRetornar400() throws Exception {
         ProcesarNarrativaRequestDTO request = ProcesarNarrativaRequestDTO.builder()

@@ -64,6 +64,12 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   const [horaIncidente, setHoraIncidente] = useState<string>(getCurrentLocalTime());
   const [descripcionHechos, setDescripcionHechos] = useState<string>('');
 
+  // Estados de sugerencias / alertas de IA para Docente y Lugar
+  const [sugerenciaDocentePendiente, setSugerenciaDocentePendiente] = useState<string | null>(null);
+  const [alertaDocenteNoMencionado, setAlertaDocenteNoMencionado] = useState<boolean>(false);
+  const [sugerenciaLugarPendiente, setSugerenciaLugarPendiente] = useState<string | null>(null);
+  const [alertaLugarNoMencionado, setAlertaLugarNoMencionado] = useState<boolean>(false);
+
   // Estudiantes involucrados
   const [involucrados, setInvolucrados] = useState<InvolucradoItemData[]>([
     {
@@ -108,6 +114,12 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       setErrorGlobal(null);
       setFechaIncidente(getTodayLocalDate());
       setHoraIncidente(getCurrentLocalTime());
+      setDocenteReportaId('');
+      setLugarId('');
+      setSugerenciaDocentePendiente(null);
+      setAlertaDocenteNoMencionado(false);
+      setSugerenciaLugarPendiente(null);
+      setAlertaLugarNoMencionado(false);
     }
   }, [isOpen]);
 
@@ -122,13 +134,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       setDocentes(docs);
       setLugares(lugs);
       setFaltas(flts);
-
-      if (docs.length > 0 && docenteReportaId === '') {
-        setDocenteReportaId(docs[0].id);
-      }
-      if (lugs.length > 0 && lugarId === '') {
-        setLugarId(lugs[0].id);
-      }
+      // No autoseleccionar docs[0] ni lugs[0] para evitar asignaciones erróneas por omisión
     } catch (err: unknown) {
       const e = err as Error;
       setErrorGlobal('No se pudieron cargar los catálogos institucionales: ' + e.message);
@@ -141,11 +147,41 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     if (resultado.hechosEstandarizados) {
       setDescripcionHechos(resultado.hechosEstandarizados);
     }
+    if (resultado.fechaSugerida) {
+      setFechaIncidente(resultado.fechaSugerida);
+    }
+    if (resultado.horaSugerida) {
+      setHoraIncidente(resultado.horaSugerida);
+    }
+
+    // Manejo de Docente Informante
     if (resultado.docenteReportaId) {
       setDocenteReportaId(resultado.docenteReportaId);
+      setSugerenciaDocentePendiente(null);
+      setAlertaDocenteNoMencionado(false);
+    } else if (resultado.docenteReportaNombre && resultado.docenteReportaNombre.trim() !== '') {
+      setDocenteReportaId('');
+      setSugerenciaDocentePendiente(resultado.docenteReportaNombre.trim());
+      setAlertaDocenteNoMencionado(false);
+    } else {
+      setDocenteReportaId('');
+      setSugerenciaDocentePendiente(null);
+      setAlertaDocenteNoMencionado(true);
     }
+
+    // Manejo de Lugar Institucional
     if (resultado.lugarSugeridoId) {
       setLugarId(resultado.lugarSugeridoId);
+      setSugerenciaLugarPendiente(null);
+      setAlertaLugarNoMencionado(false);
+    } else if (resultado.lugarNombre && resultado.lugarNombre.trim() !== '') {
+      setLugarId('');
+      setSugerenciaLugarPendiente(resultado.lugarNombre.trim());
+      setAlertaLugarNoMencionado(false);
+    } else {
+      setLugarId('');
+      setSugerenciaLugarPendiente(null);
+      setAlertaLugarNoMencionado(true);
     }
 
     if (resultado.estudiantes && resultado.estudiantes.length > 0) {
@@ -229,11 +265,19 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     setErrorGlobal(null);
 
     if (!docenteReportaId) {
-      setErrorGlobal('Seleccione el docente o funcionario que reporta el incidente.');
+      if (sugerenciaDocentePendiente) {
+        setErrorGlobal(`Docente informante pendiente de vincular: "${sugerenciaDocentePendiente}". Debe seleccionar al funcionario correspondiente de la lista institucional.`);
+      } else {
+        setErrorGlobal('Debe seleccionar el docente o funcionario que reporta el incidente.');
+      }
       return;
     }
     if (!lugarId) {
-      setErrorGlobal('Seleccione el lugar institucional del hecho.');
+      if (sugerenciaLugarPendiente) {
+        setErrorGlobal(`Lugar institucional pendiente de vincular: "${sugerenciaLugarPendiente}". Debe seleccionar la ubicación oficial del catálogo.`);
+      } else {
+        setErrorGlobal('Debe seleccionar el lugar institucional del hecho.');
+      }
       return;
     }
     if (!fechaIncidente) {
@@ -354,6 +398,18 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
             setHoraIncidente={setHoraIncidente}
             descripcionHechos={descripcionHechos}
             setDescripcionHechos={setDescripcionHechos}
+            sugerenciaDocentePendiente={sugerenciaDocentePendiente}
+            alertaDocenteNoMencionado={alertaDocenteNoMencionado}
+            onLimpiarAlertaDocente={() => {
+              setSugerenciaDocentePendiente(null);
+              setAlertaDocenteNoMencionado(false);
+            }}
+            sugerenciaLugarPendiente={sugerenciaLugarPendiente}
+            alertaLugarNoMencionado={alertaLugarNoMencionado}
+            onLimpiarAlertaLugar={() => {
+              setSugerenciaLugarPendiente(null);
+              setAlertaLugarNoMencionado(false);
+            }}
           />
 
           {/* Bloque 2: Tipología y Selección de Involucrados */}

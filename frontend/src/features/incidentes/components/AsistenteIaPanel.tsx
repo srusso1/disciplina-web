@@ -165,20 +165,59 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                <div className="p-2 rounded-lg bg-white border border-indigo-100">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Docente Detectado</span>
+                {/* Docente Detectado */}
+                <div className="p-2 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Docente Detectado</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                        resultado.docenteReportaId
+                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                          : resultado.docenteReportaNombre
+                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {resultado.docenteReportaId
+                        ? 'En Nómina'
+                        : resultado.docenteReportaNombre
+                        ? 'Sin Vincular'
+                        : 'No Identificado'}
+                    </span>
+                  </div>
                   <span className="font-semibold text-slate-700 truncate block">
-                    {resultado.docenteReportaNombre || 'No detectado'}
+                    {resultado.docenteReportaNombre || 'No especificado en relato'}
                   </span>
                 </div>
-                <div className="p-2 rounded-lg bg-white border border-indigo-100">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Lugar Detectado</span>
+
+                {/* Lugar Detectado */}
+                <div className="p-2 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Lugar Detectado</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                        resultado.lugarSugeridoId
+                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                          : resultado.lugarNombre
+                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {resultado.lugarSugeridoId
+                        ? 'Catálogo OK'
+                        : resultado.lugarNombre
+                        ? 'Sin Vincular'
+                        : 'No Identificado'}
+                    </span>
+                  </div>
                   <span className="font-semibold text-slate-700 truncate block">
-                    {resultado.lugarNombre || 'No detectado'}
+                    {resultado.lugarNombre || 'No especificado en relato'}
                   </span>
                 </div>
-                <div className="p-2 rounded-lg bg-white border border-indigo-100">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Involucrados Detectados</span>
+
+                {/* Involucrados */}
+                <div className="p-2 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Involucrados Detectados</span>
                   <span className="font-semibold text-slate-700 block">
                     {resultado.estudiantes?.length || 0} estudiante(s)
                   </span>

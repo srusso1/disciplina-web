@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -178,28 +179,26 @@ public class IaConvivenciaService {
         // Mapear Lugar
         Integer lugarId = null;
         String lugarNombre = null;
-        if (lugarTxt != null) {
-            Lugar match = lugares.stream()
-                    .filter(l -> l.getNombre().equalsIgnoreCase(lugarTxt.trim()) ||
-                                 lugarTxt.toLowerCase().contains(l.getNombre().toLowerCase()))
-                    .findFirst().orElse(null);
+        if (lugarTxt != null && !lugarTxt.trim().isEmpty() && !lugarTxt.trim().equalsIgnoreCase("null")) {
+            Lugar match = buscarMejorCoincidenciaLugar(lugarTxt, lugares);
             if (match != null) {
                 lugarId = match.getId();
                 lugarNombre = match.getNombre();
+            } else {
+                lugarNombre = lugarTxt.trim();
             }
         }
 
         // Mapear Docente
         Integer docenteId = null;
         String docenteNombre = null;
-        if (docenteTxt != null) {
-            Docente match = docentes.stream()
-                    .filter(d -> d.getNombreCompleto().equalsIgnoreCase(docenteTxt.trim()) ||
-                                 docenteTxt.toLowerCase().contains(d.getNombres().toLowerCase()))
-                    .findFirst().orElse(null);
+        if (docenteTxt != null && !docenteTxt.trim().isEmpty() && !docenteTxt.trim().equalsIgnoreCase("null")) {
+            Docente match = buscarMejorCoincidenciaDocente(docenteTxt, docentes);
             if (match != null) {
                 docenteId = match.getId();
                 docenteNombre = match.getNombreCompleto();
+            } else {
+                docenteNombre = docenteTxt.trim();
             }
         }
 
@@ -296,15 +295,10 @@ public class IaConvivenciaService {
         String relatoLower = relato.toLowerCase();
 
         // 1. Detectar Lugar
-        Lugar lugarDetectado = lugares.stream()
-                .filter(l -> relatoLower.contains(l.getNombre().toLowerCase()))
-                .findFirst().orElse(null);
+        Lugar lugarDetectado = buscarMejorCoincidenciaLugar(relato, lugares);
 
         // 2. Detectar Docente
-        Docente docenteDetectado = docentes.stream()
-                .filter(d -> relatoLower.contains(d.getNombres().toLowerCase()) ||
-                             relatoLower.contains(d.getApellidos().toLowerCase()))
-                .findFirst().orElse(null);
+        Docente docenteDetectado = buscarMejorCoincidenciaDocente(relato, docentes);
 
         // 3. Detectar Clasificación Ley 1620 y Falta
         ClasificacionLey leyDetectada = ClasificacionLey.TIPO_I;
@@ -388,19 +382,19 @@ public class IaConvivenciaService {
     }
 
     private MatriculaEstudiante buscarMejorCoincidenciaEstudiante(String texto, List<MatriculaEstudiante> matriculas) {
-        if (texto == null || texto.trim().isEmpty()) return null;
-        String t = texto.toLowerCase().trim();
+        if (texto == null || texto.trim().isEmpty() || matriculas == null) return null;
+        String t = normalizarTexto(texto);
 
         // Coincidencia exacta de nombre completo
         for (MatriculaEstudiante m : matriculas) {
-            if (m.getEstudiante().getNombreCompleto().toLowerCase().equals(t)) {
+            if (normalizarTexto(m.getEstudiante().getNombreCompleto()).equals(t)) {
                 return m;
             }
         }
 
         // Coincidencia de inclusión
         for (MatriculaEstudiante m : matriculas) {
-            String nc = m.getEstudiante().getNombreCompleto().toLowerCase();
+            String nc = normalizarTexto(m.getEstudiante().getNombreCompleto());
             if (nc.contains(t) || t.contains(nc)) {
                 return m;
             }
@@ -410,9 +404,11 @@ public class IaConvivenciaService {
         String[] partes = t.split("\\s+");
         for (MatriculaEstudiante m : matriculas) {
             Estudiante e = m.getEstudiante();
+            String nombresNorm = normalizarTexto(e.getNombres());
+            String apellidosNorm = normalizarTexto(e.getApellidos());
             int coincidencias = 0;
             for (String p : partes) {
-                if (p.length() > 3 && (e.getNombres().toLowerCase().contains(p) || e.getApellidos().toLowerCase().contains(p))) {
+                if (p.length() > 3 && (nombresNorm.contains(p) || apellidosNorm.contains(p))) {
                     coincidencias++;
                 }
             }
@@ -422,6 +418,122 @@ public class IaConvivenciaService {
         }
 
         return null;
+    }
+
+    private Docente buscarMejorCoincidenciaDocente(String texto, List<Docente> docentes) {
+        if (texto == null || texto.trim().isEmpty() || docentes == null || docentes.isEmpty()) {
+            return null;
+        }
+
+        String tNorm = normalizarTexto(texto);
+
+        // 1. Coincidencia exacta de nombre completo
+        for (Docente d : docentes) {
+            if (normalizarTexto(d.getNombreCompleto()).equals(tNorm)) {
+                return d;
+            }
+        }
+
+        // 2. Coincidencia por contención bidireccional
+        for (Docente d : docentes) {
+            String ncNorm = normalizarTexto(d.getNombreCompleto());
+            if (ncNorm.contains(tNorm) || tNorm.contains(ncNorm)) {
+                return d;
+            }
+        }
+
+        // 3. Coincidencia por tokens significativos (nombre + apellido)
+        Set<String> stopWords = Set.of("docente", "profesor", "profesora", "profe", "licenciado", "licenciada", "el", "la", "de", "del");
+        List<String> tokensTexto = Arrays.stream(tNorm.split("\\s+"))
+                .filter(tk -> tk.length() > 2 && !stopWords.contains(tk))
+                .toList();
+
+        Docente mejorCandidato = null;
+        int maxCoincidencias = 0;
+
+        for (Docente d : docentes) {
+            String nombresNorm = normalizarTexto(d.getNombres());
+            String apellidosNorm = normalizarTexto(d.getApellidos());
+
+            int coincidencias = 0;
+            boolean tieneNombre = false;
+            boolean tieneApellido = false;
+
+            for (String tk : tokensTexto) {
+                if (nombresNorm.contains(tk)) {
+                    coincidencias++;
+                    tieneNombre = true;
+                } else if (apellidosNorm.contains(tk)) {
+                    coincidencias++;
+                    tieneApellido = true;
+                }
+            }
+
+            if ((tieneNombre && tieneApellido) || coincidencias >= 2) {
+                if (coincidencias > maxCoincidencias) {
+                    maxCoincidencias = coincidencias;
+                    mejorCandidato = d;
+                }
+            }
+        }
+
+        return mejorCandidato;
+    }
+
+    private Lugar buscarMejorCoincidenciaLugar(String texto, List<Lugar> lugares) {
+        if (texto == null || texto.trim().isEmpty() || lugares == null || lugares.isEmpty()) {
+            return null;
+        }
+
+        String tNorm = normalizarTexto(texto);
+
+        // 1. Coincidencia exacta
+        for (Lugar l : lugares) {
+            if (normalizarTexto(l.getNombre()).equals(tNorm)) {
+                return l;
+            }
+        }
+
+        // 2. Coincidencia por contención bidireccional
+        for (Lugar l : lugares) {
+            String lNorm = normalizarTexto(l.getNombre());
+            if (lNorm.contains(tNorm) || tNorm.contains(lNorm)) {
+                return l;
+            }
+        }
+
+        // 3. Coincidencia por tokens significativos
+        Set<String> stopWords = Set.of("en", "el", "la", "de", "los", "las", "del", "un", "una", "institucional", "escolar");
+        List<String> tokens = Arrays.stream(tNorm.split("\\s+"))
+                .filter(tk -> tk.length() > 3 && !stopWords.contains(tk))
+                .toList();
+
+        Lugar mejorLugar = null;
+        int maxPuntos = 0;
+
+        for (Lugar l : lugares) {
+            String lNorm = normalizarTexto(l.getNombre());
+            int puntos = 0;
+            for (String tk : tokens) {
+                if (lNorm.contains(tk)) {
+                    puntos++;
+                }
+            }
+            if (puntos > maxPuntos) {
+                maxPuntos = puntos;
+                mejorLugar = l;
+            }
+        }
+
+        return mejorLugar;
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) return "";
+        return Normalizer.normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase()
+                .trim();
     }
 
     private String construirPromptSistemaIntervencion() {
