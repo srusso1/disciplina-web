@@ -40,4 +40,27 @@ public interface IncidenteEstudianteRepository extends JpaRepository<IncidenteEs
         WHERE ie.catalogoFalta.clasificacionLey = :clasificacionLey
         """)
     long countDistinctIncidentesByClasificacionLey(@Param("clasificacionLey") ClasificacionLey clasificacionLey);
+
+    @Query("""
+        SELECT ie.gradoMomento, count(DISTINCT ie.incidente.id)
+        FROM IncidenteEstudiante ie
+        WHERE ie.gradoMomento IS NOT NULL AND ie.gradoMomento != ''
+        GROUP BY ie.gradoMomento
+        ORDER BY ie.gradoMomento ASC
+        """)
+    List<Object[]> contarIncidentesPorGrado();
+
+    @Query("""
+        SELECT count(DISTINCT ie.estudiante.id)
+        FROM IncidenteEstudiante ie
+        """)
+    long contarTotalEstudiantesInvolucrados();
+
+    @Query("""
+        SELECT ie.estudiante.id
+        FROM IncidenteEstudiante ie
+        GROUP BY ie.estudiante.id
+        HAVING count(DISTINCT ie.incidente.id) > 1
+        """)
+    List<Integer> obtenerIdsEstudiantesReincidentes();
 }

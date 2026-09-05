@@ -68,4 +68,26 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
     Optional<Incidente> findByIdWithDetails(@Param("id") Integer id);
 
     long countByEstadoProceso(EstadoProceso estadoProceso);
+
+    @Query("""
+        SELECT i.lugar.id, i.lugar.nombre, count(i)
+        FROM Incidente i
+        GROUP BY i.lugar.id, i.lugar.nombre
+        ORDER BY count(i) DESC
+        """)
+    java.util.List<Object[]> contarIncidentesPorLugar();
+
+    @Query("""
+        SELECT i.estadoProceso, count(i)
+        FROM Incidente i
+        GROUP BY i.estadoProceso
+        """)
+    java.util.List<Object[]> contarIncidentesPorEstado();
+
+    @Query("""
+        SELECT i.fechaIncidente, i.horaIncidente
+        FROM Incidente i
+        ORDER BY i.fechaIncidente ASC
+        """)
+    java.util.List<Object[]> obtenerFechasYHorasIncidentes();
 }
