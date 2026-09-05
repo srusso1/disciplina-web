@@ -90,6 +90,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -100,6 +101,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -328,7 +330,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overscroll-contain transition-opacity animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-registro-incidente-title"

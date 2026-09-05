@@ -61,15 +61,24 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
   }, [estudiante]);
 
   useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !isSubmitting) {
+      if (e.key === 'Escape' && !isSubmitting) {
         onClose();
       }
     };
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.classList.remove('modal-open');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, isSubmitting, onClose]);
 
   if (!isOpen || !estudiante) return null;
@@ -162,7 +171,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overscroll-contain transition-opacity animate-in fade-in duration-200"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
