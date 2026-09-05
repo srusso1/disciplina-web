@@ -170,6 +170,9 @@ public class IncidenteService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Incidente no encontrado con ID: " + id));
 
         EstadoProceso estadoAnterior = incidente.getEstadoProceso();
+        if (estadoAnterior == EstadoProceso.CERRADO && dto.getEstadoProceso() != EstadoProceso.CERRADO) {
+            throw new OperacionInvalidaException("No es posible modificar el estado de un incidente que ya se encuentra CERRADO (debido proceso concluido).");
+        }
         incidente.setEstadoProceso(dto.getEstadoProceso());
         incidente = incidenteRepository.save(incidente);
 

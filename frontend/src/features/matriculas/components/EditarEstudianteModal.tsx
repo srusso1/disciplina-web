@@ -146,7 +146,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
       grupo: grupo.trim(),
       jornada: jornada.trim(),
       estadoMatricula,
-      anioLectivo: estudiante.anioLectivo || 2026,
+      anioLectivo: estudiante.anioLectivo || new Date().getFullYear(),
     };
 
     try {

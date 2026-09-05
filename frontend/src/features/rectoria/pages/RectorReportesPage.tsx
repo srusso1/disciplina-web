@@ -80,7 +80,7 @@ export const RectorReportesPage: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Informe-Ejecutivo-Convivencia-2026.pdf`;
+      a.download = `Informe-Ejecutivo-Convivencia-${new Date().getFullYear()}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -179,7 +179,7 @@ export const RectorReportesPage: React.FC = () => {
             Documento Oficial de Rectoría
           </span>
           <h2 className="text-lg font-extrabold text-white tracking-tight">
-            Informe Ejecutivo Consolidado de Convivencia Escolar 2026
+            Informe Ejecutivo Consolidado de Convivencia Escolar ({new Date().getFullYear()})
           </h2>
           <p className="text-xs text-slate-300 leading-relaxed">
             Consolida indicadores de conflictividad según Ley 1620, mapa de calor de espacios institucionales, franjas horarias de mayor criticidad y balance cuantitativo del debido proceso para rendición de cuentas directiva.

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { incidentesApi } from '../../incidentes/api/incidentesApi';
 import { planesApi } from '../../planes/api/planesApi';
@@ -7,6 +7,7 @@ import { NarrativaProcesada } from '../../incidentes/types/incidente.types';
 import { PropuestaIaResponse, CrearPlanIntervencionRequest } from '../../planes/types/planes.types';
 import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { useDebounce } from '../../../core/hooks/useDebounce';
 import {
   Sparkles,
   FileText,
@@ -36,6 +37,7 @@ export const AsistenteIaPage: React.FC = () => {
 
   // Tab 2: Plan de Intervención (CU-06)
   const [busquedaEstudiante, setBusquedaEstudiante] = useState<string>('');
+  const debouncedBusquedaEstudiante = useDebounce(busquedaEstudiante, 350);
   const [estudiantesResultados, setEstudiantesResultados] = useState<EstudianteMatricula[]>([]);
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState<EstudianteMatricula | null>(null);
   const [buscandoEstudiante, setBuscandoEstudiante] = useState<boolean>(false);
@@ -92,27 +94,44 @@ export const AsistenteIaPage: React.FC = () => {
     setTimeout(() => setTextoCopiado(false), 2500);
   };
 
-  // Buscar estudiantes para el plan
-  const handleBuscarEstudiantes = async (texto: string) => {
-    setBusquedaEstudiante(texto);
-    if (texto.trim().length < 2) {
-      setEstudiantesResultados([]);
-      return;
-    }
+  // Búsqueda reactiva debounced para evitar saturación de red y race conditions
+  useEffect(() => {
+    let activo = true;
 
-    setBuscandoEstudiante(true);
-    try {
-      const res = await matriculasApi.listarEstudiantes({
-        busqueda: texto.trim(),
-        size: 5,
-      });
-      setEstudiantesResultados(res.contenido);
-    } catch (err) {
-      console.error('Error buscando estudiantes:', err);
-    } finally {
-      setBuscandoEstudiante(false);
-    }
-  };
+    const ejecutarBusqueda = async () => {
+      const termino = debouncedBusquedaEstudiante.trim();
+      if (termino.length < 2) {
+        setEstudiantesResultados([]);
+        setBuscandoEstudiante(false);
+        return;
+      }
+
+      setBuscandoEstudiante(true);
+      try {
+        const res = await matriculasApi.listarEstudiantes({
+          busqueda: termino,
+          size: 5,
+        });
+        if (activo) {
+          setEstudiantesResultados(res.contenido);
+        }
+      } catch (err) {
+        if (activo) {
+          console.error('Error buscando estudiantes:', err);
+        }
+      } finally {
+        if (activo) {
+          setBuscandoEstudiante(false);
+        }
+      }
+    };
+
+    ejecutarBusqueda();
+
+    return () => {
+      activo = false;
+    };
+  }, [debouncedBusquedaEstudiante]);
 
   // Generar plan de intervención con Gemini
   const handleGenerarPlan = async () => {
@@ -446,7 +465,7 @@ export const AsistenteIaPage: React.FC = () => {
                     type="text"
                     placeholder="Escribe documento o nombre..."
                     value={busquedaEstudiante}
-                    onChange={(e) => handleBuscarEstudiantes(e.target.value)}
+                    onChange={(e) => setBusquedaEstudiante(e.target.value)}
                     className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
                   />
                   {buscandoEstudiante && (

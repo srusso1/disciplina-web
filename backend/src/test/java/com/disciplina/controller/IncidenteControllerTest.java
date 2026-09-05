@@ -553,4 +553,48 @@ class IncidenteControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", not(empty())));
     }
+
+    @Test
+    @DisplayName("RNF-Inmutabilidad: No debe permitir reabrir o cambiar estado de un incidente CERRADO (HTTP 400)")
+    void testActualizarEstado_enIncidenteCerrado_retornaBadRequest() throws Exception {
+        Estudiante est = crearEstudianteConMatricula("09", "0901", 2026);
+
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Incidente para probar inmutabilidad de estado al cerrarse.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(est.getId())
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        String res = mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Integer incidenteId = objectMapper.readTree(res).get("id").asInt();
+
+        // Cerrar el incidente formalmente
+        mockMvc.perform(patch("/api/v1/incidentes/" + incidenteId + "/estado")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estadoProceso\":\"CERRADO\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estadoProceso", is("CERRADO")));
+
+        // Intentar revertir el estado a EN_INDAGACION sobre el caso cerrado
+        mockMvc.perform(patch("/api/v1/incidentes/" + incidenteId + "/estado")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estadoProceso\":\"EN_INDAGACION\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("CERRADO")));
+    }
 }

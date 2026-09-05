@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
+import { PageLoader } from '../../../core/components/PageLoader';
 import { 
   BarChart3, 
   ShieldAlert, 
@@ -135,14 +136,16 @@ export const RectorLayout: React.FC = () => {
               <HelpCircle className="w-4 h-4" />
             </button>
             <span className="px-2.5 py-1 rounded-full bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200">
-              Vigencia 2026
+              Vigencia {new Date().getFullYear()}
             </span>
           </div>
         </header>
 
-        {/* Contenido de la Página */}
+        {/* Contenido de la Pagina */}
         <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
+          <Suspense fallback={<PageLoader mensaje="Cargando módulo..." />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

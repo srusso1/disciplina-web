@@ -83,7 +83,7 @@ export const RectorDashboardPage: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Informe-Ejecutivo-Convivencia-2026.pdf`;
+      a.download = `Informe-Ejecutivo-Convivencia-${new Date().getFullYear()}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -285,7 +285,7 @@ export const RectorDashboardPage: React.FC = () => {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(val: any) => [`${val ?? 0} expedientes`, 'Cantidad']}
+                      formatter={(val: unknown) => [`${val ?? 0} expedientes`, 'Cantidad']}
                       contentStyle={{ borderRadius: '1rem', border: '1px solid #e2e8f0', fontSize: '12px' }}
                     />
                     <Legend 
@@ -354,7 +354,7 @@ export const RectorDashboardPage: React.FC = () => {
                       width={120}
                     />
                     <Tooltip 
-                      formatter={(val: any, _name: any, props: any) => [
+                      formatter={(val: unknown, _name: unknown, props: { payload?: { porcentaje?: number } }) => [
                         `${val ?? 0} casos (${props?.payload?.porcentaje ?? 0}%)`,
                         'Incidencia'
                       ]}
@@ -416,7 +416,7 @@ export const RectorDashboardPage: React.FC = () => {
                   <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip 
-                    formatter={(val: any) => [`${val ?? 0} incidentes`, 'Casos registrados']}
+                    formatter={(val: unknown) => [`${val ?? 0} incidentes`, 'Casos registrados']}
                     contentStyle={{ borderRadius: '1rem', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                   <Area 
@@ -467,7 +467,7 @@ export const RectorDashboardPage: React.FC = () => {
                   />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip 
-                    formatter={(val: any, _name: any, props: any) => [
+                    formatter={(val: unknown, _name: unknown, props: { payload?: { porcentaje?: number } }) => [
                       `${val ?? 0} casos (${props?.payload?.porcentaje ?? 0}%)`,
                       'Incidentes'
                     ]}
@@ -646,7 +646,7 @@ export const RectorDashboardPage: React.FC = () => {
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
             <span>Próxima Sesión Ordinaria:</span>
-            <span className="font-bold text-trujillo-navy">Marzo 2026</span>
+            <span className="font-bold text-trujillo-navy">Vigencia {new Date().getFullYear()}</span>
           </div>
         </div>
       </div>

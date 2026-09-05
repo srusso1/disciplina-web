@@ -9,6 +9,7 @@ import {
 } from '../../planes/types/planes.types';
 import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { useDebounce } from '../../../core/hooks/useDebounce';
 import { ExpedienteEstudianteModal } from '../../matriculas/components/ExpedienteEstudianteModal';
 import {
   Layers,
@@ -68,6 +69,7 @@ export const PlanesIntervencionPage: React.FC = () => {
   const [isModalNuevoOpen, setIsModalNuevoOpen] = useState<boolean>(false);
   const [estudiantesBusqueda, setEstudiantesBusqueda] = useState<EstudianteMatricula[]>([]);
   const [busquedaEstudianteTexto, setBusquedaEstudianteTexto] = useState<string>('');
+  const debouncedBusquedaEstudiante = useDebounce(busquedaEstudianteTexto, 350);
   const [buscandoEstudiante, setBuscandoEstudiante] = useState<boolean>(false);
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState<EstudianteMatricula | null>(null);
 
@@ -178,27 +180,44 @@ export const PlanesIntervencionPage: React.FC = () => {
     }
   };
 
-  // Buscar estudiantes para nuevo plan
-  const handleBuscarEstudiantes = async (texto: string) => {
-    setBusquedaEstudianteTexto(texto);
-    if (texto.trim().length < 2) {
-      setEstudiantesBusqueda([]);
-      return;
-    }
+  // Búsqueda reactiva debounced para evitar saturación y race conditions
+  useEffect(() => {
+    let activo = true;
 
-    setBuscandoEstudiante(true);
-    try {
-      const res = await matriculasApi.listarEstudiantes({
-        busqueda: texto.trim(),
-        size: 5,
-      });
-      setEstudiantesBusqueda(res.contenido);
-    } catch (err) {
-      console.error('Error buscando estudiante:', err);
-    } finally {
-      setBuscandoEstudiante(false);
-    }
-  };
+    const ejecutarBusqueda = async () => {
+      const termino = debouncedBusquedaEstudiante.trim();
+      if (termino.length < 2) {
+        setEstudiantesBusqueda([]);
+        setBuscandoEstudiante(false);
+        return;
+      }
+
+      setBuscandoEstudiante(true);
+      try {
+        const res = await matriculasApi.listarEstudiantes({
+          busqueda: termino,
+          size: 5,
+        });
+        if (activo) {
+          setEstudiantesBusqueda(res.contenido);
+        }
+      } catch (err) {
+        if (activo) {
+          console.error('Error buscando estudiante:', err);
+        }
+      } finally {
+        if (activo) {
+          setBuscandoEstudiante(false);
+        }
+      }
+    };
+
+    ejecutarBusqueda();
+
+    return () => {
+      activo = false;
+    };
+  }, [debouncedBusquedaEstudiante]);
 
   // Asistencia con IA para nuevo plan
   const handleGenerarIaNuevoPlan = async () => {
@@ -793,7 +812,7 @@ export const PlanesIntervencionPage: React.FC = () => {
                       type="text"
                       placeholder="Escribe documento o nombre del alumno..."
                       value={busquedaEstudianteTexto}
-                      onChange={(e) => handleBuscarEstudiantes(e.target.value)}
+                      onChange={(e) => setBusquedaEstudianteTexto(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
                     />
                     {buscandoEstudiante && (

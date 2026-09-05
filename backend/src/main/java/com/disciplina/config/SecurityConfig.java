@@ -114,12 +114,20 @@ public class SecurityConfig {
                         // Endpoints publicos de autenticacion y error
                         .requestMatchers("/auth/**", "/api/v1/auth/**", "/error").permitAll()
                         
-                        // Defensa en profundidad a nivel de rutas directivas
-                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**").hasAuthority("ROLE_RECTOR")
+                        // Defensa en profundidad a nivel de rutas directivas y auditoria forense
+                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**", "/auditoria/**", "/api/v1/auditoria/**", "/reportes/pdf/consolidado-anual", "/api/v1/reportes/pdf/consolidado-anual").hasAuthority("ROLE_RECTOR")
                         .requestMatchers("/orientador/**", "/api/v1/orientador/**").hasAuthority("ROLE_ORIENTADOR")
                         
-                        // Rutas compartidas de incidentes, catalogos, matriculas, expedientes e IA
-                        .requestMatchers("/matriculas/**", "/api/v1/matriculas/**", "/catalogos/**", "/api/v1/catalogos/**", "/incidentes/**", "/api/v1/incidentes/**", "/ia/**", "/api/v1/ia/**", "/api/v1/**").hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
+                        // Rutas compartidas de incidentes, catalogos, matriculas, planes, reportes de actas e IA
+                        .requestMatchers(
+                                "/matriculas/**", "/api/v1/matriculas/**",
+                                "/catalogos/**", "/api/v1/catalogos/**",
+                                "/incidentes/**", "/api/v1/incidentes/**",
+                                "/planes-intervencion/**", "/api/v1/planes-intervencion/**",
+                                "/reportes/**", "/api/v1/reportes/**",
+                                "/ia/**", "/api/v1/ia/**",
+                                "/api/v1/**"
+                        ).hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
                         
                         .anyRequest().authenticated()
                 )

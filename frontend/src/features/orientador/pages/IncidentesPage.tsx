@@ -156,7 +156,7 @@ export const IncidentesPage: React.FC = () => {
         {/* Total Casos */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
           <div className="flex items-center justify-between text-trujillo-navy mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Expedientes 2026</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Expedientes {new Date().getFullYear()}</span>
             <div className="p-2 rounded-xl bg-trujillo-ice">
               <FileText className="w-4 h-4 text-trujillo-navy" />
             </div>

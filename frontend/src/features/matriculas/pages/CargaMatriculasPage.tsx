@@ -30,6 +30,7 @@ export const CargaMatriculasPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [resumen, setResumen] = useState<ImportacionMatriculasResumen | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const anioVigente = new Date().getFullYear();
 
   // Explorador y Paginación en Base de Datos
   const [estudiantes, setEstudiantes] = useState<EstudianteMatricula[]>([]);
@@ -78,7 +79,7 @@ export const CargaMatriculasPage: React.FC = () => {
         const data = await matriculasApi.listarEstudiantes({
           page: paginaActual,
           size: tamanoPagina,
-          anioLectivo: 2026,
+          anioLectivo: anioVigente,
           grado: filtroGrado || undefined,
           busqueda: busquedaAplicada || undefined,
         });
@@ -177,7 +178,7 @@ export const CargaMatriculasPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const resultado = await matriculasApi.importarMasivo(file, 2026);
+      const resultado = await matriculasApi.importarMasivo(file, anioVigente);
       setResumen(resultado);
       setPaginaActual(0);
       setRecargarTrigger((prev) => prev + 1);
@@ -220,7 +221,7 @@ export const CargaMatriculasPage: React.FC = () => {
 
         <div className="px-3.5 py-2 rounded-xl bg-sky-50 text-trujillo-navy border border-sky-200 text-xs font-bold flex items-center gap-2 shrink-0">
           <Clock className="w-4 h-4 text-trujillo-navy" />
-          <span>Vigencia Escolar: 2026</span>
+          <span>Vigencia Escolar: {anioVigente}</span>
         </div>
       </div>
 
@@ -356,7 +357,7 @@ export const CargaMatriculasPage: React.FC = () => {
             <div className="bg-white border border-sky-200 rounded-2xl p-5 shadow-card border-l-4 border-l-sky-500">
               <span className="text-xs font-bold uppercase tracking-wider text-sky-800">Matrículas Vinculadas</span>
               <p className="text-3xl font-black text-sky-900 mt-2">{resumen.matriculasCreadas}</p>
-              <p className="text-[11px] text-slate-500 mt-1">Asignadas a la vigencia 2026</p>
+              <p className="text-[11px] text-slate-500 mt-1">Asignadas a la vigencia {resumen.anioLectivo || anioVigente}</p>
             </div>
 
             <div className="bg-white border border-amber-200 rounded-2xl p-5 shadow-card border-l-4 border-l-amber-500">
@@ -373,30 +374,30 @@ export const CargaMatriculasPage: React.FC = () => {
                 <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
                 <div>
                   <h3 className="text-sm font-bold">
-                    Trazabilidad de Inconsistencias Subsanadas Automáticamente
+                    Inconsistencias y Dobles Matrículas Corregidas
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    Se generaron identificadores provisorios para documentos en 0 o se actualizaron grupos duplicados.
+                  <p className="text-xs text-amber-700">
+                    Se detectaron {resumen.advertencias.length} situaciones que fueron regularizadas automáticamente sin abortar la carga.
                   </p>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border border-slate-100 rounded-xl overflow-hidden">
-                  <thead className="bg-amber-50 text-amber-900 font-semibold uppercase tracking-wider border-b border-amber-100">
+              <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-amber-50/70 border-b border-amber-200 text-amber-900 font-bold sticky top-0">
                     <tr>
-                      <th className="px-3 py-2.5">Fila Excel</th>
-                      <th className="px-3 py-2.5">Código</th>
-                      <th className="px-3 py-2.5">Estudiante</th>
-                      <th className="px-3 py-2.5">Inconsistencia Detectada</th>
-                      <th className="px-3 py-2.5">Acción Aplicada</th>
+                      <th className="px-3 py-2">Fila</th>
+                      <th className="px-3 py-2">Código</th>
+                      <th className="px-3 py-2">Estudiante</th>
+                      <th className="px-3 py-2">Inconsistencia Detectada</th>
+                      <th className="px-3 py-2">Acción Aplicada</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-amber-100">
                     {resumen.advertencias.map((adv, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
-                        <td className="px-3 py-2 font-mono font-bold text-slate-700">{adv.fila}</td>
-                        <td className="px-3 py-2 font-mono text-slate-600">{adv.codigo}</td>
+                      <tr key={idx} className="hover:bg-amber-50/40">
+                        <td className="px-3 py-2 font-mono text-slate-500">#{adv.fila}</td>
+                        <td className="px-3 py-2 font-mono font-bold text-slate-700">{adv.codigo}</td>
                         <td className="px-3 py-2 font-semibold text-slate-800">{adv.estudiante}</td>
                         <td className="px-3 py-2 text-amber-800 font-medium">{adv.motivo}</td>
                         <td className="px-3 py-2">
@@ -420,7 +421,7 @@ export const CargaMatriculasPage: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-trujillo-dark flex items-center gap-2">
               <Users className="w-5 h-5 text-trujillo-navy" />
-              <span>Estudiantes Matriculados en Vigencia 2026</span>
+              <span>Estudiantes Matriculados en Vigencia {anioVigente}</span>
             </h2>
             <p className="text-xs text-slate-500">
               Total de alumnos activos: <span className="font-bold text-trujillo-navy">{totalElementos}</span>

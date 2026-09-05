@@ -111,7 +111,7 @@ export const ExpedienteUnicoPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="px-4 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Año Lectivo</span>
-              <span className="text-lg font-black text-trujillo-sky">2026</span>
+              <span className="text-lg font-black text-trujillo-sky">{new Date().getFullYear()}</span>
             </div>
             <div className="px-4 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Alumnos</span>
@@ -130,7 +130,7 @@ export const ExpedienteUnicoPage: React.FC = () => {
           <div>
             <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Población Activa</span>
             <p className="text-xl font-extrabold text-slate-800">{totalElementos} Estudiantes</p>
-            <span className="text-xs text-slate-500">Registrados en matrículas 2026</span>
+            <span className="text-xs text-slate-500">Registrados en matrículas {new Date().getFullYear()}</span>
           </div>
         </div>
 
