@@ -229,12 +229,12 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
         </div>
       </div>
 
-      {/* Bloque 3: Descripción Fáctica Oficial */}
+      {/* Bloque 2: Descripción Fáctica General */}
       <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/90 space-y-2.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-trujillo-navy uppercase tracking-wider flex items-center gap-2">
             <FileText className="w-4 h-4 text-trujillo-sky" />
-            3. Descripción Fáctica del Incidente *
+            2. Descripción Fáctica General del Incidente *
           </label>
           <span className="text-[11px] text-slate-400">
             {descripcionHechos.length} caracteres (mínimo 10)

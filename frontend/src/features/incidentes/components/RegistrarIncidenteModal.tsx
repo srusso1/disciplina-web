@@ -3,7 +3,6 @@ import {
   X,
   Plus,
   AlertTriangle,
-  BookOpen,
   Users,
   Shield,
   Loader2,
@@ -13,7 +12,6 @@ import {
   DocenteCatalogo,
   LugarCatalogo,
   CatalogoFalta,
-  ClasificacionLey,
   RegistrarIncidenteData,
   InvolucradoRequest,
   NarrativaProcesada,
@@ -55,7 +53,6 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   const [docentes, setDocentes] = useState<DocenteCatalogo[]>([]);
   const [lugares, setLugares] = useState<LugarCatalogo[]>([]);
   const [faltas, setFaltas] = useState<CatalogoFalta[]>([]);
-  const [filtroTipoLeyFaltas, setFiltroTipoLeyFaltas] = useState<ClasificacionLey | 'TODAS'>('TODAS');
 
   // Campos principales
   const [docenteReportaId, setDocenteReportaId] = useState<number | ''>('');
@@ -255,11 +252,6 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     }
   };
 
-  const faltasFiltradas = faltas.filter((f) => {
-    if (filtroTipoLeyFaltas === 'TODAS') return true;
-    return f.clasificacionLey === filtroTipoLeyFaltas;
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorGlobal(null);
@@ -368,172 +360,160 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
           </button>
         </div>
 
-        {/* Formulario Principal */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-          {errorGlobal && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-3 shadow-xs animate-in fade-in">
-              <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="font-bold text-rose-800">No fue posible registrar el incidente</p>
-                <p className="text-rose-600 leading-relaxed">{errorGlobal}</p>
+        {/* Formulario Principal con Cuerpo Scrolleable y Footer Fijo */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          {/* Cuerpo Scrolleable */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {errorGlobal && (
+              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-3 shadow-xs animate-in fade-in">
+                <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold text-rose-800">No fue posible registrar el incidente</p>
+                  <p className="text-rose-600 leading-relaxed">{errorGlobal}</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Subcomponente 1: Panel de IA */}
-          <AsistenteIaPanel onAplicar={handleAplicarResultadoIa} />
+            {/* Asistente IA */}
+            <AsistenteIaPanel onAplicar={handleAplicarResultadoIa} />
 
-          {/* Subcomponente 2: Contexto Institucional (Docente, Lugar, Fecha, Hora, Hechos) */}
-          <ContextoHechosSection
-            docentes={docentes}
-            lugares={lugares}
-            cargandoCatalogos={cargandoCatalogos}
-            docenteReportaId={docenteReportaId}
-            setDocenteReportaId={setDocenteReportaId}
-            lugarId={lugarId}
-            setLugarId={setLugarId}
-            fechaIncidente={fechaIncidente}
-            setFechaIncidente={setFechaIncidente}
-            horaIncidente={horaIncidente}
-            setHoraIncidente={setHoraIncidente}
-            descripcionHechos={descripcionHechos}
-            setDescripcionHechos={setDescripcionHechos}
-            sugerenciaDocentePendiente={sugerenciaDocentePendiente}
-            alertaDocenteNoMencionado={alertaDocenteNoMencionado}
-            onLimpiarAlertaDocente={() => {
-              setSugerenciaDocentePendiente(null);
-              setAlertaDocenteNoMencionado(false);
-            }}
-            sugerenciaLugarPendiente={sugerenciaLugarPendiente}
-            alertaLugarNoMencionado={alertaLugarNoMencionado}
-            onLimpiarAlertaLugar={() => {
-              setSugerenciaLugarPendiente(null);
-              setAlertaLugarNoMencionado(false);
-            }}
-          />
+            {/* Paso 1: Contexto Institucional y Paso 2: Hechos Fácticos */}
+            <ContextoHechosSection
+              docentes={docentes}
+              lugares={lugares}
+              cargandoCatalogos={cargandoCatalogos}
+              docenteReportaId={docenteReportaId}
+              setDocenteReportaId={setDocenteReportaId}
+              lugarId={lugarId}
+              setLugarId={setLugarId}
+              fechaIncidente={fechaIncidente}
+              setFechaIncidente={setFechaIncidente}
+              horaIncidente={horaIncidente}
+              setHoraIncidente={setHoraIncidente}
+              descripcionHechos={descripcionHechos}
+              setDescripcionHechos={setDescripcionHechos}
+              sugerenciaDocentePendiente={sugerenciaDocentePendiente}
+              alertaDocenteNoMencionado={alertaDocenteNoMencionado}
+              onLimpiarAlertaDocente={() => {
+                setSugerenciaDocentePendiente(null);
+                setAlertaDocenteNoMencionado(false);
+              }}
+              sugerenciaLugarPendiente={sugerenciaLugarPendiente}
+              alertaLugarNoMencionado={alertaLugarNoMencionado}
+              onLimpiarAlertaLugar={() => {
+                setSugerenciaLugarPendiente(null);
+                setAlertaLugarNoMencionado(false);
+              }}
+            />
 
-          {/* Bloque 2: Tipología y Selección de Involucrados */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
-              <div>
-                <h3 className="text-xs font-bold text-trujillo-navy uppercase tracking-wider flex items-center gap-2">
-                  <Users className="w-4 h-4 text-trujillo-sky" />
-                  2. Estudiantes Vinculados al Caso ({involucrados.length})
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Seleccione si el reporte corresponde a un único estudiante o a una situación colectiva.
-                </p>
-              </div>
-
-              {/* Selector interactivo de Modo: Individual vs Colectivo */}
-              <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => cambiarModoCaso(false)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-[0.97] cursor-pointer ${
-                    !modoColectivo
-                      ? 'bg-white text-trujillo-navy shadow-xs border border-slate-200'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Caso Individual (1)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => cambiarModoCaso(true)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-[0.97] flex items-center gap-1.5 cursor-pointer ${
-                    modoColectivo
-                      ? 'bg-trujillo-navy text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <span>Caso Colectivo (N)</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-trujillo-sky animate-pulse"></span>
-                </button>
-              </div>
-            </div>
-
-            {/* Filtro rápido por tipo de falta Ley 1620 */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                <BookOpen className="w-3.5 h-3.5" />
-                Catálogo Faltas:
-              </span>
-              {(['TODAS', 'TIPO_I', 'TIPO_II', 'TIPO_III'] as const).map((tipo) => (
-                <button
-                  key={tipo}
-                  type="button"
-                  onClick={() => setFiltroTipoLeyFaltas(tipo)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition active:scale-[0.97] cursor-pointer ${
-                    filtroTipoLeyFaltas === tipo
-                      ? 'bg-trujillo-navy text-white border-trujillo-navy shadow-xs'
-                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  {tipo === 'TODAS'
-                    ? 'Todas'
-                    : tipo === 'TIPO_I'
-                    ? 'Tipo I (Leves)'
-                    : tipo === 'TIPO_II'
-                    ? 'Tipo II (Graves)'
-                    : 'Tipo III (Gravísimas)'}
-                </button>
-              ))}
-            </div>
-
-            {/* Subcomponente 3: Lista Modular de Involucrados */}
+            {/* Paso 3: Estudiantes Vinculados y Debido Proceso */}
             <div className="space-y-4">
-              {involucrados.map((inv, idx) => (
-                <InvolucradoItemCard
-                  key={inv.idTemp}
-                  index={idx}
-                  data={inv}
-                  faltas={faltasFiltradas}
-                  modoColectivo={modoColectivo}
-                  totalInvolucrados={involucrados.length}
-                  onChange={(updated) => actualizarInvolucrado(idx, updated)}
-                  onRemover={() => removerInvolucrado(idx)}
-                  onErrorGlobal={setErrorGlobal}
-                />
-              ))}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+                <div>
+                  <h3 className="text-xs font-bold text-trujillo-navy uppercase tracking-wider flex items-center gap-2">
+                    <Users className="w-4 h-4 text-trujillo-sky" />
+                    3. Estudiantes Vinculados y Debido Proceso ({involucrados.length})
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Seleccione si el reporte corresponde a un único estudiante o a una situación colectiva.
+                  </p>
+                </div>
 
-              {modoColectivo && (
-                <button
-                  type="button"
-                  onClick={agregarInvolucrado}
-                  className="w-full py-3 border-2 border-dashed border-sky-300 hover:border-trujillo-sky rounded-2xl text-xs sm:text-sm font-bold text-trujillo-navy bg-sky-50/40 hover:bg-sky-50 flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 text-trujillo-sky" />
-                  <span>Vincular Otro Estudiante al Mismo Incidente Colectivo</span>
-                </button>
-              )}
+                {/* Selector interactivo de Modo: Individual vs Colectivo */}
+                <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => cambiarModoCaso(false)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-[0.97] cursor-pointer ${
+                      !modoColectivo
+                        ? 'bg-white text-trujillo-navy shadow-xs border border-slate-200'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Caso Individual (1)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cambiarModoCaso(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-[0.97] flex items-center gap-1.5 cursor-pointer ${
+                      modoColectivo
+                        ? 'bg-trujillo-navy text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <span>Caso Colectivo (N)</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-trujillo-sky animate-pulse"></span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Subcomponente: Lista Modular de Involucrados */}
+              <div className="space-y-4">
+                {involucrados.map((inv, idx) => (
+                  <InvolucradoItemCard
+                    key={inv.idTemp}
+                    index={idx}
+                    data={inv}
+                    faltas={faltas}
+                    modoColectivo={modoColectivo}
+                    totalInvolucrados={involucrados.length}
+                    onChange={(updated) => actualizarInvolucrado(idx, updated)}
+                    onRemover={() => removerInvolucrado(idx)}
+                    onErrorGlobal={setErrorGlobal}
+                  />
+                ))}
+
+                {modoColectivo && (
+                  <button
+                    type="button"
+                    onClick={agregarInvolucrado}
+                    className="w-full py-3 border-2 border-dashed border-sky-300 hover:border-trujillo-sky rounded-2xl text-xs sm:text-sm font-bold text-trujillo-navy bg-sky-50/40 hover:bg-sky-50 flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-trujillo-sky" />
+                    <span>Vincular Otro Estudiante al Mismo Incidente Colectivo</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Botones de Acción */}
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={guardando}
-              className="px-5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-[0.97] cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={guardando}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-trujillo-navy hover:bg-slate-800 disabled:opacity-50 text-xs sm:text-sm font-bold text-white shadow-md transition active:scale-[0.97] cursor-pointer"
-            >
-              {guardando ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-trujillo-sky" />
-                  <span>Guardando en Expediente...</span>
-                </>
-              ) : (
-                <span>Registrar Incidente Oficial</span>
-              )}
-            </button>
+          {/* Footer Fijo de Acciones (Siempre Visible) */}
+          <div className="bg-slate-50/95 backdrop-blur-sm px-6 py-4 border-t border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">
+                <Users className="w-3.5 h-3.5 text-trujillo-sky" />
+                {modoColectivo
+                  ? `Caso Colectivo (${involucrados.length} involucrados)`
+                  : 'Caso Individual (1 estudiante)'}
+              </span>
+              <span>•</span>
+              <span className="text-[11px] text-slate-400">Ley 1620 y Debido Proceso</span>
+            </div>
+
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={guardando}
+                className="px-5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100/80 transition active:scale-[0.97] cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={guardando}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-trujillo-navy hover:bg-slate-800 disabled:opacity-50 text-xs sm:text-sm font-bold text-white shadow-md hover:shadow transition active:scale-[0.97] cursor-pointer"
+              >
+                {guardando ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-trujillo-sky" />
+                    <span>Guardando en Expediente...</span>
+                  </>
+                ) : (
+                  <span>Registrar Incidente Oficial</span>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

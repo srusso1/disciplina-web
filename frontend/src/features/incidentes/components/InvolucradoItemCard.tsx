@@ -267,8 +267,8 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
         </div>
       )}
 
-      {/* Campos de Rol, Falta y Observación */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+      {/* Fila 1: Rol en el Hecho y Tipificación de Falta (2 columnas balanceadas) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
         {/* Rol */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -277,7 +277,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
           <select
             value={data.rolEstudiante}
             onChange={(e) => handleCambioRol(e.target.value as RolEstudianteIncidente)}
-            className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition font-medium text-slate-800"
+            className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition font-medium text-slate-800"
           >
             <option value="AGRESOR_PRINCIPAL">Agresor Principal</option>
             <option value="PARTICIPE">Partícipe / Coautor</option>
@@ -289,17 +289,17 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
         {/* Tipificación de Falta Disciplinaria */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
-            <span>Falta Tipificada Manual</span>
+            <span>Falta Tipificada (Ley 1620)</span>
             {esVictimaOTestigo && (
-              <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.2 rounded border border-sky-200">
+              <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200">
                 Debido Proceso
               </span>
             )}
           </label>
           {esVictimaOTestigo ? (
-            <div className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-500 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-              <span className="truncate italic">Parte protegida (sin falta disciplinaria)</span>
+            <div className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-500 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-sky-600 shrink-0" />
+              <span className="truncate italic">Parte protegida (exenta de falta disciplinaria)</span>
             </div>
           ) : (
             <select
@@ -309,31 +309,66 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                   catalogoFaltaId: e.target.value ? Number(e.target.value) : null,
                 })
               }
-              className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
             >
               <option value="">Sin falta tipificada específica...</option>
-              {faltas.map((f) => (
-                <option key={f.id} value={f.id}>
-                  [{f.clasificacionLey}] {f.codigo} — {f.descripcion.substring(0, 55)}...
-                </option>
-              ))}
+              {faltas.filter((f) => f.clasificacionLey === 'TIPO_I').length > 0 && (
+                <optgroup label="Faltas Tipo I (Leves / Conflictos Cotidianos)">
+                  {faltas
+                    .filter((f) => f.clasificacionLey === 'TIPO_I')
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.codigo} — {f.descripcion}
+                      </option>
+                    ))}
+                </optgroup>
+              )}
+              {faltas.filter((f) => f.clasificacionLey === 'TIPO_II').length > 0 && (
+                <optgroup label="Faltas Tipo II (Graves / Agresiones y Riñas)">
+                  {faltas
+                    .filter((f) => f.clasificacionLey === 'TIPO_II')
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.codigo} — {f.descripcion}
+                      </option>
+                    ))}
+                </optgroup>
+              )}
+              {faltas.filter((f) => f.clasificacionLey === 'TIPO_III').length > 0 && (
+                <optgroup label="Faltas Tipo III (Gravísimas / Presuntos Delitos)">
+                  {faltas
+                    .filter((f) => f.clasificacionLey === 'TIPO_III')
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.codigo} — {f.descripcion}
+                      </option>
+                    ))}
+                </optgroup>
+              )}
             </select>
           )}
         </div>
+      </div>
 
-        {/* Observación Individual o Descargo Inicial */}
-        <div className="sm:col-span-2 lg:col-span-1">
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Observación / Justificación Individual
+      {/* Fila 2: Observación / Justificación Individual en Textarea */}
+      <div className="pt-1">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-semibold text-slate-700">
+            Observación / Justificación Individual del Estudiante
           </label>
-          <input
-            type="text"
-            value={data.descripcionIndividual}
-            onChange={(e) => onChange({ descripcionIndividual: e.target.value })}
-            placeholder="Aclaración específica del estudiante..."
-            className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition placeholder:text-slate-400"
-          />
+          <span className="text-[11px] text-slate-400">
+            {data.descripcionIndividual?.length
+              ? `${data.descripcionIndividual.length} caracteres`
+              : 'Opcional (descargo o versión preliminar)'}
+          </span>
         </div>
+        <textarea
+          rows={3}
+          value={data.descripcionIndividual}
+          onChange={(e) => onChange({ descripcionIndividual: e.target.value })}
+          placeholder="Registre aquí el descargo preliminar, versión del estudiante o circunstancias atenuantes/agravantes particulares..."
+          className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition placeholder:text-slate-400 resize-none leading-relaxed text-slate-800"
+        />
       </div>
     </div>
   );
