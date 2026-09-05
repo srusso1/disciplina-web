@@ -1,5 +1,6 @@
 package com.disciplina.domain.repository;
 
+import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.model.IncidenteEstudiante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,4 +34,10 @@ public interface IncidenteEstudianteRepository extends JpaRepository<IncidenteEs
     List<IncidenteEstudiante> findByEstudianteIdConIncidente(@Param("estudianteId") Integer estudianteId);
 
     Optional<IncidenteEstudiante> findByIncidenteIdAndEstudianteId(Integer incidenteId, Integer estudianteId);
+
+    @Query("""
+        SELECT count(DISTINCT ie.incidente.id) FROM IncidenteEstudiante ie
+        WHERE ie.catalogoFalta.clasificacionLey = :clasificacionLey
+        """)
+    long countDistinctIncidentesByClasificacionLey(@Param("clasificacionLey") ClasificacionLey clasificacionLey);
 }

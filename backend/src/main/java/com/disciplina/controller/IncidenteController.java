@@ -1,5 +1,6 @@
 package com.disciplina.controller;
 
+import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
 import com.disciplina.dto.incidente.*;
@@ -14,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 @RestController
 @RequestMapping({"/incidentes", "/api/v1/incidentes"})
@@ -39,12 +39,13 @@ public class IncidenteController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "15") int size,
             @RequestParam(value = "estado", required = false) EstadoProceso estado,
+            @RequestParam(value = "tipoLey", required = false) ClasificacionLey tipoLey,
             @RequestParam(value = "fechaDesde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
             @RequestParam(value = "fechaHasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta,
             @RequestParam(value = "busqueda", required = false) String busqueda) {
 
         PaginaRespuestaDTO<IncidenteResponseDTO> pagina = incidenteService
-                .listarIncidentesPaginados(estado, fechaDesde, fechaHasta, busqueda, page, size);
+                .listarIncidentesPaginados(estado, tipoLey, fechaDesde, fechaHasta, busqueda, page, size);
         return ResponseEntity.ok(pagina);
     }
 
@@ -71,7 +72,7 @@ public class IncidenteController {
     }
 
     @GetMapping("/estadisticas")
-    public ResponseEntity<Map<String, Long>> obtenerEstadisticas() {
+    public ResponseEntity<EstadisticasIncidentesDTO> obtenerEstadisticas() {
         return ResponseEntity.ok(incidenteService.obtenerEstadisticasIncidentes());
     }
 }

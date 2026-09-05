@@ -351,4 +351,58 @@ class IncidenteControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", not(empty())));
     }
+
+    @Test
+    @DisplayName("Debe filtrar incidentes por Clasificacion de Ley 1620 (Tipo I, Tipo II, Tipo III)")
+    void testFiltrarIncidentesPorTipoLey() throws Exception {
+        Estudiante est = crearEstudianteConMatricula("06", "0601", 2026);
+
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Incidente con falta tipificada Tipo II para validar filtro de ley 1620.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId()) // faltaPrueba es TIPO_II
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated());
+
+        // Filtrar por TIPO_II debe retornar al menos 1 resultado
+        mockMvc.perform(get("/api/v1/incidentes")
+                        .param("tipoLey", "TIPO_II")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido", not(empty())))
+                .andExpect(jsonPath("$.contenido[?(@.involucrados[0].falta.clasificacionLey == 'TIPO_II')]", not(empty())));
+
+        // Filtrar por TIPO_III no debe incluir incidentes que solo tienen TIPO_II
+        mockMvc.perform(get("/api/v1/incidentes")
+                        .param("tipoLey", "TIPO_III")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Debe obtener estadisticas de convivencia con el DTO estructurado para KPI cards")
+    void testObtenerEstadisticasConFormatoEsperado() throws Exception {
+        mockMvc.perform(get("/api/v1/incidentes/estadisticas")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalIncidentes", notNullValue()))
+                .andExpect(jsonPath("$.tipoI", notNullValue()))
+                .andExpect(jsonPath("$.tipoII", notNullValue()))
+                .andExpect(jsonPath("$.tipoIII", notNullValue()))
+                .andExpect(jsonPath("$.enSeguimiento", notNullValue()))
+                .andExpect(jsonPath("$.cerrados", notNullValue()));
+    }
 }

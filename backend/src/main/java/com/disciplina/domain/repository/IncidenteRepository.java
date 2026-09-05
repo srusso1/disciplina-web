@@ -1,5 +1,6 @@
 package com.disciplina.domain.repository;
 
+import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.domain.model.Incidente;
 import org.springframework.data.domain.Page;
@@ -22,7 +23,9 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
         JOIN FETCH i.usuarioRegistro u
         LEFT JOIN i.involucrados inv
         LEFT JOIN inv.estudiante e
+        LEFT JOIN inv.catalogoFalta cf
         WHERE (:estado IS NULL OR i.estadoProceso = :estado)
+          AND (:tipoLey IS NULL OR cf.clasificacionLey = :tipoLey)
           AND (:fechaDesde IS NULL OR i.fechaIncidente >= :fechaDesde)
           AND (:fechaHasta IS NULL OR i.fechaIncidente <= :fechaHasta)
           AND (:busqueda IS NULL OR :busqueda = '' OR
@@ -36,7 +39,9 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
         SELECT count(DISTINCT i) FROM Incidente i
         LEFT JOIN i.involucrados inv
         LEFT JOIN inv.estudiante e
+        LEFT JOIN inv.catalogoFalta cf
         WHERE (:estado IS NULL OR i.estadoProceso = :estado)
+          AND (:tipoLey IS NULL OR cf.clasificacionLey = :tipoLey)
           AND (:fechaDesde IS NULL OR i.fechaIncidente >= :fechaDesde)
           AND (:fechaHasta IS NULL OR i.fechaIncidente <= :fechaHasta)
           AND (:busqueda IS NULL OR :busqueda = '' OR
@@ -47,6 +52,7 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
         """)
     Page<Incidente> buscarIncidentesPaginados(
             @Param("estado") EstadoProceso estado,
+            @Param("tipoLey") ClasificacionLey tipoLey,
             @Param("fechaDesde") LocalDate fechaDesde,
             @Param("fechaHasta") LocalDate fechaHasta,
             @Param("busqueda") String busqueda,

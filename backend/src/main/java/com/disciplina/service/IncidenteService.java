@@ -2,6 +2,7 @@ package com.disciplina.service;
 
 import com.disciplina.common.exception.ConflictoEntidadException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
+import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.domain.model.*;
 import com.disciplina.domain.repository.*;
@@ -114,6 +115,7 @@ public class IncidenteService {
 
     public PaginaRespuestaDTO<IncidenteResponseDTO> listarIncidentesPaginados(
             EstadoProceso estado,
+            ClasificacionLey tipoLey,
             LocalDate fechaDesde,
             LocalDate fechaHasta,
             String busqueda,
@@ -126,7 +128,7 @@ public class IncidenteService {
 
         String filtro = (busqueda != null && !busqueda.trim().isEmpty()) ? busqueda.trim() : null;
 
-        Page<Incidente> pagina = incidenteRepository.buscarIncidentesPaginados(estado, fechaDesde, fechaHasta, filtro, pageable);
+        Page<Incidente> pagina = incidenteRepository.buscarIncidentesPaginados(estado, tipoLey, fechaDesde, fechaHasta, filtro, pageable);
         return PaginaRespuestaDTO.de(pagina.map(i -> mapearADTO(i, null)));
     }
 
@@ -165,13 +167,23 @@ public class IncidenteService {
         return mapearInvolucradoADTO(ie);
     }
 
-    public Map<String, Long> obtenerEstadisticasIncidentes() {
-        Map<String, Long> stats = new HashMap<>();
-        for (EstadoProceso ep : EstadoProceso.values()) {
-            stats.put(ep.name(), incidenteRepository.countByEstadoProceso(ep));
-        }
-        stats.put("TOTAL", incidenteRepository.count());
-        return stats;
+    public EstadisticasIncidentesDTO obtenerEstadisticasIncidentes() {
+        long total = incidenteRepository.count();
+        long tipoI = incidenteEstudianteRepository.countDistinctIncidentesByClasificacionLey(ClasificacionLey.TIPO_I);
+        long tipoII = incidenteEstudianteRepository.countDistinctIncidentesByClasificacionLey(ClasificacionLey.TIPO_II);
+        long tipoIII = incidenteEstudianteRepository.countDistinctIncidentesByClasificacionLey(ClasificacionLey.TIPO_III);
+
+        long cerrados = incidenteRepository.countByEstadoProceso(EstadoProceso.CERRADO);
+        long enSeguimiento = Math.max(0, total - cerrados);
+
+        return EstadisticasIncidentesDTO.builder()
+                .totalIncidentes(total)
+                .tipoI(tipoI)
+                .tipoII(tipoII)
+                .tipoIII(tipoIII)
+                .enSeguimiento(enSeguimiento)
+                .cerrados(cerrados)
+                .build();
     }
 
     private IncidenteResponseDTO mapearADTO(Incidente i, List<IncidenteEstudiante> involucradosExternos) {
