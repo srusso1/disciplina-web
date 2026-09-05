@@ -20,6 +20,9 @@ import {
   ChevronDown,
   ChevronUp,
   FileEdit,
+  AlertCircle,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
 
 interface PlanesIntervencionTabProps {
@@ -66,6 +69,11 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
 
   // Control de acordeón de planes
   const [planExpandido, setPlanExpandido] = useState<number | null>(null);
+  const [mensajeAlerta, setMensajeAlerta] = useState<{ tipo: 'error' | 'exito'; texto: string } | null>(null);
+
+  const mostrarAlerta = (texto: string, tipo: 'error' | 'exito' = 'error') => {
+    setMensajeAlerta({ tipo, texto });
+  };
 
   const cargarPlanes = async () => {
     setCargando(true);
@@ -110,7 +118,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
       setAdvertenciaIa(propuesta.advertenciaGobierno || 'Propuesta estructurada por IA según antecedentes.');
     } catch (err) {
       console.error('Error al invocar asistencia IA:', err);
-      alert(extraerMensajeError(err, 'No se pudo generar la propuesta asistida por IA.'));
+      mostrarAlerta(extraerMensajeError(err, 'No se pudo generar la propuesta asistida por IA.'));
     } finally {
       setGenerandoIa(false);
     }
@@ -120,7 +128,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
   const handleGuardarPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!diagnostico.trim() || !accionesAcordadas.trim()) {
-      alert('El diagnóstico situacional y las acciones formativas son obligatorias.');
+      mostrarAlerta('El diagnóstico situacional y las acciones formativas son obligatorias.');
       return;
     }
 
@@ -141,6 +149,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
       setPlanes((prev) => [creado, ...prev]);
       setPlanExpandido(creado.id);
       setMostrarFormNuevo(false);
+      mostrarAlerta('Plan de intervención registrado exitosamente.', 'exito');
 
       // Limpiar formulario
       setDiagnostico('');
@@ -152,7 +161,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
       setAdvertenciaIa(null);
     } catch (err) {
       console.error('Error al guardar plan:', err);
-      alert(extraerMensajeError(err, 'Error al formular el plan de intervención.'));
+      mostrarAlerta(extraerMensajeError(err, 'Error al formular el plan de intervención.'));
     } finally {
       setGuardandoPlan(false);
     }
@@ -162,7 +171,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
   const handleRegistrarSeguimiento = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!planIdSeguimiento || !observacionSeguimiento.trim()) {
-      alert('La observación o nota pedagógica de seguimiento es obligatoria.');
+      mostrarAlerta('La observación o nota pedagógica de seguimiento es obligatoria.');
       return;
     }
 
@@ -179,6 +188,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
       setPlanes((prev) =>
         prev.map((p) => (p.id === planIdSeguimiento ? planActualizado : p))
       );
+      mostrarAlerta('Nota de seguimiento registrada con éxito.', 'exito');
 
       // Cerrar formulario de seguimiento
       setPlanIdSeguimiento(null);
@@ -186,7 +196,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
       setNuevaFechaSeguimiento('');
     } catch (err) {
       console.error('Error al registrar seguimiento:', err);
-      alert(extraerMensajeError(err, 'No fue posible registrar la nota de seguimiento.'));
+      mostrarAlerta(extraerMensajeError(err, 'No fue posible registrar la nota de seguimiento.'));
     } finally {
       setGuardandoSeguimiento(false);
     }
@@ -233,6 +243,33 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
           </button>
         )}
       </div>
+
+      {/* Banner de Notificación / Alerta Accesible */}
+      {mensajeAlerta && (
+        <div
+          className={`p-3.5 rounded-xl border flex items-center justify-between text-xs font-semibold animate-in fade-in duration-150 ${
+            mensajeAlerta.tipo === 'error'
+              ? 'bg-rose-50 border-rose-200 text-rose-800'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {mensajeAlerta.tipo === 'error' ? (
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            )}
+            <span>{mensajeAlerta.texto}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMensajeAlerta(null)}
+            className="p-1 hover:bg-black/5 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Formulario de Creación de Plan (RF-06 & CU-06) */}
       {mostrarFormNuevo && (

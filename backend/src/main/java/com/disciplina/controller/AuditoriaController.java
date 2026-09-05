@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping({"/auditoria", "/api/v1/auditoria"})
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_RECTOR')")
+@PreAuthorize("hasRole('RECTOR')")
 public class AuditoriaController {
 
     private final AuditoriaService auditoriaService;

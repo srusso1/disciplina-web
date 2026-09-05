@@ -1,6 +1,7 @@
 package com.disciplina.service;
 
 import com.disciplina.common.exception.ConflictoEntidadException;
+import com.disciplina.common.exception.OperacionInvalidaException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
 import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
@@ -48,7 +49,7 @@ public class IncidenteService {
         Lugar lugar = lugarRepository.findById(dto.getLugarId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Lugar no encontrado con ID: " + dto.getLugarId()));
 
-        Usuario usuario = usuarioRepository.findByUsername(username)
+        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario autenticado no encontrado: " + username));
 
         // Validar unicidad de estudiantes dentro del mismo incidente
@@ -187,6 +188,10 @@ public class IncidenteService {
     public InvolucradoResponseDTO actualizarDescargoEstudiante(Integer incidenteId, Integer estudianteId, ActualizarDescargoDTO dto) {
         IncidenteEstudiante ie = incidenteEstudianteRepository.findByIncidenteIdAndEstudianteId(incidenteId, estudianteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No se encontro relacion entre el incidente " + incidenteId + " y el estudiante " + estudianteId));
+
+        if (ie.getIncidente() != null && ie.getIncidente().getEstadoProceso() == EstadoProceso.CERRADO) {
+            throw new OperacionInvalidaException("No es posible modificar los descargos o compromisos de un incidente que ya se encuentra CERRADO (debido proceso concluido).");
+        }
 
         String descargoAnterior = ie.getDescargoEstudiante();
         String compromisoAnterior = ie.getCompromisoIndividual();

@@ -63,18 +63,33 @@ public class AuditoriaService {
                 accionNormalizada = accionNormalizada.substring(0, 50);
             }
 
+            String entidadNormalizada = entidad != null ? entidad.trim() : "General";
+            if (entidadNormalizada.length() > 50) {
+                entidadNormalizada = entidadNormalizada.substring(0, 50);
+            }
+
+            String idNormalizado = entidadId != null ? String.valueOf(entidadId).trim() : "0";
+            if (idNormalizado.length() > 50) {
+                idNormalizado = idNormalizado.substring(0, 50);
+            }
+
+            String ipNormalizada = ip != null ? ip.trim() : "127.0.0.1";
+            if (ipNormalizada.length() > 45) {
+                ipNormalizada = ipNormalizada.substring(0, 45);
+            }
+
             AuditoriaSistema auditoria = AuditoriaSistema.builder()
                     .usuario(usuario)
                     .accion(accionNormalizada)
-                    .entidad(entidad != null ? entidad.trim() : "General")
-                    .entidadId(entidadId != null ? String.valueOf(entidadId) : "0")
+                    .entidad(entidadNormalizada)
+                    .entidadId(idNormalizado)
                     .datosAnteriores(jsonAnterior)
                     .datosNuevos(jsonNuevo)
-                    .ipOrigen(ip)
+                    .ipOrigen(ipNormalizada)
                     .build();
 
             auditoriaRepository.save(auditoria);
-            log.debug("Auditoria registrada: {} en {} (ID: {})", accionNormalizada, entidad, entidadId);
+            log.debug("Auditoria registrada: {} en {} (ID: {})", accionNormalizada, entidadNormalizada, idNormalizado);
         } catch (Exception e) {
             log.error("Fallo al registrar traza forense de auditoria: {}", e.getMessage(), e);
         }

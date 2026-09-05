@@ -153,14 +153,15 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
       const actualizado = await matriculasApi.actualizarEstudiante(estudiante.id, data);
       onSuccess(actualizado);
       onClose();
-    } catch (err: any) {
-      if (err.response?.status === 409) {
-        setErrorGlobal(err.response.data?.message || 'Ya existe otro estudiante con este documento.');
-      } else if (err.response?.status === 400 && err.response.data?.fieldErrors) {
-        setErroresCampos(err.response.data.fieldErrors);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number; data?: { message?: string; fieldErrors?: Record<string, string> } } };
+      if (errorObj.response?.status === 409) {
+        setErrorGlobal(errorObj.response.data?.message || 'Ya existe otro estudiante con este documento.');
+      } else if (errorObj.response?.status === 400 && errorObj.response.data?.fieldErrors) {
+        setErroresCampos(errorObj.response.data.fieldErrors);
         setErrorGlobal('Corrija los campos indicados a continuación.');
       } else {
-        setErrorGlobal(err.response?.data?.message || 'Ocurrió un error al guardar los cambios.');
+        setErrorGlobal(errorObj.response?.data?.message || 'Ocurrió un error al guardar los cambios.');
       }
     } finally {
       setIsSubmitting(false);

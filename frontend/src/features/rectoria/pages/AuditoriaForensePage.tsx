@@ -68,6 +68,27 @@ export const AuditoriaForensePage: React.FC = () => {
     cargarAuditorias(0);
   }, [filtroEntidad, filtroAccion]);
 
+  useEffect(() => {
+    if (!registroSeleccionado) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setRegistroSeleccionado(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.classList.remove('modal-open');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [registroSeleccionado]);
+
   const handleBuscar = (e: React.FormEvent) => {
     e.preventDefault();
     setPaginaActual(0);

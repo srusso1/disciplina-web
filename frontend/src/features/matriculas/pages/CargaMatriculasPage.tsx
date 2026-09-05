@@ -181,8 +181,9 @@ export const CargaMatriculasPage: React.FC = () => {
       setResumen(resultado);
       setPaginaActual(0);
       setRecargarTrigger((prev) => prev + 1);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Ocurrió un error al procesar la planilla. Verifique el formato e intente nuevamente.';
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      const msg = errorObj.response?.data?.message || 'Ocurrió un error al procesar la planilla. Verifique el formato e intente nuevamente.';
       setErrorMessage(msg);
     } finally {
       setIsUploading(false);

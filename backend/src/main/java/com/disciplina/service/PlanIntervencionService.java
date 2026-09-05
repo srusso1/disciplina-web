@@ -35,7 +35,7 @@ public class PlanIntervencionService {
         Estudiante estudiante = estudianteRepository.findById(dto.getEstudianteId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + dto.getEstudianteId()));
 
-        Usuario orientador = usuarioRepository.findByUsername(username)
+        Usuario orientador = usuarioRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con username: " + username));
 
         Incidente incidente = null;
@@ -169,7 +169,7 @@ public class PlanIntervencionService {
         PlanIntervencion plan = planIntervencionRepository.findById(planId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Plan de intervención no encontrado con ID: " + planId));
 
-        Usuario usuario = usuarioRepository.findByUsername(username)
+        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con username: " + username));
 
         EstadoPlanIntervencion estadoAnterior = plan.getEstado();

@@ -495,6 +495,56 @@ class IncidenteControllerTest {
     }
 
     @Test
+    @DisplayName("SAD Riesgo 3: Debe rechazar con 400 Bad Request cualquier intento de mutar descargos en un incidente CERRADO")
+    void testActualizarDescargo_enIncidenteCerrado_retornaBadRequest() throws Exception {
+        Estudiante est = crearEstudianteConMatricula("10", "1002", 2026);
+
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Incidente previo para cierre formal.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(est.getId())
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        String res = mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Integer incidenteId = objectMapper.readTree(res).get("id").asInt();
+
+        // Cerrar el incidente formalmente
+        mockMvc.perform(patch("/api/v1/incidentes/" + incidenteId + "/estado")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estadoProceso\":\"CERRADO\"}"))
+                .andExpect(status().isOk());
+
+        // Intentar mutar descargos sobre el caso cerrado
+        String payloadMutacion = """
+                {
+                    "descargo": "Intento de alteracion ilicita de expediente cerrado.",
+                    "compromisos": "Sin efecto"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/incidentes/" + incidenteId + "/estudiantes/" + est.getId() + "/descargo")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payloadMutacion))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("CERRADO")));
+    }
+
+    @Test
     @DisplayName("Debe permitir filtrar faltas con el query param tipoLey")
     void testCatalogosFaltasConParamTipoLey() throws Exception {
         mockMvc.perform(get("/api/v1/catalogos/faltas")
