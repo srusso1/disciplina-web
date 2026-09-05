@@ -57,6 +57,7 @@ export const RectorDashboardPage: React.FC = () => {
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [recargando, setRecargando] = useState<boolean>(false);
+  const [descargandoPdf, setDescargandoPdf] = useState<boolean>(false);
 
   const cargarDatos = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRecargando(true);
@@ -74,6 +75,26 @@ export const RectorDashboardPage: React.FC = () => {
       setRecargando(false);
     }
   }, []);
+
+  const handleDescargarInforme = async () => {
+    setDescargandoPdf(true);
+    try {
+      const blob = await rectoriaApi.descargarConsolidadoPdf();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Informe-Ejecutivo-Convivencia-2026.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: unknown) {
+      const e = err as Error;
+      setError('Error al generar el informe en PDF: ' + (e.message || 'Fallo de conexión'));
+    } finally {
+      setDescargandoPdf(false);
+    }
+  };
 
   useEffect(() => {
     cargarDatos();
@@ -118,10 +139,12 @@ export const RectorDashboardPage: React.FC = () => {
 
           <button
             type="button"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-bold shadow-md shadow-trujillo-navy/20 transition-all active:scale-[0.97] cursor-pointer"
+            onClick={handleDescargarInforme}
+            disabled={descargandoPdf || cargando}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-bold shadow-md shadow-trujillo-navy/20 transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50"
           >
-            <FileSpreadsheet className="w-4 h-4 text-trujillo-sky" />
-            <span>Exportar Informe</span>
+            <FileSpreadsheet className={`w-4 h-4 text-trujillo-sky ${descargandoPdf ? 'animate-pulse' : ''}`} />
+            <span>{descargandoPdf ? 'Generando PDF...' : 'Exportar Informe'}</span>
           </button>
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Scale,
   FolderKanban,
+  FileDown,
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
@@ -64,6 +65,27 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
 
   // Modal de Expediente Integral del Estudiante
   const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
+  const [descargandoPdf, setDescargandoPdf] = useState<boolean>(false);
+
+  const handleDescargarActaPdf = async () => {
+    if (!incidente) return;
+    setDescargandoPdf(true);
+    try {
+      const blob = await incidentesApi.descargarActaPdf(incidente.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Acta-Incidente-${incidente.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: unknown) {
+      setError('Error al generar el acta en PDF: ' + extraerMensajeError(err));
+    } finally {
+      setDescargandoPdf(false);
+    }
+  };
 
   const cargarDetalle = useCallback(async (id: number) => {
     setCargando(true);
@@ -233,13 +255,27 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
               <p className="text-xs text-sky-200/80">Seguimiento Formativo y Garantía del Debido Proceso (Ley 1620)</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-sky-200 hover:text-white hover:bg-white/10 transition-colors"
-            title="Cerrar ventana"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {incidente && (
+              <button
+                type="button"
+                onClick={handleDescargarActaPdf}
+                disabled={descargandoPdf}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50"
+                title="Descargar acta oficial de debido proceso en PDF"
+              >
+                <FileDown className={`w-3.5 h-3.5 text-trujillo-sky ${descargandoPdf ? 'animate-bounce' : ''}`} />
+                <span>{descargandoPdf ? 'Generando PDF...' : 'Acta PDF'}</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-sky-200 hover:text-white hover:bg-white/10 transition-colors"
+              title="Cerrar ventana"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Contenido Principal */}

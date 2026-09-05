@@ -117,4 +117,12 @@ export const incidentesApi = {
     );
     return response.data;
   },
+
+  // Generación Documental en Memoria (PDF)
+  descargarActaPdf: async (incidenteId: number): Promise<Blob> => {
+    const response = await apiClient.get(`/reportes/pdf/incidente/${incidenteId}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
