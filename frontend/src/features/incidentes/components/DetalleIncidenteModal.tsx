@@ -14,6 +14,7 @@ import {
   Send,
   AlertTriangle,
   Scale,
+  FolderKanban,
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
 import {
@@ -22,6 +23,7 @@ import {
   InvolucradoResponse,
   ClasificacionLey,
 } from '../types/incidente.types';
+import { ExpedienteEstudianteModal } from '../../matriculas/components/ExpedienteEstudianteModal';
 
 interface DetalleIncidenteModalProps {
   incidenteId: number | null;
@@ -58,6 +60,9 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
   const [descargoTexto, setDescargoTexto] = useState<string>('');
   const [compromisoTexto, setCompromisoTexto] = useState<string>('');
   const [guardandoDescargo, setGuardandoDescargo] = useState<boolean>(false);
+
+  // Modal de Expediente Integral del Estudiante
+  const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
 
   const cargarDetalle = useCallback(async (id: number) => {
     setCargando(true);
@@ -367,7 +372,17 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getBadgeRol(inv.rolEstudiante)}`}>
                               {inv.rolEstudiante}
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => setExpedienteEstudianteId(inv.estudianteId)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-trujillo-ice hover:bg-trujillo-navy text-trujillo-navy hover:text-white text-[11px] font-semibold border border-sky-200 transition cursor-pointer"
+                              title="Ver expediente e historial de convivencia"
+                            >
+                              <FolderKanban className="w-3 h-3 text-trujillo-sky" />
+                              <span>Expediente</span>
+                            </button>
                           </div>
+
                           <p className="text-xs text-slate-500 mt-0.5">
                             Doc: <strong>{inv.documento}</strong> | Grado al momento del hecho:{' '}
                             <span className="font-bold text-trujillo-navy bg-trujillo-ice px-2 py-0.5 rounded border border-sky-200">
@@ -525,6 +540,13 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
         </div>
 
       </div>
+
+      <ExpedienteEstudianteModal
+        estudianteId={expedienteEstudianteId}
+        isOpen={expedienteEstudianteId !== null}
+        onClose={() => setExpedienteEstudianteId(null)}
+      />
     </div>
   );
 };
+

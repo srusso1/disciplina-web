@@ -1,6 +1,7 @@
 package com.disciplina.controller;
 
 import com.disciplina.dto.common.PaginaRespuestaDTO;
+import com.disciplina.dto.expediente.ExpedienteEstudianteDTO;
 import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
 import com.disciplina.dto.matricula.ImportacionMatriculasResumenDTO;
@@ -87,5 +88,12 @@ public class MatriculaController {
 
         EstudianteMatriculaResponseDTO actualizado = estudianteService.actualizarEstudiante(id, dto);
         return ResponseEntity.ok(actualizado);
+    }
+
+    @GetMapping("/estudiantes/{id}/expediente")
+    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    public ResponseEntity<ExpedienteEstudianteDTO> obtenerExpediente(@PathVariable("id") Integer id) {
+        ExpedienteEstudianteDTO expediente = estudianteService.obtenerExpedienteEstudiante(id);
+        return ResponseEntity.ok(expediente);
     }
 }

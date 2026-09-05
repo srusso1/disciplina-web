@@ -24,14 +24,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import com.disciplina.domain.enums.EstadoMatricula;
-import com.disciplina.domain.model.Estudiante;
-import com.disciplina.domain.model.MatriculaEstudiante;
-import com.disciplina.domain.repository.EstudianteRepository;
-import com.disciplina.domain.repository.MatriculaEstudianteRepository;
+import com.disciplina.domain.enums.*;
+import com.disciplina.domain.model.*;
+import com.disciplina.domain.repository.*;
 import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -65,6 +67,21 @@ class MatriculaControllerTest {
 
     @Autowired
     private MatriculaEstudianteRepository matriculaEstudianteRepository;
+
+    @Autowired
+    private IncidenteRepository incidenteRepository;
+
+    @Autowired
+    private IncidenteEstudianteRepository incidenteEstudianteRepository;
+
+    @Autowired
+    private DocenteRepository docenteRepository;
+
+    @Autowired
+    private LugarRepository lugarRepository;
+
+    @Autowired
+    private CatalogoFaltaRepository catalogoFaltaRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -406,5 +423,114 @@ class MatriculaControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.grado", containsString("10 caracteres")));
+    }
+
+    @Test
+    @DisplayName("Debe consultar exitosamente el expediente historico integral del estudiante")
+    void testObtenerExpedienteEstudianteExitoso() throws Exception {
+        String doc = "EXP_" + System.currentTimeMillis();
+        Estudiante est = estudianteRepository.save(Estudiante.builder()
+                .documento(doc)
+                .nombres("CAMILO")
+                .apellidos("VALENCIA")
+                .nombreAcudiente("ROSA VALENCIA")
+                .telefonoAcudiente("3159998877")
+                .emailAcudiente("rosa@correo.com")
+                .activo(true)
+                .build());
+
+        // Matrícula 2025
+        matriculaEstudianteRepository.save(MatriculaEstudiante.builder()
+                .estudiante(est)
+                .anioLectivo(2025)
+                .grado("07")
+                .grupo("0701")
+                .jornada("MANANA")
+                .estadoMatricula(EstadoMatricula.ACTIVO)
+                .build());
+
+        // Matrícula 2026
+        matriculaEstudianteRepository.save(MatriculaEstudiante.builder()
+                .estudiante(est)
+                .anioLectivo(2026)
+                .grado("08")
+                .grupo("0802")
+                .jornada("MANANA")
+                .estadoMatricula(EstadoMatricula.ACTIVO)
+                .build());
+
+        // Crear Docente, Lugar y Falta para el incidente
+        Docente docPrueba = docenteRepository.save(Docente.builder()
+                .documento("D_" + (System.currentTimeMillis() % 1000000000L))
+                .nombres("CARLOS")
+                .apellidos("DOCENTE")
+                .areaDesempeno("CIENCIAS")
+                .activo(true)
+                .build());
+
+        Lugar lugPrueba = lugarRepository.save(Lugar.builder()
+                .nombre("PATIO_EXP_" + System.currentTimeMillis())
+                .descripcion("Patio de descanso")
+                .activo(true)
+                .build());
+
+        CatalogoFalta faltaPrueba = catalogoFaltaRepository.save(CatalogoFalta.builder()
+                .codigo("F_" + (System.currentTimeMillis() % 1000000000L))
+                .clasificacionLey(ClasificacionLey.TIPO_II)
+                .gravedadInstitucional(GravedadInstitucional.GRAVE)
+                .descripcion("Falta de prueba expediente")
+                .procedimientoSugerido("Citación acudiente")
+                .activo(true)
+                .build());
+
+        Usuario orientador = usuarioRepository.findByUsername("orientador_matricula").orElseThrow();
+
+        Incidente inc = incidenteRepository.save(Incidente.builder()
+                .docenteReporta(docPrueba)
+                .lugar(lugPrueba)
+                .usuarioRegistro(orientador)
+                .fechaIncidente(LocalDate.now())
+                .horaIncidente(LocalTime.of(10, 15))
+                .descripcionHechos("Incidente para validación de expediente")
+                .estadoProceso(EstadoProceso.EN_INDAGACION)
+                .build());
+
+        incidenteEstudianteRepository.save(IncidenteEstudiante.builder()
+                .incidente(inc)
+                .estudiante(est)
+                .catalogoFalta(faltaPrueba)
+                .anioLectivo(2026)
+                .gradoMomento("08")
+                .grupoMomento("0802")
+                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                .descargoEstudiante("Versión del estudiante en descargos")
+                .compromisoIndividual("Compromiso de buen comportamiento")
+                .build());
+
+        mockMvc.perform(get("/api/v1/matriculas/estudiantes/" + est.getId() + "/expediente")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(est.getId())))
+                .andExpect(jsonPath("$.documento", is(doc)))
+                .andExpect(jsonPath("$.nombreCompleto", is("CAMILO VALENCIA")))
+                .andExpect(jsonPath("$.matriculaActual.anioLectivo", is(2026)))
+                .andExpect(jsonPath("$.matriculaActual.grado", is("08")))
+                .andExpect(jsonPath("$.historialMatriculas", hasSize(2)))
+                .andExpect(jsonPath("$.resumenConvivencia.totalIncidentes", is(1)))
+                .andExpect(jsonPath("$.resumenConvivencia.comoAgresorPrincipal", is(1)))
+                .andExpect(jsonPath("$.resumenConvivencia.faltasTipoII", is(1)))
+                .andExpect(jsonPath("$.historialIncidentes", hasSize(1)))
+                .andExpect(jsonPath("$.historialIncidentes[0].gradoMomento", is("08")))
+                .andExpect(jsonPath("$.historialIncidentes[0].descargoEstudiante", is("Versión del estudiante en descargos")))
+                .andExpect(jsonPath("$.historialIncidentes[0].falta.clasificacionLey", is("TIPO_II")));
+    }
+
+    @Test
+    @DisplayName("Debe retornar 404 al consultar expediente de un estudiante inexistente")
+    void testObtenerExpedienteEstudianteNoEncontrado() throws Exception {
+        mockMvc.perform(get("/api/v1/matriculas/estudiantes/999999/expediente")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Estudiante no encontrado")));
     }
 }

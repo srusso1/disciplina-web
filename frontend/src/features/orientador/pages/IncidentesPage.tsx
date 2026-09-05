@@ -25,6 +25,7 @@ import {
 } from '../../incidentes/types/incidente.types';
 import { RegistrarIncidenteModal } from '../../incidentes/components/RegistrarIncidenteModal';
 import { DetalleIncidenteModal } from '../../incidentes/components/DetalleIncidenteModal';
+import { ExpedienteEstudianteModal } from '../../matriculas/components/ExpedienteEstudianteModal';
 
 export const IncidentesPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -52,6 +53,7 @@ export const IncidentesPage: React.FC = () => {
   // Modales
   const [modalRegistroAbierto, setModalRegistroAbierto] = useState<boolean>(false);
   const [incidenteSeleccionadoId, setIncidenteSeleccionadoId] = useState<number | null>(null);
+  const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
@@ -311,9 +313,15 @@ export const IncidentesPage: React.FC = () => {
                             key={inv.id}
                             className="flex items-center gap-2 text-xs flex-wrap"
                           >
-                            <span className="font-bold text-slate-800">
+                            <button
+                              type="button"
+                              onClick={() => setExpedienteEstudianteId(inv.estudianteId)}
+                              className="font-bold text-slate-800 hover:text-trujillo-navy hover:underline cursor-pointer text-left transition"
+                              title="Ver expediente e historial del estudiante"
+                            >
                               {inv.nombreCompleto}
-                            </span>
+                            </button>
+
                             <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
                               {inv.gradoMomento}-{inv.grupoMomento}
                             </span>
@@ -417,6 +425,13 @@ export const IncidentesPage: React.FC = () => {
         onClose={() => setIncidenteSeleccionadoId(null)}
         onUpdated={() => cargarDatos()}
       />
+
+      <ExpedienteEstudianteModal
+        estudianteId={expedienteEstudianteId}
+        isOpen={expedienteEstudianteId !== null}
+        onClose={() => setExpedienteEstudianteId(null)}
+      />
     </div>
   );
 };
+

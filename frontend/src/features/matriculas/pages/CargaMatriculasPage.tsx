@@ -18,9 +18,11 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Pencil
+  Pencil,
+  FolderKanban
 } from 'lucide-react';
 import { EditarEstudianteModal } from '../components/EditarEstudianteModal';
+import { ExpedienteEstudianteModal } from '../components/ExpedienteEstudianteModal';
 
 export const CargaMatriculasPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -44,6 +46,9 @@ export const CargaMatriculasPage: React.FC = () => {
   // Estado del Modal de Edición
   const [estudianteAEditar, setEstudianteAEditar] = useState<EstudianteMatricula | null>(null);
   const [isModalEditarOpen, setIsModalEditarOpen] = useState<boolean>(false);
+
+  // Estado del Modal de Expediente Integral
+  const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -511,16 +516,29 @@ export const CargaMatriculasPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleAbrirEditar(est)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-trujillo-navy hover:text-white bg-sky-50 hover:bg-trujillo-navy rounded-lg border border-sky-200 hover:border-trujillo-navy transition-all duration-150 active:scale-[0.98] cursor-pointer"
-                        title="Editar datos del estudiante"
-                      >
-                        <Pencil className="w-3 h-3" />
-                        <span>Editar</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setExpedienteEstudianteId(est.id)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-trujillo-navy hover:text-white bg-trujillo-ice hover:bg-trujillo-navy rounded-lg border border-sky-200 hover:border-trujillo-navy transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                          title="Ver expediente e historial disciplinario integral"
+                        >
+                          <FolderKanban className="w-3 h-3 text-trujillo-sky" />
+                          <span>Expediente</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleAbrirEditar(est)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-700 rounded-lg border border-slate-200 hover:border-slate-700 transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                          title="Editar datos del estudiante"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          <span>Editar</span>
+                        </button>
+                      </div>
                     </td>
+
                   </tr>
                 ))
               )}
@@ -608,6 +626,13 @@ export const CargaMatriculasPage: React.FC = () => {
         isOpen={isModalEditarOpen}
         onClose={handleCerrarEditar}
         onSuccess={handleEstudianteActualizado}
+      />
+
+      {/* Modal de Expediente Integral de Estudiante (Hoja de Vida y Antecedentes) */}
+      <ExpedienteEstudianteModal
+        estudianteId={expedienteEstudianteId}
+        isOpen={expedienteEstudianteId !== null}
+        onClose={() => setExpedienteEstudianteId(null)}
       />
     </div>
   );

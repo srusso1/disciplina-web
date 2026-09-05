@@ -19,6 +19,8 @@ public interface MatriculaEstudianteRepository extends JpaRepository<MatriculaEs
 
     Optional<MatriculaEstudiante> findByEstudianteIdAndAnioLectivo(Integer estudianteId, Integer anioLectivo);
 
+    List<MatriculaEstudiante> findByEstudianteIdOrderByAnioLectivoDesc(Integer estudianteId);
+
     @Query("SELECT m FROM MatriculaEstudiante m JOIN FETCH m.estudiante WHERE m.anioLectivo = :anioLectivo")
     List<MatriculaEstudiante> findByAnioLectivoConEstudiante(@Param("anioLectivo") Integer anioLectivo);
 

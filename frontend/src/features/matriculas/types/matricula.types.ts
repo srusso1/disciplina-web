@@ -1,3 +1,5 @@
+import type { EstadoProceso, RolEstudianteIncidente, CatalogoFalta } from '../../incidentes/types/incidente.types';
+
 export interface AdvertenciaFila {
   fila: number;
   codigo: string;
@@ -60,4 +62,59 @@ export interface PaginaRespuesta<T> {
   totalPaginas: number;
   primera: boolean;
   ultima: boolean;
+}
+
+export interface MatriculaHistorial {
+  id: number;
+  anioLectivo: number;
+  grado: string;
+  grupo: string;
+  jornada: string;
+  estadoMatricula: string;
+}
+
+export interface ResumenConvivencia {
+  totalIncidentes: number;
+  comoAgresorPrincipal: number;
+  comoParticipe: number;
+  comoVictima: number;
+  comoTestigo: number;
+  faltasTipoI: number;
+  faltasTipoII: number;
+  faltasTipoIII: number;
+  reincidente: boolean;
+}
+
+export interface IncidenteHistorialEstudiante {
+  incidenteId: number;
+  fechaIncidente: string;
+  horaIncidente?: string;
+  lugarNombre: string;
+  docenteReportaNombre: string;
+  estadoProceso: EstadoProceso;
+  descripcionHechos: string;
+  rolEstudiante: RolEstudianteIncidente;
+  anioLectivoSnapshot: number;
+  gradoMomento: string;
+  grupoMomento: string;
+  falta?: CatalogoFalta;
+  descargoEstudiante?: string;
+  compromisoIndividual?: string;
+  createdAt: string;
+}
+
+export interface ExpedienteEstudiante {
+  id: number;
+  documento: string;
+  nombres: string;
+  apellidos: string;
+  nombreCompleto: string;
+  nombreAcudiente?: string;
+  telefonoAcudiente?: string;
+  emailAcudiente?: string;
+  activo: boolean;
+  matriculaActual?: MatriculaHistorial;
+  historialMatriculas: MatriculaHistorial[];
+  resumenConvivencia: ResumenConvivencia;
+  historialIncidentes: IncidenteHistorialEstudiante[];
 }
