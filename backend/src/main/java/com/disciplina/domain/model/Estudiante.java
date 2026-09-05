@@ -44,4 +44,10 @@ public class Estudiante {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
+
+    public String getNombreCompleto() {
+        String n = nombres != null ? nombres.trim() : "";
+        String a = apellidos != null ? apellidos.trim() : "";
+        return (n + " " + a).trim();
+    }
 }

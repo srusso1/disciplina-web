@@ -15,6 +15,11 @@ import {
   Loader2,
   GraduationCap,
   Info,
+  Sparkles,
+  Wand2,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
 import { matriculasApi } from '../../matriculas/api/matriculasApi';
@@ -27,6 +32,7 @@ import {
   RegistrarIncidenteData,
   InvolucradoRequest,
   ClasificacionLey,
+  NarrativaProcesada,
 } from '../types/incidente.types';
 
 interface RegistrarIncidenteModalProps {
@@ -101,6 +107,14 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   const [guardando, setGuardando] = useState<boolean>(false);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
 
+  // Asistente PLN Google Gemini / Heurístico State
+  const [panelIaAbierto, setPanelIaAbierto] = useState<boolean>(false);
+  const [relatoInformal, setRelatoInformal] = useState<string>('');
+  const [procesandoIa, setProcesandoIa] = useState<boolean>(false);
+  const [resultadoIa, setResultadoIa] = useState<NarrativaProcesada | null>(null);
+  const [errorIa, setErrorIa] = useState<string | null>(null);
+  const [aplicadoConExito, setAplicadoConExito] = useState<boolean>(false);
+
   // 1. Lock body scroll when modal is open and handle Escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -128,8 +142,96 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       setErrorGlobal(null);
       setFechaIncidente(getTodayLocalDate());
       setHoraIncidente(getCurrentLocalTime());
+      setPanelIaAbierto(false);
+      setRelatoInformal('');
+      setResultadoIa(null);
+      setErrorIa(null);
+      setAplicadoConExito(false);
     }
   }, [isOpen]);
+
+  const handleProcesarRelatoIa = async () => {
+    if (!relatoInformal || relatoInformal.trim().length < 10) {
+      setErrorIa('El relato informal debe contener al menos 10 caracteres para que el asistente pueda estructurarlo.');
+      return;
+    }
+    setErrorIa(null);
+    setProcesandoIa(true);
+    setAplicadoConExito(false);
+    try {
+      const res = await incidentesApi.procesarNarrativa({
+        relato: relatoInformal.trim(),
+        anioLectivo: new Date().getFullYear(),
+      });
+      setResultadoIa(res);
+    } catch (err: unknown) {
+      const e = err as Error;
+      setErrorIa('No fue posible procesar la narrativa con el asistente: ' + e.message);
+    } finally {
+      setProcesandoIa(false);
+    }
+  };
+
+  const handleCargarEjemploRelato = () => {
+    setRelatoInformal(
+      'Durante el segundo descanso en el Patio Principal, el profesor Carlos Pérez observó que un estudiante empujó e insultó fuertemente a otro compañero frente a varios estudiantes luego de un partido.'
+    );
+  };
+
+  const handleAplicarResultadoIa = () => {
+    if (!resultadoIa) return;
+
+    // 1. Redacción formal
+    if (resultadoIa.hechosEstandarizados) {
+      setDescripcionHechos(resultadoIa.hechosEstandarizados);
+    }
+
+    // 2. Docente informante
+    if (resultadoIa.docenteReportaId) {
+      setDocenteReportaId(resultadoIa.docenteReportaId);
+    }
+
+    // 3. Lugar sugerido
+    if (resultadoIa.lugarSugeridoId) {
+      setLugarId(resultadoIa.lugarSugeridoId);
+    }
+
+    // 4. Involucrados
+    if (resultadoIa.estudiantes && resultadoIa.estudiantes.length > 0) {
+      if (resultadoIa.estudiantes.length > 1) {
+        setModoColectivo(true);
+      }
+
+      const nuevosInvolucrados: InvolucradoFormState[] = resultadoIa.estudiantes.map((estIa, idx) => ({
+        idTemp: `${Date.now()}_${idx}`,
+        estudianteId: estIa.estudianteId || null,
+        estudianteSeleccionado: estIa.estudianteId ? {
+          id: estIa.estudianteId,
+          documento: estIa.documento || '',
+          nombres: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
+          apellidos: '',
+          nombreCompleto: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
+          nombreAcudiente: '',
+          telefonoAcudiente: '',
+          grado: estIa.gradoMomento || '',
+          grupo: estIa.grupoMomento || '',
+          jornada: 'MANANA',
+          anioLectivo: new Date().getFullYear(),
+          estadoMatricula: 'ACTIVO',
+        } : null,
+        busquedaEstudiante: estIa.estudianteId ? '' : (estIa.nombreMencionado || ''),
+        resultadosBusqueda: [],
+        buscando: false,
+        catalogoFaltaId: estIa.catalogoFaltaId || null,
+        rolEstudiante: estIa.rolSugerido || 'PARTICIPE',
+        descripcionIndividual: estIa.justificacionRol || '',
+      }));
+
+      setInvolucrados(nuevosInvolucrados);
+    }
+
+    setAplicadoConExito(true);
+  };
 
   const cargarCatalogos = async () => {
     setCargandoCatalogos(true);
@@ -369,6 +471,170 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
               </div>
             </div>
           )}
+
+          {/* Asistente PLN Gemini / Heurístico Collapsible Card */}
+          <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/70 via-sky-50/40 to-white shadow-sm overflow-hidden transition-all duration-200">
+            <button
+              type="button"
+              onClick={() => setPanelIaAbierto((prev) => !prev)}
+              className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-indigo-100/40 transition cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-200">
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm font-bold text-indigo-950">
+                      Asistente PLN de Convivencia
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
+                      Google Gemini + Heurística
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Pega un relato informal del docente para estructurar redacción, lugares e involucrados
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-indigo-600">
+                <span className="text-xs font-semibold hidden sm:inline">
+                  {panelIaAbierto ? 'Ocultar asistente' : 'Usar asistente'}
+                </span>
+                {panelIaAbierto ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </div>
+            </button>
+
+            {panelIaAbierto && (
+              <div className="p-5 border-t border-indigo-100/80 bg-white/70 space-y-4 animate-in fade-in duration-150">
+                {errorIa && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{errorIa}</span>
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                      Relato Informal del Docente o Coordinador
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleCargarEjemploRelato}
+                      className="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline font-medium cursor-pointer"
+                    >
+                      Cargar relato de ejemplo
+                    </button>
+                  </div>
+                  <textarea
+                    value={relatoInformal}
+                    onChange={(e) => setRelatoInformal(e.target.value)}
+                    placeholder="Escribe o pega el relato tal como te lo compartieron (ej: 'El profe Carlos Pérez avisó que en el descanso en la cancha Mateo Gómez empujó a su compañero...')"
+                    rows={3}
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition text-slate-800 placeholder:text-slate-400 leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                    <Info className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                    <span>Human-in-the-Loop: los datos estructurados son sugerencias editables antes de registrar.</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleProcesarRelatoIa}
+                    disabled={procesandoIa || !relatoInformal.trim()}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm hover:shadow transition active:scale-95 cursor-pointer"
+                  >
+                    {procesandoIa ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Analizando con IA...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4" />
+                        <span>Estructurar con IA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {resultadoIa && (
+                  <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/40 space-y-3 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          resultadoIa.asistidoPorIa
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            : 'bg-amber-100 text-amber-700 border border-amber-200'
+                        }`}>
+                          {resultadoIa.asistidoPorIa ? 'Procesado con Google Gemini' : 'Modo Heurístico Institucional'}
+                        </span>
+                        {resultadoIa.clasificacionLeySugerida && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
+                            Ley 1620: {resultadoIa.clasificacionLeySugerida.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleAplicarResultadoIa}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-300 rounded-lg shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{aplicadoConExito ? '¡Aplicado al Formulario!' : 'Aplicar al Formulario'}</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      <div className="p-2 rounded-lg bg-white border border-indigo-100">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Docente Detectado</span>
+                        <span className="font-semibold text-slate-700 truncate block">
+                          {resultadoIa.docenteReportaNombre || 'No detectado'}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-indigo-100">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Lugar Detectado</span>
+                        <span className="font-semibold text-slate-700 truncate block">
+                          {resultadoIa.lugarNombre || 'No detectado'}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-indigo-100">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Involucrados Detectados</span>
+                        <span className="font-semibold text-slate-700 block">
+                          {resultadoIa.estudiantes?.length || 0} estudiante(s)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-white border border-indigo-100">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                        Redacción Formal Estructurada
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed italic">
+                        "{resultadoIa.hechosEstandarizados}"
+                      </p>
+                    </div>
+
+                    {resultadoIa.mensajeAsistente && (
+                      <p className="text-[11px] text-indigo-700 leading-normal">
+                        {resultadoIa.mensajeAsistente}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Bloque 1: Contexto Institucional del Hecho */}
           <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/90 space-y-4">

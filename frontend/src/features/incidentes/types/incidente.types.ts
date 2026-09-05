@@ -103,3 +103,54 @@ export interface PaginaIncidentes {
   primera: boolean;
   ultima: boolean;
 }
+
+export interface EstudianteIdentificadoIA {
+  nombreMencionado?: string;
+  estudianteId?: number | null;
+  documento?: string | null;
+  nombreCompleto?: string | null;
+  gradoMomento?: string | null;
+  grupoMomento?: string | null;
+  rolSugerido: RolEstudianteIncidente;
+  catalogoFaltaId?: number | null;
+  faltaCodigo?: string | null;
+  justificacionRol?: string | null;
+}
+
+export interface NarrativaProcesada {
+  hechosEstandarizados: string;
+  lugarSugeridoId?: number | null;
+  lugarNombre?: string | null;
+  docenteReportaId?: number | null;
+  docenteReportaNombre?: string | null;
+  clasificacionLeySugerida?: ClasificacionLey | null;
+  fechaSugerida?: string | null;
+  horaSugerida?: string | null;
+  estudiantes: EstudianteIdentificadoIA[];
+  asistidoPorIa: boolean;
+  mensajeAsistente?: string;
+}
+
+export interface ProcesarNarrativaData {
+  relato: string;
+  anioLectivo?: number;
+}
+
+export interface PropuestaIntervencionIA {
+  estudianteId: number;
+  estudianteNombre: string;
+  incidenteOrigenId?: number;
+  diagnosticoSituacional: string;
+  recomendacionesIa: string;
+  accionesAcordadasSugeridas: string;
+  compromisoPadresSugerido: string;
+  semanasSeguimientoSugeridas: number;
+  advertenciaGobierno: string;
+  asistidoPorIa: boolean;
+}
+
+export interface GenerarPropuestaIntervencionData {
+  estudianteId: number;
+  incidenteOrigenId?: number;
+}
+

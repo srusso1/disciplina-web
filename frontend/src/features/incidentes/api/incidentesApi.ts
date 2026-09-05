@@ -12,6 +12,10 @@ import {
   EstadoProceso,
   ClasificacionLey,
   GravedadInstitucional,
+  NarrativaProcesada,
+  ProcesarNarrativaData,
+  PropuestaIntervencionIA,
+  GenerarPropuestaIntervencionData,
 } from '../types/incidente.types';
 
 export const incidentesApi = {
@@ -75,6 +79,22 @@ export const incidentesApi = {
 
   obtenerEstadisticas: async (): Promise<EstadisticasIncidentes> => {
     const response = await apiClient.get<EstadisticasIncidentes>('/incidentes/estadisticas');
+    return response.data;
+  },
+
+  // IA y Asistente PLN de Convivencia
+  procesarNarrativa: async (data: ProcesarNarrativaData): Promise<NarrativaProcesada> => {
+    const response = await apiClient.post<NarrativaProcesada>('/ia/procesar-narrativa', data);
+    return response.data;
+  },
+
+  generarPropuestaIntervencion: async (
+    data: GenerarPropuestaIntervencionData
+  ): Promise<PropuestaIntervencionIA> => {
+    const response = await apiClient.post<PropuestaIntervencionIA>(
+      '/ia/generar-intervencion',
+      data
+    );
     return response.data;
   },
 };
