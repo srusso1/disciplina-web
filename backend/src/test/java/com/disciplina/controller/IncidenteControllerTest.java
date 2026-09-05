@@ -405,4 +405,102 @@ class IncidenteControllerTest {
                 .andExpect(jsonPath("$.enSeguimiento", notNullValue()))
                 .andExpect(jsonPath("$.cerrados", notNullValue()));
     }
+
+    @Test
+    @DisplayName("Debe aceptar payload con alias 'nuevoEstado' y 'observaciones' sin error 400")
+    void testActualizarEstadoConAliasFrontend() throws Exception {
+        Estudiante est = crearEstudianteConMatricula("08", "0801", 2026);
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Incidente para validar alias nuevoEstado del frontend.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(est.getId())
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        String res = mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Integer incidenteId = objectMapper.readTree(res).get("id").asInt();
+
+        String payloadFrontend = """
+                {
+                    "nuevoEstado": "EN_INDAGACION",
+                    "observaciones": "Iniciando indagacion con personeria"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/v1/incidentes/" + incidenteId + "/estado")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payloadFrontend))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estadoProceso", is("EN_INDAGACION")));
+    }
+
+    @Test
+    @DisplayName("Debe aceptar payload de descargos con alias 'descargo' y 'compromisos' y serializar propiedades de frontend")
+    void testActualizarDescargoConAliasFrontend() throws Exception {
+        Estudiante est = crearEstudianteConMatricula("09", "0901", 2026);
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Incidente para probar alias de descargo y compromisos.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(est.getId())
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        String res = mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Integer incidenteId = objectMapper.readTree(res).get("id").asInt();
+
+        String payloadFrontend = """
+                {
+                    "descargo": "El estudiante manifiesta su compromiso con la convivencia.",
+                    "compromisos": "Realizar actividad restaurativa."
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/incidentes/" + incidenteId + "/estudiantes/" + est.getId() + "/descargo")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payloadFrontend))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.descargoEstudiante", containsString("compromiso con la convivencia")))
+                .andExpect(jsonPath("$.descargo", containsString("compromiso con la convivencia")))
+                .andExpect(jsonPath("$.compromisos", containsString("actividad restaurativa")))
+                .andExpect(jsonPath("$.nombreCompleto", notNullValue()))
+                .andExpect(jsonPath("$.documento", notNullValue()))
+                .andExpect(jsonPath("$.tieneDescargo", is(true)))
+                .andExpect(jsonPath("$.tieneCompromisos", is(true)));
+    }
+
+    @Test
+    @DisplayName("Debe permitir filtrar faltas con el query param tipoLey")
+    void testCatalogosFaltasConParamTipoLey() throws Exception {
+        mockMvc.perform(get("/api/v1/catalogos/faltas")
+                        .param("tipoLey", "TIPO_II")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", not(empty())));
+    }
 }

@@ -17,6 +17,7 @@ import {
   FolderKanban,
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
+import { extraerMensajeError } from '../../../core/api/apiClient';
 import {
   Incidente,
   EstadoProceso,
@@ -108,8 +109,10 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
   const handleCambiarEstado = async () => {
     if (!incidente) return;
     setActualizandoEstado(true);
+    setError(null);
     try {
       const actualizado = await incidentesApi.actualizarEstado(incidente.id, {
+        estadoProceso: nuevoEstado,
         nuevoEstado,
         observaciones: observacionEstado.trim() || undefined,
       });
@@ -117,8 +120,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
       setObservacionEstado('');
       onUpdated();
     } catch (err: unknown) {
-      const e = err as Error;
-      setError('No se pudo actualizar el estado: ' + e.message);
+      setError('No se pudo actualizar el estado: ' + extraerMensajeError(err));
     } finally {
       setActualizandoEstado(false);
     }
@@ -126,8 +128,8 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
 
   const iniciarEdicionDescargo = (inv: InvolucradoResponse) => {
     setEditandoDescargoId(inv.estudianteId);
-    setDescargoTexto(inv.descargo || '');
-    setCompromisoTexto(inv.compromisos || '');
+    setDescargoTexto(inv.descargoEstudiante || inv.descargo || '');
+    setCompromisoTexto(inv.compromisoIndividual || inv.compromisos || '');
   };
 
   const cancelarEdicionDescargo = () => {
@@ -144,17 +146,28 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
     }
 
     setGuardandoDescargo(true);
+    setError(null);
     try {
-      const actualizado = await incidentesApi.actualizarDescargo(incidente.id, estudianteId, {
+      const invActualizado = await incidentesApi.actualizarDescargo(incidente.id, estudianteId, {
+        descargoEstudiante: descargoTexto.trim(),
+        compromisoIndividual: compromisoTexto.trim() || undefined,
         descargo: descargoTexto.trim(),
-        compromisos: compromisoTexto.trim(),
+        compromisos: compromisoTexto.trim() || undefined,
       });
-      setIncidente(actualizado);
+
+      setIncidente((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          involucrados: prev.involucrados.map((inv) =>
+            inv.estudianteId === estudianteId ? { ...inv, ...invActualizado } : inv
+          ),
+        };
+      });
       setEditandoDescargoId(null);
       onUpdated();
     } catch (err: unknown) {
-      const e = err as Error;
-      setError('Error al registrar descargo: ' + e.message);
+      setError('Error al registrar descargo: ' + extraerMensajeError(err));
     } finally {
       setGuardandoDescargo(false);
     }
@@ -367,7 +380,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-base font-bold text-slate-900">
-                              {inv.nombreCompleto}
+                              {inv.estudianteNombreCompleto || inv.nombreCompleto}
                             </span>
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getBadgeRol(inv.rolEstudiante)}`}>
                               {inv.rolEstudiante}
@@ -384,7 +397,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                           </div>
 
                           <p className="text-xs text-slate-500 mt-0.5">
-                            Doc: <strong>{inv.documento}</strong> | Grado al momento del hecho:{' '}
+                            Doc: <strong>{inv.estudianteDocumento || inv.documento}</strong> | Grado al momento del hecho:{' '}
                             <span className="font-bold text-trujillo-navy bg-trujillo-ice px-2 py-0.5 rounded border border-sky-200">
                               Grado {inv.gradoMomento} - Grupo {inv.grupoMomento}
                             </span>
@@ -477,7 +490,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                             <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1">
-                                  {inv.tieneDescargo ? (
+                                  {(inv.tieneDescargo ?? Boolean(inv.descargoEstudiante || inv.descargo)) ? (
                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                   ) : (
                                     <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
@@ -490,11 +503,11 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                                   className="text-[11px] font-bold text-trujillo-navy hover:underline flex items-center gap-1"
                                 >
                                   <FileEdit className="w-3 h-3" />
-                                  {inv.tieneDescargo ? 'Editar' : 'Registrar'}
+                                  {(inv.tieneDescargo ?? Boolean(inv.descargoEstudiante || inv.descargo)) ? 'Editar' : 'Registrar'}
                                 </button>
                               </div>
                               <p className="text-xs text-slate-700 italic">
-                                {inv.descargo || 'Pendiente de registrar versión libre del estudiante.'}
+                                {inv.descargoEstudiante || inv.descargo || 'Pendiente de registrar versión libre del estudiante.'}
                               </p>
                             </div>
 
@@ -502,7 +515,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                             <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1">
-                                  {inv.tieneCompromisos ? (
+                                  {(inv.tieneCompromisos ?? Boolean(inv.compromisoIndividual || inv.compromisos)) ? (
                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                   ) : (
                                     <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
@@ -511,7 +524,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                                 </span>
                               </div>
                               <p className="text-xs text-slate-700">
-                                {inv.compromisos || 'Sin compromisos pedagógicos suscritos aún.'}
+                                {inv.compromisoIndividual || inv.compromisos || 'Sin compromisos pedagógicos suscritos aún.'}
                               </p>
                             </div>
                           </div>

@@ -35,7 +35,9 @@ public class CatalogoController {
 
     @GetMapping("/faltas")
     public ResponseEntity<List<CatalogoFaltaResponseDTO>> listarFaltas(
-            @RequestParam(value = "tipo", required = false) ClasificacionLey tipo) {
-        return ResponseEntity.ok(catalogoService.listarFaltasActivas(tipo));
+            @RequestParam(value = "tipo", required = false) ClasificacionLey tipo,
+            @RequestParam(value = "tipoLey", required = false) ClasificacionLey tipoLey) {
+        ClasificacionLey filtro = tipo != null ? tipo : tipoLey;
+        return ResponseEntity.ok(catalogoService.listarFaltasActivas(filtro));
     }
 }

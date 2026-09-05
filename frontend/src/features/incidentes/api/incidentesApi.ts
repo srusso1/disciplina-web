@@ -5,6 +5,7 @@ import {
   CatalogoFalta,
   RegistrarIncidenteData,
   Incidente,
+  InvolucradoResponse,
   ActualizarEstadoData,
   ActualizarDescargoData,
   EstadisticasIncidentes,
@@ -31,10 +32,18 @@ export const incidentesApi = {
   },
 
   listarFaltas: async (params?: {
+    tipo?: ClasificacionLey;
     tipoLey?: ClasificacionLey;
     gravedad?: GravedadInstitucional;
   }): Promise<CatalogoFalta[]> => {
-    const response = await apiClient.get<CatalogoFalta[]>('/catalogos/faltas', { params });
+    const queryParams = params
+      ? {
+          ...params,
+          tipo: params.tipo || params.tipoLey,
+          tipoLey: params.tipoLey || params.tipo,
+        }
+      : undefined;
+    const response = await apiClient.get<CatalogoFalta[]>('/catalogos/faltas', { params: queryParams });
     return response.data;
   },
 
@@ -61,7 +70,12 @@ export const incidentesApi = {
   },
 
   actualizarEstado: async (id: number, data: ActualizarEstadoData): Promise<Incidente> => {
-    const response = await apiClient.patch<Incidente>(`/incidentes/${id}/estado`, data);
+    const payload = {
+      estadoProceso: data.estadoProceso || data.nuevoEstado,
+      nuevoEstado: data.nuevoEstado || data.estadoProceso,
+      observaciones: data.observaciones,
+    };
+    const response = await apiClient.patch<Incidente>(`/incidentes/${id}/estado`, payload);
     return response.data;
   },
 
@@ -69,10 +83,16 @@ export const incidentesApi = {
     incidenteId: number,
     estudianteId: number,
     data: ActualizarDescargoData
-  ): Promise<Incidente> => {
-    const response = await apiClient.put<Incidente>(
+  ): Promise<InvolucradoResponse> => {
+    const payload = {
+      descargoEstudiante: data.descargoEstudiante || data.descargo,
+      compromisoIndividual: data.compromisoIndividual || data.compromisos,
+      descargo: data.descargo || data.descargoEstudiante,
+      compromisos: data.compromisos || data.compromisoIndividual,
+    };
+    const response = await apiClient.put<InvolucradoResponse>(
       `/incidentes/${incidenteId}/estudiantes/${estudianteId}/descargo`,
-      data
+      payload
     );
     return response.data;
   },

@@ -46,19 +46,24 @@ export interface RegistrarIncidenteData {
 export interface InvolucradoResponse {
   id: number;
   estudianteId: number;
-  documento: string;
-  nombres: string;
-  apellidos: string;
-  nombreCompleto: string;
+  documento?: string;
+  estudianteDocumento?: string;
+  nombres?: string;
+  apellidos?: string;
+  nombreCompleto?: string;
+  estudianteNombreCompleto?: string;
+  anioLectivo?: number;
   gradoMomento: string;
   grupoMomento: string;
   rolEstudiante: RolEstudianteIncidente;
   falta?: CatalogoFalta;
   descripcionIndividual?: string;
   descargo?: string;
+  descargoEstudiante?: string;
   compromisos?: string;
-  tieneDescargo: boolean;
-  tieneCompromisos: boolean;
+  compromisoIndividual?: string;
+  tieneDescargo?: boolean;
+  tieneCompromisos?: boolean;
 }
 
 export interface Incidente {
@@ -76,13 +81,16 @@ export interface Incidente {
 }
 
 export interface ActualizarEstadoData {
-  nuevoEstado: EstadoProceso;
+  estadoProceso?: EstadoProceso;
+  nuevoEstado?: EstadoProceso;
   observaciones?: string;
 }
 
 export interface ActualizarDescargoData {
-  descargo: string;
-  compromisos: string;
+  descargoEstudiante?: string;
+  compromisoIndividual?: string;
+  descargo?: string;
+  compromisos?: string;
 }
 
 export interface EstadisticasIncidentes {

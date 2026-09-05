@@ -149,8 +149,8 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pr-8">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-trujillo-sky shadow-inner shrink-0 font-extrabold text-xl">
-                  {expediente.nombres[0]}
-                  {expediente.apellidos[0]}
+                  {(expediente.nombres?.[0] || 'E').toUpperCase()}
+                  {(expediente.apellidos?.[0] || '').toUpperCase()}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">

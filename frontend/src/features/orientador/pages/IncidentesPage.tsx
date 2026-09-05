@@ -17,6 +17,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { incidentesApi } from '../../incidentes/api/incidentesApi';
+import { extraerMensajeError } from '../../../core/api/apiClient';
 import {
   Incidente,
   EstadoProceso,
@@ -41,6 +42,7 @@ export const IncidentesPage: React.FC = () => {
   });
 
   const [cargando, setCargando] = useState<boolean>(true);
+  const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [paginaActual, setPaginaActual] = useState<number>(0);
   const [totalPaginas, setTotalPaginas] = useState<number>(0);
   const [totalElementos, setTotalElementos] = useState<number>(0);
@@ -57,6 +59,7 @@ export const IncidentesPage: React.FC = () => {
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
+    setErrorCarga(null);
     try {
       const [resLista, resStats] = await Promise.all([
         incidentesApi.listar({
@@ -75,6 +78,7 @@ export const IncidentesPage: React.FC = () => {
       setEstadisticas(resStats);
     } catch (err) {
       console.error('Error al cargar datos de convivencia:', err);
+      setErrorCarga(extraerMensajeError(err, 'No fue posible cargar la bitácora de convivencia escolar.'));
     } finally {
       setCargando(false);
     }
@@ -263,6 +267,21 @@ export const IncidentesPage: React.FC = () => {
 
       {/* Lista / Tabla de Incidentes */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-card overflow-hidden">
+        {errorCarga && (
+          <div className="p-4 bg-rose-50 border-b border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{errorCarga}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => cargarDatos()}
+              className="text-xs font-bold text-rose-700 underline hover:text-rose-900 ml-4 cursor-pointer"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
         {cargando ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <Loader2 className="w-8 h-8 animate-spin text-trujillo-sky mb-2" />

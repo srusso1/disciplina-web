@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
+import { incidentesApi } from '../../incidentes/api/incidentesApi';
+import { EstadisticasIncidentes } from '../../incidentes/types/incidente.types';
 import { 
   BarChart3, 
   ShieldAlert, 
@@ -15,6 +17,26 @@ import {
 
 export const RectorDashboardPage: React.FC = () => {
   const { user } = useAuthStore();
+  const [stats, setStats] = useState<EstadisticasIncidentes | null>(null);
+  const [cargando, setCargando] = useState<boolean>(true);
+
+  useEffect(() => {
+    let montado = true;
+    incidentesApi.obtenerEstadisticas()
+      .then((data) => {
+        if (montado) setStats(data);
+      })
+      .catch((err) => {
+        console.error('Error al cargar estadísticas en rectoría:', err);
+      })
+      .finally(() => {
+        if (montado) setCargando(false);
+      });
+
+    return () => {
+      montado = false;
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -54,7 +76,9 @@ export const RectorDashboardPage: React.FC = () => {
               <BarChart3 className="w-4 h-4 text-trujillo-navy" />
             </div>
           </div>
-          <p className="text-3xl font-black text-trujillo-dark">0</p>
+          <p className="text-3xl font-black text-trujillo-dark">
+            {cargando ? '...' : (stats?.totalIncidentes ?? 0)}
+          </p>
           <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-trujillo-laurel" />
             <span>Vigencia escolar 2026 activa</span>
@@ -69,7 +93,9 @@ export const RectorDashboardPage: React.FC = () => {
               <AlertTriangle className="w-4 h-4 text-yellow-700" />
             </div>
           </div>
-          <p className="text-3xl font-black text-yellow-900">0</p>
+          <p className="text-3xl font-black text-yellow-900">
+            {cargando ? '...' : (stats?.tipoI ?? 0)}
+          </p>
           <p className="text-xs text-slate-500 mt-1">Acuerdos pedagógicos de aula</p>
         </div>
 
@@ -81,7 +107,9 @@ export const RectorDashboardPage: React.FC = () => {
               <Clock className="w-4 h-4 text-orange-600" />
             </div>
           </div>
-          <p className="text-3xl font-black text-orange-900">0</p>
+          <p className="text-3xl font-black text-orange-900">
+            {cargando ? '...' : (stats?.tipoII ?? 0)}
+          </p>
           <p className="text-xs text-slate-500 mt-1">Intervención de comité & acudientes</p>
         </div>
 
@@ -93,7 +121,9 @@ export const RectorDashboardPage: React.FC = () => {
               <ShieldAlert className="w-4 h-4 text-rose-600" />
             </div>
           </div>
-          <p className="text-3xl font-black text-rose-900">0</p>
+          <p className="text-3xl font-black text-rose-900">
+            {cargando ? '...' : (stats?.tipoIII ?? 0)}
+          </p>
           <p className="text-xs text-slate-500 mt-1">Activación Ruta de Atención Integral</p>
         </div>
       </div>
