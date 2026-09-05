@@ -38,6 +38,7 @@ public class IncidenteService {
     private final EstudianteRepository estudianteRepository;
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
     private final CatalogoFaltaRepository catalogoFaltaRepository;
+    private final AuditoriaService auditoriaService;
 
     @Transactional
     public IncidenteResponseDTO registrarIncidente(RegistrarIncidenteDTO dto, String username) {
@@ -117,6 +118,19 @@ public class IncidenteService {
         Incidente guardado = incidenteRepository.save(incidente);
         log.info("Incidente registrado exitosamente con ID: {} e involucrados: {}", guardado.getId(), guardado.getInvolucrados().size());
 
+        auditoriaService.registrarAuditoria(
+                "CREAR",
+                "Incidente",
+                guardado.getId(),
+                null,
+                Map.of(
+                        "descripcionHechos", guardado.getDescripcionHechos(),
+                        "lugarId", lugar.getId(),
+                        "docenteReportaId", docente.getId(),
+                        "involucrados", guardado.getInvolucrados().size()
+                ),
+                username);
+
         return mapearADTO(guardado, null);
     }
 
@@ -154,8 +168,17 @@ public class IncidenteService {
         Incidente incidente = incidenteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Incidente no encontrado con ID: " + id));
 
+        EstadoProceso estadoAnterior = incidente.getEstadoProceso();
         incidente.setEstadoProceso(dto.getEstadoProceso());
         incidente = incidenteRepository.save(incidente);
+
+        auditoriaService.registrarAuditoria(
+                "CAMBIO_ESTADO",
+                "Incidente",
+                incidente.getId(),
+                Map.of("estadoProceso", estadoAnterior != null ? estadoAnterior.name() : "N/A"),
+                Map.of("estadoProceso", dto.getEstadoProceso().name()),
+                null);
 
         return obtenerIncidentePorId(incidente.getId());
     }
@@ -165,12 +188,24 @@ public class IncidenteService {
         IncidenteEstudiante ie = incidenteEstudianteRepository.findByIncidenteIdAndEstudianteId(incidenteId, estudianteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No se encontro relacion entre el incidente " + incidenteId + " y el estudiante " + estudianteId));
 
+        String descargoAnterior = ie.getDescargoEstudiante();
+        String compromisoAnterior = ie.getCompromisoIndividual();
+
         ie.setDescargoEstudiante(dto.getDescargoEstudiante().trim());
         if (dto.getCompromisoIndividual() != null) {
             ie.setCompromisoIndividual(dto.getCompromisoIndividual().trim());
         }
 
         ie = incidenteEstudianteRepository.save(ie);
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR_DESCARGO",
+                "IncidenteEstudiante",
+                ie.getId(),
+                Map.of("descargo", descargoAnterior != null ? descargoAnterior : "", "compromiso", compromisoAnterior != null ? compromisoAnterior : ""),
+                Map.of("descargo", ie.getDescargoEstudiante(), "compromiso", ie.getCompromisoIndividual() != null ? ie.getCompromisoIndividual() : ""),
+                null);
+
         return mapearInvolucradoADTO(ie);
     }
 

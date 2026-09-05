@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +28,7 @@ public class PlanIntervencionService {
     private final EstudianteRepository estudianteRepository;
     private final IncidenteRepository incidenteRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AuditoriaService auditoriaService;
 
     @Transactional
     public PlanIntervencionResponseDTO crearPlan(CrearPlanIntervencionDTO dto, String username) {
@@ -55,6 +57,19 @@ public class PlanIntervencionService {
                 .build();
 
         plan = planIntervencionRepository.save(plan);
+
+        auditoriaService.registrarAuditoria(
+                "CREAR",
+                "PlanIntervencion",
+                plan.getId(),
+                null,
+                Map.of(
+                        "estudianteId", plan.getEstudiante().getId(),
+                        "estado", plan.getEstado().name(),
+                        "accionesAcordadas", plan.getAccionesAcordadas()
+                ),
+                username);
+
         return mapearADTO(plan, Collections.emptyList());
     }
 
@@ -115,6 +130,8 @@ public class PlanIntervencionService {
         PlanIntervencion plan = planIntervencionRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Plan de intervención no encontrado con ID: " + id));
 
+        EstadoPlanIntervencion estadoAnterior = plan.getEstado();
+
         if (dto.getDiagnosticoSituacional() != null && !dto.getDiagnosticoSituacional().isBlank()) {
             plan.setDiagnosticoSituacional(dto.getDiagnosticoSituacional().trim());
         }
@@ -135,6 +152,15 @@ public class PlanIntervencionService {
         }
 
         plan = planIntervencionRepository.save(plan);
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR",
+                "PlanIntervencion",
+                plan.getId(),
+                Map.of("estado", estadoAnterior != null ? estadoAnterior.name() : "N/A"),
+                Map.of("estado", plan.getEstado().name()),
+                null);
+
         return obtenerPlanPorId(plan.getId());
     }
 
@@ -145,6 +171,8 @@ public class PlanIntervencionService {
 
         Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con username: " + username));
+
+        EstadoPlanIntervencion estadoAnterior = plan.getEstado();
 
         SeguimientoCaso seguimiento = SeguimientoCaso.builder()
                 .plan(plan)
@@ -162,6 +190,15 @@ public class PlanIntervencionService {
         }
 
         planIntervencionRepository.save(plan);
+
+        auditoriaService.registrarAuditoria(
+                "REGISTRAR_SEGUIMIENTO",
+                "PlanIntervencion",
+                planId,
+                Map.of("estadoAnterior", estadoAnterior != null ? estadoAnterior.name() : "N/A"),
+                Map.of("nuevoEstado", plan.getEstado().name(), "observacion", dto.getObservacion()),
+                username);
+
         return obtenerPlanPorId(planId);
     }
 
