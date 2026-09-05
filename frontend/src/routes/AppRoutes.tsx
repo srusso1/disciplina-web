@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { OrientadorLayout } from '../features/orientador/pages/OrientadorLayout';
 import { IncidentesPage } from '../features/orientador/pages/IncidentesPage';
+import { ExpedienteUnicoPage } from '../features/orientador/pages/ExpedienteUnicoPage';
+import { PlanesIntervencionPage } from '../features/orientador/pages/PlanesIntervencionPage';
+import { AsistenteIaPage } from '../features/orientador/pages/AsistenteIaPage';
 import { RectorLayout } from '../features/rectoria/pages/RectorLayout';
 import { RectorDashboardPage } from '../features/rectoria/pages/RectorDashboardPage';
 import { CargaMatriculasPage } from '../features/matriculas/pages/CargaMatriculasPage';
@@ -42,6 +45,9 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<Navigate to="incidentes" replace />} />
         <Route path="incidentes" element={<IncidentesPage />} />
         <Route path="matriculas" element={<CargaMatriculasPage />} />
+        <Route path="expedientes" element={<ExpedienteUnicoPage />} />
+        <Route path="planes" element={<PlanesIntervencionPage />} />
+        <Route path="asistente-ia" element={<AsistenteIaPage />} />
       </Route>
 
       {/* Rutas Protegidas - Rectoria */}
