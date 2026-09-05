@@ -124,29 +124,40 @@ public class IaConvivenciaService {
                 .collect(Collectors.joining("; "));
 
         return """
-            Eres un Asistente Experto en Convivencia Escolar y Debido Proceso para instituciones educativas en Colombia (Ley 1620 de 2013).
-            Tu objetivo es analizar relatos informales escritos por docentes o coordinadores y estructurarlos formalmente.
-            
+            Eres un Asistente Jurídico y Pedagógico Experto en Convivencia Escolar y Debido Proceso para instituciones educativas en Colombia (Ley 1620 de 2013 y Decreto 1965 de 2013, Art. 40).
+            Tu objetivo es analizar relatos informales redactados por docentes o directivos y estructurarlos formalmente en el marco legal escolar colombiano.
+
+            CRITERIOS JURÍDICOS ESTRICTOS DE CLASIFICACIÓN (DECRETO 1965 DE 2013, ART. 40):
+            - TIPO_I: Conflictos cotidianos manejados inadecuadamente y situaciones esporádicas que inciden negativamente en el clima escolar, sin generar daño al cuerpo o a la salud física o mental (ej: discusiones verbales esporádicas, desavenencias, uso indebido de celular, indisciplina menor).
+            - TIPO_II: Situaciones de agresión física (golpes, puñetazos, bofetadas, zancadillas, peleas o riñas entre estudiantes), agresión verbal reiterada, acoso escolar (bullying) o ciberacoso que NO revistan características de delito penal y que NO causen incapacidad médica certificada. Toda pelea, riña o agresión física ordinaria entre estudiantes dentro del plantel donde NO hubo armas ni hospitalización o incapacidad médica formal debe clasificarse ESTRICTAMENTE como TIPO_II (falta ART-201-T2).
+            - TIPO_III: ÚNICAMENTE situaciones constitutivas de presuntos DELITOS PENALES bajo la legislación colombiana (porte o uso de armas de fuego o cortopunzantes, tráfico de estupefacientes, delitos contra la libertad y formación sexual, o agresiones físicas extremas con lesiones personales que causen hospitalización o incapacidad médica legal). NUNCA clasifiques un golpe simple, riña ordinaria o agresión entre pares como TIPO_III a menos que el relato manifieste explícitamente armas, abuso sexual o daño corporal grave con incapacidad médica legal.
+
+            CRITERIOS JURÍDICOS DE ROLES Y ATRIBUCIÓN DE FALTAS (DEBIDO PROCESO):
+            - AGRESOR_PRINCIPAL: Estudiante que ejecuta directamente la agresión física, verbal o psicológica. DEBE llevar faltaCodigoSugerido asignado del catálogo.
+            - PARTICIPE: Estudiante que colabora activamente o interviene en riña mutua. DEBE llevar faltaCodigoSugerido.
+            - VICTIMA: Estudiante receptor de la agresión o violencia (quien recibe el golpe, agresión o insulto). Su faltaCodigoSugerido DEBE SER OBLIGATORIAMENTE null (no cometió ninguna falta disciplinaria).
+            - TESTIGO: Estudiante que presenció los hechos sin participar. Su faltaCodigoSugerido DEBE SER OBLIGATORIAMENTE null.
+
             Catálogos institucionales disponibles:
             - Lugares: %s
             - Docentes: %s
             - Tipificación Faltas: %s
             - Estudiantes matriculados: %s
-            
+
             Debes responder OBLIGATORIAMENTE un JSON con esta estructura exacta:
             {
-              "hechosEstandarizados": "Redacción objetiva, formal y cronológica de los hechos en tercera persona",
+              "hechosEstandarizados": "Redacción objetiva, formal y cronológica de los hechos en tercera persona, sin adjetivos subjetivos",
               "lugarSugerido": "Nombre exacto del lugar más probable del catálogo o null",
               "docenteReporta": "Nombre del docente que reporta si se menciona o null",
-              "clasificacionLeySugerida": "TIPO_I o TIPO_II o TIPO_III o null",
+              "clasificacionLeySugerida": "TIPO_I | TIPO_II | TIPO_III",
               "fechaMencionada": "YYYY-MM-DD si se menciona fecha específica o null",
               "horaMencionada": "HH:MM si se menciona hora o null",
               "estudiantes": [
                 {
                   "nombreMencionado": "Nombre tal como se menciona en el relato",
                   "rolSugerido": "AGRESOR_PRINCIPAL | PARTICIPE | VICTIMA | TESTIGO",
-                  "faltaCodigoSugerido": "Código exacto de la falta si aplica",
-                  "justificacionRol": "Breve explicación de por qué se le asigna ese rol"
+                  "faltaCodigoSugerido": "Código exacto de la falta del catálogo (ej: ART-201-T2). OBLIGATORIO: null si es VICTIMA o TESTIGO",
+                  "justificacionRol": "Breve explicación objetiva del rol asignado"
                 }
               ]
             }
@@ -200,9 +211,14 @@ public class IaConvivenciaService {
 
         ClasificacionLey clasificacionLey = null;
         if (clasifTxt != null) {
-            try {
-                clasificacionLey = ClasificacionLey.valueOf(clasifTxt.trim().toUpperCase());
-            } catch (Exception ignored) {}
+            String cNormal = clasifTxt.trim().replace(" ", "_").replace("-", "_").toUpperCase();
+            if (cNormal.contains("III") || cNormal.endsWith("_3") || cNormal.equals("3")) {
+                clasificacionLey = ClasificacionLey.TIPO_III;
+            } else if (cNormal.contains("II") || cNormal.endsWith("_2") || cNormal.equals("2")) {
+                clasificacionLey = ClasificacionLey.TIPO_II;
+            } else if (cNormal.contains("I") || cNormal.endsWith("_1") || cNormal.equals("1")) {
+                clasificacionLey = ClasificacionLey.TIPO_I;
+            }
         }
 
         List<EstudianteIdentificadoIADTO> estudiantesIdentificados = new ArrayList<>();
@@ -223,12 +239,21 @@ public class IaConvivenciaService {
                 MatriculaEstudiante matchMatricula = buscarMejorCoincidenciaEstudiante(nombreMencionado, matriculas);
 
                 Integer faltaId = null;
-                if (faltaCod != null) {
-                    CatalogoFalta cfMatch = faltas.stream()
-                            .filter(f -> f.getCodigo().equalsIgnoreCase(faltaCod.trim()))
+                CatalogoFalta cfMatch = null;
+                boolean esParteProtegida = (rol == RolEstudianteIncidente.VICTIMA || rol == RolEstudianteIncidente.TESTIGO);
+
+                // Salvaguarda jurídica de Debido Proceso: Víctimas y Testigos NO cometen falta disciplinaria
+                String faltaCodigoEfectivo = esParteProtegida ? null : faltaCod;
+
+                if (faltaCodigoEfectivo != null) {
+                    cfMatch = faltas.stream()
+                            .filter(f -> f.getCodigo().equalsIgnoreCase(faltaCodigoEfectivo.trim()))
                             .findFirst().orElse(null);
                     if (cfMatch != null) {
                         faltaId = cfMatch.getId();
+                        if (clasificacionLey == null) {
+                            clasificacionLey = cfMatch.getClasificacionLey();
+                        }
                     }
                 }
 
@@ -236,7 +261,7 @@ public class IaConvivenciaService {
                         .nombreMencionado(nombreMencionado)
                         .rolSugerido(rol)
                         .catalogoFaltaId(faltaId)
-                        .faltaCodigo(faltaCod)
+                        .faltaCodigo(faltaCodigoEfectivo)
                         .justificacionRol(justificacion);
 
                 if (matchMatricula != null) {
@@ -291,7 +316,7 @@ public class IaConvivenciaService {
 
         if (relatoLower.contains("arma") || relatoLower.contains("drog") || relatoLower.contains("delito") || relatoLower.contains("abuso")) {
             leyDetectada = ClasificacionLey.TIPO_III;
-        } else if (relatoLower.contains("golpe") || relatoLower.contains("pelea") || relatoLower.contains("lesion") || relatoLower.contains("acoso") || relatoLower.contains("hurto")) {
+        } else if (relatoLower.contains("golpe") || relatoLower.contains("pelea") || relatoLower.contains("pego") || relatoLower.contains("pegó") || relatoLower.contains("agred") || relatoLower.contains("lesion") || relatoLower.contains("acoso") || relatoLower.contains("hurto")) {
             leyDetectada = ClasificacionLey.TIPO_II;
         }
 
@@ -318,6 +343,10 @@ public class IaConvivenciaService {
                         ? RolEstudianteIncidente.AGRESOR_PRINCIPAL
                         : RolEstudianteIncidente.VICTIMA;
 
+                boolean esSujetoPasivo = (rol == RolEstudianteIncidente.VICTIMA || rol == RolEstudianteIncidente.TESTIGO);
+                Integer faltaIdHeuristica = esSujetoPasivo ? null : (faltaDetectada != null ? faltaDetectada.getId() : null);
+                String faltaCodHeuristica = esSujetoPasivo ? null : (faltaDetectada != null ? faltaDetectada.getCodigo() : null);
+
                 estudiantes.add(EstudianteIdentificadoIADTO.builder()
                         .nombreMencionado(e.getNombreCompleto())
                         .estudianteId(e.getId())
@@ -326,9 +355,11 @@ public class IaConvivenciaService {
                         .gradoMomento(m.getGrado())
                         .grupoMomento(m.getGrupo())
                         .rolSugerido(rol)
-                        .catalogoFaltaId(faltaDetectada != null ? faltaDetectada.getId() : null)
-                        .faltaCodigo(faltaDetectada != null ? faltaDetectada.getCodigo() : null)
-                        .justificacionRol("Identificado por análisis de coincidencia nominal en el relato.")
+                        .catalogoFaltaId(faltaIdHeuristica)
+                        .faltaCodigo(faltaCodHeuristica)
+                        .justificacionRol(esSujetoPasivo
+                                ? "Identificado como parte afectada / víctima (no incurre en falta disciplinaria)."
+                                : "Identificado por análisis de coincidencia nominal en el relato.")
                         .build());
 
                 primerEstudiante = false;

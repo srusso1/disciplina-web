@@ -51,8 +51,8 @@ app:
     secret: ${JWT_SECRET:c2VjcmV0X3Bhc3N3b3JkX2Rpc2NpcGxpbmFfd2ViXzIwMjZfaG1hY19zaGEyNTZfc2VjdXJlX2tleV9mb3Jfand0X2F1dGhlbnRpY2F0aW9u}
     expiration-ms: ${JWT_EXPIRATION_MS:28800000}
   gemini:
-    api-key: ${GEMINI_API_KEY:}
-    model: ${GEMINI_MODEL:gemini-1.5-flash}
+    api-key: ${GEMINI_API_KEY:AQ.Ab8RN6LpeJ7yxEjT4hD6-pcHgjg7uuICFW_1yUb7Dc2Ov-e08w}
+    model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
     timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:8}
 
 logging:

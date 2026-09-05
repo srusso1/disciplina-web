@@ -26,11 +26,11 @@ public class GeminiClient {
 
     public GeminiClient(
             @Value("${app.gemini.api-key:}") String apiKey,
-            @Value("${app.gemini.model:gemini-1.5-flash}") String model,
+            @Value("${app.gemini.model:gemini-3.5-flash-lite}") String model,
             @Value("${app.gemini.timeout-seconds:8}") int timeoutSeconds,
             ObjectMapper objectMapper) {
         this.apiKey = (apiKey != null) ? apiKey.trim() : "";
-        this.model = (model != null && !model.isBlank()) ? model.trim() : "gemini-1.5-flash";
+        this.model = (model != null && !model.isBlank()) ? model.trim() : "gemini-3.5-flash-lite";
         this.timeoutSeconds = timeoutSeconds > 0 ? timeoutSeconds : 8;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
@@ -62,7 +62,7 @@ public class GeminiClient {
                             "parts", new Object[]{Map.of("text", promptSistema)}
                     ),
                     "generationConfig", Map.of(
-                            "response_mime_type", "application/json",
+                            "responseMimeType", "application/json",
                             "temperature", 0.1
                     )
             );

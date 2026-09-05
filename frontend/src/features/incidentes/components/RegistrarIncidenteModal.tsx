@@ -202,30 +202,33 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
         setModoColectivo(true);
       }
 
-      const nuevosInvolucrados: InvolucradoFormState[] = resultadoIa.estudiantes.map((estIa, idx) => ({
-        idTemp: `${Date.now()}_${idx}`,
-        estudianteId: estIa.estudianteId || null,
-        estudianteSeleccionado: estIa.estudianteId ? {
-          id: estIa.estudianteId,
-          documento: estIa.documento || '',
-          nombres: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
-          apellidos: '',
-          nombreCompleto: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
-          nombreAcudiente: '',
-          telefonoAcudiente: '',
-          grado: estIa.gradoMomento || '',
-          grupo: estIa.grupoMomento || '',
-          jornada: 'MANANA',
-          anioLectivo: new Date().getFullYear(),
-          estadoMatricula: 'ACTIVO',
-        } : null,
-        busquedaEstudiante: estIa.estudianteId ? '' : (estIa.nombreMencionado || ''),
-        resultadosBusqueda: [],
-        buscando: false,
-        catalogoFaltaId: estIa.catalogoFaltaId || null,
-        rolEstudiante: estIa.rolSugerido || 'PARTICIPE',
-        descripcionIndividual: estIa.justificacionRol || '',
-      }));
+      const nuevosInvolucrados: InvolucradoFormState[] = resultadoIa.estudiantes.map((estIa, idx) => {
+        const esAfectadoSinFalta = estIa.rolSugerido === 'VICTIMA' || estIa.rolSugerido === 'TESTIGO';
+        return {
+          idTemp: `${Date.now()}_${idx}`,
+          estudianteId: estIa.estudianteId || null,
+          estudianteSeleccionado: estIa.estudianteId ? {
+            id: estIa.estudianteId,
+            documento: estIa.documento || '',
+            nombres: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
+            apellidos: '',
+            nombreCompleto: estIa.nombreCompleto || estIa.nombreMencionado || 'Estudiante',
+            nombreAcudiente: '',
+            telefonoAcudiente: '',
+            grado: estIa.gradoMomento || '',
+            grupo: estIa.grupoMomento || '',
+            jornada: 'MANANA',
+            anioLectivo: new Date().getFullYear(),
+            estadoMatricula: 'ACTIVO',
+          } : null,
+          busquedaEstudiante: estIa.estudianteId ? '' : (estIa.nombreMencionado || ''),
+          resultadosBusqueda: [],
+          buscando: false,
+          catalogoFaltaId: esAfectadoSinFalta ? null : (estIa.catalogoFaltaId || null),
+          rolEstudiante: estIa.rolSugerido || 'PARTICIPE',
+          descripcionIndividual: estIa.justificacionRol || '',
+        };
+      });
 
       setInvolucrados(nuevosInvolucrados);
     }
@@ -940,11 +943,14 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
                       </label>
                       <select
                         value={inv.rolEstudiante}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const nuevoRol = e.target.value as RolEstudianteIncidente;
+                          const esAfectado = nuevoRol === 'VICTIMA' || nuevoRol === 'TESTIGO';
                           actualizarInvolucrado(idx, {
-                            rolEstudiante: e.target.value as RolEstudianteIncidente,
-                          })
-                        }
+                            rolEstudiante: nuevoRol,
+                            catalogoFaltaId: esAfectado ? null : inv.catalogoFaltaId,
+                          });
+                        }}
                         className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky transition font-medium text-slate-800"
                       >
                         <option value="AGRESOR_PRINCIPAL">Agresor Principal / Infractor</option>
@@ -956,20 +962,36 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
                     {/* Falta del Catálogo */}
                     <div className="sm:col-span-1 lg:col-span-2">
-                      <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                        <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-                        Falta Disciplinaria Tipificada
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
+                          <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                          Falta Disciplinaria Tipificada
+                        </label>
+                        {(inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO') && (
+                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            Parte protegida (sin falta disciplinaria)
+                          </span>
+                        )}
+                      </div>
                       <select
                         value={inv.catalogoFaltaId || ''}
+                        disabled={inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO'}
                         onChange={(e) =>
                           actualizarInvolucrado(idx, {
                             catalogoFaltaId: e.target.value ? Number(e.target.value) : null,
                           })
                         }
-                        className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky transition text-slate-800"
+                        className={`w-full px-3 py-2 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-trujillo-sky transition ${
+                          inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO'
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                            : 'bg-white text-slate-800 border-slate-300'
+                        }`}
                       >
-                        <option value="">Sin falta tipificada (Afectado, Víctima o Testigo)</option>
+                        <option value="">
+                          {inv.rolEstudiante === 'VICTIMA' || inv.rolEstudiante === 'TESTIGO'
+                            ? 'No aplica falta disciplinaria (Afectado / Víctima / Testigo)'
+                            : 'Sin falta tipificada / Pendiente de indagación'}
+                        </option>
                         {faltasFiltradas.map((f) => (
                           <option key={f.id} value={f.id}>
                             [{f.codigo}] {f.clasificacionLey} ({f.gravedadInstitucional}) — {f.descripcion.slice(0, 65)}...

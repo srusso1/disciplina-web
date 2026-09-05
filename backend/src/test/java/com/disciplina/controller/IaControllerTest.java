@@ -133,6 +133,23 @@ class IaControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/v1/ia/procesar-narrativa clasifica agresión física simple sin armas como TIPO_II")
+    void procesarNarrativa_agresionFisicaSimple_debeClasificarTipoII() throws Exception {
+        ProcesarNarrativaRequestDTO request = ProcesarNarrativaRequestDTO.builder()
+                .relato("El estudiante Juan Acero le pego a su compañero stiven delgado en el patio central de la institución, el docente andres gomez reporto la situación.")
+                .anioLectivo(LocalDate.now().getYear())
+                .build();
+
+        mockMvc.perform(post("/api/v1/ia/procesar-narrativa")
+                        .header("Authorization", "Bearer " + tokenRector)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.clasificacionLeySugerida", is("TIPO_II")))
+                .andExpect(jsonPath("$.estudiantes[?(@.rolSugerido == 'VICTIMA')].catalogoFaltaId", everyItem(nullValue())));
+    }
+
+    @Test
     @DisplayName("POST /api/v1/ia/procesar-narrativa con relato en blanco debe retornar 400")
     void procesarNarrativa_conRelatoVacio_debeRetornar400() throws Exception {
         ProcesarNarrativaRequestDTO request = ProcesarNarrativaRequestDTO.builder()
