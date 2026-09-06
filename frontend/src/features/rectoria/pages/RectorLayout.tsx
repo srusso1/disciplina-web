@@ -115,7 +115,7 @@ export const RectorLayout: React.FC = () => {
       </aside>
 
       {/* Área Principal de Trabajo */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+      <div data-scroll-container className="flex-1 flex flex-col min-h-screen overflow-y-auto layout-content-scroll">
         {/* Barra Superior Institucional */}
         <header className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
           <div className="flex items-center gap-2">

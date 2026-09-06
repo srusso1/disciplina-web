@@ -61,4 +61,11 @@ export const matriculasApi = {
     const response = await apiClient.get<ExpedienteEstudiante>(`/matriculas/estudiantes/${id}/expediente`);
     return response.data;
   },
+
+  descargarPlantilla: async (): Promise<Blob> => {
+    const response = await apiClient.get('/matriculas/plantilla-ejemplo', {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };

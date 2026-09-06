@@ -19,7 +19,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Pencil,
-  FolderKanban
+  FolderKanban,
+  Download
 } from 'lucide-react';
 import { EditarEstudianteModal } from '../components/EditarEstudianteModal';
 import { ExpedienteEstudianteModal } from '../components/ExpedienteEstudianteModal';
@@ -28,9 +29,30 @@ export const CargaMatriculasPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [descargandoPlantilla, setDescargandoPlantilla] = useState(false);
   const [resumen, setResumen] = useState<ImportacionMatriculasResumen | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const anioVigente = new Date().getFullYear();
+
+  const handleDescargarPlantilla = async () => {
+    try {
+      setDescargandoPlantilla(true);
+      const blob = await matriculasApi.descargarPlantilla();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `plantilla_matricula_disciplina_${anioVigente}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Error al descargar plantilla:', err);
+      setErrorMessage('No fue posible descargar la plantilla oficial. Intente nuevamente.');
+    } finally {
+      setDescargandoPlantilla(false);
+    }
+  };
 
   // Explorador y Paginación en Base de Datos
   const [estudiantes, setEstudiantes] = useState<EstudianteMatricula[]>([]);
@@ -219,9 +241,22 @@ export const CargaMatriculasPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="px-3.5 py-2 rounded-xl bg-sky-50 text-trujillo-navy border border-sky-200 text-xs font-bold flex items-center gap-2 shrink-0">
-          <Clock className="w-4 h-4 text-trujillo-navy" />
-          <span>Vigencia Escolar: {anioVigente}</span>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={handleDescargarPlantilla}
+            disabled={descargandoPlantilla}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-trujillo-sky/15 hover:bg-trujillo-sky/25 text-trujillo-navy border border-trujillo-sky/30 text-xs font-bold transition-all active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
+            title="Descargar archivo Excel con la estructura de columnas requerida"
+          >
+            {descargandoPlantilla ? <Loader2 className="w-4 h-4 animate-spin text-trujillo-navy" /> : <Download className="w-4 h-4 text-trujillo-navy" />}
+            <span>{descargandoPlantilla ? 'Generando...' : 'Descargar Plantilla Oficial (.xlsx)'}</span>
+          </button>
+
+          <div className="px-3.5 py-2 rounded-xl bg-sky-50 text-trujillo-navy border border-sky-200 text-xs font-bold flex items-center gap-2">
+            <Clock className="w-4 h-4 text-trujillo-navy" />
+            <span>Vigencia Escolar: {anioVigente}</span>
+          </div>
         </div>
       </div>
 
@@ -234,6 +269,30 @@ export const CargaMatriculasPage: React.FC = () => {
           <p className="text-xs text-slate-500 mt-0.5">
             Arrastre el archivo exportado de secretaría académica o selecciónelo desde su equipo.
           </p>
+        </div>
+
+        {/* Guía Visual de Columnas Oficiales */}
+        <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200 text-xs space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <span className="font-extrabold text-slate-700">Columnas reconocidas por el motor de importación:</span>
+            <span className="text-[11px] text-slate-500 font-medium">Compatible con exportaciones de SIMAT / Secretaría</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">GRADO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">CODIGO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">DOCUMENTO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">PRIMER APELLIDO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">PRIMER NOMBRE</span>
+
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">SEGUNDO APELLIDO</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">SEGUNDO NOMBRE</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">SEDE</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">NOM1_ACU</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">APE1_ACU</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">TELEFONO</span>
+          </div>
         </div>
 
         {/* Drag and Drop Container */}

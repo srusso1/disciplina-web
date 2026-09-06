@@ -403,12 +403,20 @@ export const AsistenteIaPage: React.FC = () => {
                 )}
 
                 {/* Acciones de continuidad */}
-                <div className="pt-2 flex justify-end">
+                <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    ¿Deseas formalizar este hecho en la bitácora escolar?
+                  </span>
                   <button
-                    onClick={() => navigate('/orientador/incidentes')}
-                    className="px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
+                    onClick={() =>
+                      navigate('/orientador/incidentes', {
+                        state: { prefill: resultadoNarrativa, autoOpenModal: true },
+                      })
+                    }
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
+                    title="Abre el modal de registro con todos estos campos pre-diligenciados"
                   >
-                    <span>Ir a Bitácora para Registrar Incidente</span>
+                    <span>Transferir a Registro de Incidente Oficial</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

@@ -464,4 +464,60 @@ public class ImportadorMatriculasService {
         }
         return true;
     }
+
+    public byte[] generarPlantillaEjemplo() {
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Matriculas");
+
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            String[] headers = {
+                "GRADO", "SEDE", "CODIGO", "DOCUMENTO",
+                "PRIMER APELLIDO", "SEGUNDO APELLIDO",
+                "PRIMER NOMBRE", "SEGUNDO NOMBRE",
+                "NOM1_ACU", "APE1_ACU", "TELEFONO"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            String[][] sampleData = {
+                {"6", "PRINCIPAL", "2026001", "1098765432", "GOMEZ", "PEREZ", "CARLOS", "ANDRES", "MARIA", "GOMEZ", "3001234567"},
+                {"7", "PRINCIPAL", "2026002", "1098765433", "RODRIGUEZ", "LOPEZ", "VALENTINA", "", "JUAN", "RODRIGUEZ", "3119876543"},
+                {"8", "PRINCIPAL", "2026003", "1098765434", "MARTINEZ", "SILVA", "SEBASTIAN", "FELIPE", "ANA", "MARTINEZ", "3205554321"}
+            };
+
+            for (int r = 0; r < sampleData.length; r++) {
+                Row row = sheet.createRow(r + 1);
+                for (int c = 0; c < sampleData[r].length; c++) {
+                    Cell cell = row.createCell(c);
+                    cell.setCellValue(sampleData[r][c]);
+                }
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            log.error("Error al generar plantilla Excel de matriculas", e);
+            throw new RuntimeException("Error al generar plantilla de ejemplo", e);
+        }
+    }
 }

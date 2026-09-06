@@ -19,11 +19,13 @@ import {
 import { AsistenteIaPanel } from './AsistenteIaPanel';
 import { InvolucradoItemCard, InvolucradoItemData } from './InvolucradoItemCard';
 import { ContextoHechosSection } from './ContextoHechosSection';
+import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 
 interface RegistrarIncidenteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialData?: NarrativaProcesada | null;
 }
 
 const getTodayLocalDate = () => {
@@ -45,6 +47,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   isOpen,
   onClose,
   onSuccess,
+  initialData,
 }) => {
   // Modo de caso: Individual vs Colectivo
   const [modoColectivo, setModoColectivo] = useState<boolean>(false);
@@ -84,13 +87,11 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
   const [guardando, setGuardando] = useState<boolean>(false);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
 
-  // Bloqueo de scroll y cierre con Escape
+  useLockBodyScroll(isOpen);
+
+  // Cierre con tecla Escape
   useEffect(() => {
     if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('modal-open');
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -100,8 +101,6 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -218,6 +217,12 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       setInvolucrados(nuevos);
     }
   };
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      handleAplicarResultadoIa(initialData);
+    }
+  }, [isOpen, initialData]);
 
   const actualizarInvolucrado = (index: number, updated: Partial<InvolucradoItemData>) => {
     setInvolucrados((prev) => {

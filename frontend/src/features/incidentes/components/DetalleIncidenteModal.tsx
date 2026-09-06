@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 import {
   Incidente,
   EstadoProceso,
@@ -102,12 +103,10 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
     }
   }, []);
 
+  useLockBodyScroll(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('modal-open');
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -117,8 +116,6 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -309,41 +306,56 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                   </span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <select
-                    value={nuevoEstado}
-                    onChange={(e) => setNuevoEstado(e.target.value as EstadoProceso)}
-                    className="flex-1 px-3.5 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky font-medium text-slate-700"
-                  >
-                    {ESTADOS_DISPONIBLES.map((st) => (
-                      <option key={st.estado} value={st.estado}>
-                        {st.etiqueta}
-                      </option>
-                    ))}
-                  </select>
+                {incidente.estadoProceso === 'CERRADO' ? (
+                  <div className="p-4 bg-emerald-50/90 border border-emerald-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 text-emerald-800">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Expediente Concluido y Cerrado</p>
+                        <p className="text-xs text-emerald-700 mt-0.5">El debido proceso formativo ha finalizado formalmente. Este expediente es un registro institucional inmutable.</p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg tracking-wider shadow-xs shrink-0 text-center">
+                      REGISTRO INMUTABLE
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <select
+                      value={nuevoEstado}
+                      onChange={(e) => setNuevoEstado(e.target.value as EstadoProceso)}
+                      className="flex-1 px-3.5 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky font-medium text-slate-700"
+                    >
+                      {ESTADOS_DISPONIBLES.map((st) => (
+                        <option key={st.estado} value={st.estado}>
+                          {st.etiqueta}
+                        </option>
+                      ))}
+                    </select>
 
-                  <input
-                    type="text"
-                    value={observacionEstado}
-                    onChange={(e) => setObservacionEstado(e.target.value)}
-                    placeholder="Nota u observación del cambio de estado..."
-                    className="flex-[1.5] px-3.5 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky text-slate-700 placeholder:text-slate-400"
-                  />
+                    <input
+                      type="text"
+                      value={observacionEstado}
+                      onChange={(e) => setObservacionEstado(e.target.value)}
+                      placeholder="Nota u observación del cambio de estado..."
+                      className="flex-[1.5] px-3.5 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky text-slate-700 placeholder:text-slate-400"
+                    />
 
-                  <button
-                    type="button"
-                    onClick={handleCambiarEstado}
-                    disabled={actualizandoEstado || nuevoEstado === incidente.estadoProceso}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-bold rounded-xl shadow transition disabled:opacity-40 shrink-0"
-                  >
-                    {actualizandoEstado ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Send className="w-3.5 h-3.5" />
-                    )}
-                    <span>Actualizar Estado</span>
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={handleCambiarEstado}
+                      disabled={actualizandoEstado || nuevoEstado === incidente.estadoProceso}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-bold rounded-xl shadow transition disabled:opacity-40 shrink-0 cursor-pointer"
+                    >
+                      {actualizandoEstado ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      <span>Actualizar Estado</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Ficha Técnica del Incidente */}
@@ -535,14 +547,16 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                                   )}
                                   Descargo del Estudiante
                                 </span>
-                                <button
-                                  type="button"
-                                  onClick={() => iniciarEdicionDescargo(inv)}
-                                  className="text-[11px] font-bold text-trujillo-navy hover:underline flex items-center gap-1"
-                                >
-                                  <FileEdit className="w-3 h-3" />
-                                  {(inv.tieneDescargo ?? Boolean(inv.descargoEstudiante || inv.descargo)) ? 'Editar' : 'Registrar'}
-                                </button>
+                                {incidente.estadoProceso !== 'CERRADO' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => iniciarEdicionDescargo(inv)}
+                                    className="text-[11px] font-bold text-trujillo-navy hover:underline flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <FileEdit className="w-3 h-3" />
+                                    {(inv.tieneDescargo ?? Boolean(inv.descargoEstudiante || inv.descargo)) ? 'Editar' : 'Registrar'}
+                                  </button>
+                                )}
                               </div>
                               <p className="text-xs text-slate-700 italic">
                                 {inv.descargoEstudiante || inv.descargo || 'Pendiente de registrar versión libre del estudiante.'}

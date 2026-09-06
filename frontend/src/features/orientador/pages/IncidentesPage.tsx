@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
 import {
   FileText,
@@ -23,6 +24,7 @@ import {
   EstadoProceso,
   ClasificacionLey,
   EstadisticasIncidentes,
+  NarrativaProcesada,
 } from '../../incidentes/types/incidente.types';
 import { RegistrarIncidenteModal } from '../../incidentes/components/RegistrarIncidenteModal';
 import { DetalleIncidenteModal } from '../../incidentes/components/DetalleIncidenteModal';
@@ -30,6 +32,7 @@ import { ExpedienteEstudianteModal } from '../../matriculas/components/Expedient
 
 export const IncidentesPage: React.FC = () => {
   const { user } = useAuthStore();
+  const location = useLocation();
 
   const [incidentes, setIncidentes] = useState<Incidente[]>([]);
   const [estadisticas, setEstadisticas] = useState<EstadisticasIncidentes>({
@@ -54,8 +57,19 @@ export const IncidentesPage: React.FC = () => {
 
   // Modales
   const [modalRegistroAbierto, setModalRegistroAbierto] = useState<boolean>(false);
+  const [datosPrellenadosIa, setDatosPrellenadosIa] = useState<NarrativaProcesada | null>(null);
   const [incidenteSeleccionadoId, setIncidenteSeleccionadoId] = useState<number | null>(null);
   const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
+
+  // Detectar transferencia reactiva desde Asistente IA (CU-05 -> CU-04)
+  useEffect(() => {
+    const state = location.state as { prefill?: NarrativaProcesada; autoOpenModal?: boolean } | null;
+    if (state?.prefill && state?.autoOpenModal) {
+      setDatosPrellenadosIa(state.prefill);
+      setModalRegistroAbierto(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
@@ -431,10 +445,15 @@ export const IncidentesPage: React.FC = () => {
       {/* Modales */}
       <RegistrarIncidenteModal
         isOpen={modalRegistroAbierto}
-        onClose={() => setModalRegistroAbierto(false)}
+        initialData={datosPrellenadosIa}
+        onClose={() => {
+          setModalRegistroAbierto(false);
+          setDatosPrellenadosIa(null);
+        }}
         onSuccess={() => {
           setPaginaActual(0);
           cargarDatos();
+          setDatosPrellenadosIa(null);
         }}
       />
 

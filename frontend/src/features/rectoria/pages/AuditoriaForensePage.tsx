@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auditoriaApi } from '../api/auditoriaApi';
 import { AuditoriaRegistro, FiltrosAuditoria } from '../types/auditoria.types';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 import {
   ShieldAlert,
   Search,
@@ -36,6 +37,22 @@ export const AuditoriaForensePage: React.FC = () => {
 
   // Modal para ver diff forense
   const [registroSeleccionado, setRegistroSeleccionado] = useState<AuditoriaRegistro | null>(null);
+
+  // Bloquear scroll de fondo cuando el modal esté abierto
+  useLockBodyScroll(Boolean(registroSeleccionado));
+
+  // Soporte para cerrar con tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && registroSeleccionado) {
+        setRegistroSeleccionado(null);
+      }
+    };
+    if (registroSeleccionado) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [registroSeleccionado]);
 
   const cargarAuditorias = async (page: number = 0) => {
     setCargando(true);
