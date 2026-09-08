@@ -262,7 +262,7 @@ class MatriculaControllerTest {
     }
 
     @Test
-    @DisplayName("Debe actualizar exitosamente los datos de un estudiante y transformar acudiente a mayúsculas")
+    @DisplayName("Debe actualizar exitosamente los datos de un estudiante como Rector y transformar acudiente a mayúsculas")
     void testActualizarEstudianteExitoso() throws Exception {
         String docInicial = "DOC_INIT_" + System.nanoTime();
         String docFinal = "DOC_FIN_" + System.nanoTime();
@@ -298,7 +298,7 @@ class MatriculaControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/matriculas/estudiantes/" + est.getId())
-                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .header("Authorization", "Bearer " + tokenRector)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -309,6 +309,27 @@ class MatriculaControllerTest {
                 .andExpect(jsonPath("$.telefonoAcudiente", is("3114165509")))
                 .andExpect(jsonPath("$.grado", is("11")))
                 .andExpect(jsonPath("$.grupo", is("2")));
+    }
+
+    @Test
+    @DisplayName("Debe rechazar actualización de estudiante con rol Orientador con 403 Forbidden")
+    void testActualizarEstudianteOrientadorForbidden() throws Exception {
+        ActualizarEstudianteDTO dto = ActualizarEstudianteDTO.builder()
+                .documento("CUALQUIER_DOC")
+                .nombres("Nombre")
+                .apellidos("Apellido")
+                .nombreAcudiente("ACUDIENTE")
+                .telefonoAcudiente("3101112233")
+                .grado("09")
+                .grupo("0901")
+                .anioLectivo(2026)
+                .build();
+
+        mockMvc.perform(put("/api/v1/matriculas/estudiantes/1")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -335,7 +356,7 @@ class MatriculaControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/matriculas/estudiantes/" + est.getId())
-                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .header("Authorization", "Bearer " + tokenRector)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
@@ -396,7 +417,7 @@ class MatriculaControllerTest {
             """;
 
         mockMvc.perform(put("/api/v1/matriculas/estudiantes/1")
-                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .header("Authorization", "Bearer " + tokenRector)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonInvalido))
                 .andExpect(status().isBadRequest())
@@ -417,7 +438,7 @@ class MatriculaControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/matriculas/estudiantes/1")
-                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .header("Authorization", "Bearer " + tokenRector)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())

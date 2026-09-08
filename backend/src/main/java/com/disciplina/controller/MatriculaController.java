@@ -31,7 +31,7 @@ public class MatriculaController {
     private final EstudianteService estudianteService;
 
     @GetMapping(value = "/plantilla-ejemplo", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    @PreAuthorize("hasRole('RECTOR')")
     public ResponseEntity<byte[]> descargarPlantillaEjemplo() {
         byte[] excel = importadorMatriculasService.generarPlantillaEjemplo();
         return ResponseEntity.ok()
@@ -41,7 +41,7 @@ public class MatriculaController {
     }
 
     @PostMapping(value = "/importar-masivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    @PreAuthorize("hasRole('RECTOR')")
     public ResponseEntity<ImportacionMatriculasResumenDTO> importarPlanillaMasiva(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "anioLectivo", required = false) Integer anioLectivo) {
@@ -95,7 +95,7 @@ public class MatriculaController {
     }
 
     @PutMapping("/estudiantes/{id}")
-    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    @PreAuthorize("hasRole('RECTOR')")
     public ResponseEntity<EstudianteMatriculaResponseDTO> actualizarEstudiante(
             @PathVariable("id") Integer id,
             @Valid @RequestBody ActualizarEstudianteDTO dto) {

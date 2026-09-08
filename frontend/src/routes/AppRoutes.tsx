@@ -48,7 +48,6 @@ export const AppRoutes: React.FC = () => {
         >
           <Route index element={<Navigate to="incidentes" replace />} />
           <Route path="incidentes" element={<IncidentesPage />} />
-          <Route path="matriculas" element={<CargaMatriculasPage />} />
           <Route path="expedientes" element={<ExpedienteUnicoPage />} />
           <Route path="planes" element={<PlanesIntervencionPage />} />
           <Route path="asistente-ia" element={<AsistenteIaPage />} />
