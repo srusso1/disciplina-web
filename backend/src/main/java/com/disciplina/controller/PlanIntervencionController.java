@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,10 @@ public class PlanIntervencionController {
             @Valid @RequestBody CrearPlanIntervencionDTO dto,
             Authentication authentication) {
 
-        String username = authentication != null ? authentication.getName() : "orientador";
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Acceso no autenticado. Se requiere una sesión válida.");
+        }
+        String username = authentication.getName();
         PlanIntervencionResponseDTO creado = planIntervencionService.crearPlan(dto, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
@@ -75,7 +79,7 @@ public class PlanIntervencionController {
     @PutMapping("/{id}")
     public ResponseEntity<PlanIntervencionResponseDTO> actualizarPlan(
             @PathVariable("id") Integer id,
-            @RequestBody ActualizarPlanIntervencionDTO dto) {
+            @Valid @RequestBody ActualizarPlanIntervencionDTO dto) {
 
         return ResponseEntity.ok(planIntervencionService.actualizarPlan(id, dto));
     }
@@ -89,7 +93,10 @@ public class PlanIntervencionController {
             @Valid @RequestBody RegistrarSeguimientoDTO dto,
             Authentication authentication) {
 
-        String username = authentication != null ? authentication.getName() : "orientador";
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Acceso no autenticado. Se requiere una sesión válida.");
+        }
+        String username = authentication.getName();
         PlanIntervencionResponseDTO actualizado = planIntervencionService.registrarSeguimiento(id, dto, username);
         return ResponseEntity.ok(actualizado);
     }

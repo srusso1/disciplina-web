@@ -164,7 +164,7 @@ export const AuditoriaForensePage: React.FC = () => {
                 Bitácora de Auditoría y Trazabilidad Forense
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                Custodia probatoria inmutable de actuaciones disciplinarias (Criterio 3 BDD & Sección 18 - SAD)
+                Custodia probatoria inmutable y cadena de custodia del debido proceso institucional
               </p>
             </div>
           </div>
@@ -277,7 +277,7 @@ export const AuditoriaForensePage: React.FC = () => {
       </div>
 
       {/* Tabla de Registros Forenses */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
         {cargando ? (
           <div className="py-20 flex flex-col items-center justify-center text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-trujillo-navy mb-3" />
@@ -297,28 +297,28 @@ export const AuditoriaForensePage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">Timestamp</th>
-                  <th className="py-3 px-4">Acción</th>
-                  <th className="py-3 px-4">Entidad Afectada</th>
-                  <th className="py-3 px-4">Usuario Actor</th>
-                  <th className="py-3 px-4">IP Origen</th>
-                  <th className="py-3 px-4 text-center">Trazabilidad JSON</th>
+                <tr className="bg-slate-100/75 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="py-2.5 px-3.5">Timestamp</th>
+                  <th className="py-2.5 px-3.5">Acción</th>
+                  <th className="py-2.5 px-3.5">Entidad Afectada</th>
+                  <th className="py-2.5 px-3.5">Usuario Actor</th>
+                  <th className="py-2.5 px-3.5">IP Origen</th>
+                  <th className="py-2.5 px-3.5 text-center">Registro de Cambios</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {registros.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-3 px-4 whitespace-nowrap">
+                  <tr key={r.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <div className="flex items-center gap-1.5 text-slate-800 font-medium">
                         <Clock className="w-3.5 h-3.5 text-trujillo-sky shrink-0" />
                         <span>{new Date(r.createdAt).toLocaleString()}</span>
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getBadgeAccion(
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${getBadgeAccion(
                           r.accion
                         )}`}
                       >
@@ -326,7 +326,7 @@ export const AuditoriaForensePage: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-slate-800">{r.entidad}</span>
                         <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
@@ -335,9 +335,9 @@ export const AuditoriaForensePage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <div>
-                        <span className="font-bold text-slate-800 block">
+                        <span className="font-semibold text-slate-800 block">
                           {r.usuarioNombreCompleto || r.usuarioUsername}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium">
@@ -346,16 +346,16 @@ export const AuditoriaForensePage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-slate-500">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap font-mono text-[11px] text-slate-500">
                       {r.ipOrigen || '127.0.0.1'}
                     </td>
 
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setRegistroSeleccionado(r)}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200 transition active:scale-[0.98] cursor-pointer"
-                        title="Inspeccionar mutación JSON"
+                        title="Inspeccionar detalle del cambio realizado"
                       >
                         <Code2 className="w-3.5 h-3.5" />
                         <span>Ver Diff</span>
@@ -409,10 +409,14 @@ export const AuditoriaForensePage: React.FC = () => {
 
       {/* Modal de Detalle Forense JSON */}
       {registroSeleccionado && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overscroll-contain"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] min-h-0 flex flex-col overflow-hidden shadow-lg border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150">
             {/* Cabecera del Modal */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div>
                 <div className="flex items-center gap-2">
                   <Code2 className="w-5 h-5 text-trujillo-navy" />
@@ -436,7 +440,7 @@ export const AuditoriaForensePage: React.FC = () => {
             </div>
 
             {/* Contenido Comparativo */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-4 modal-scroll-body">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Datos Anteriores */}
                 <div className="space-y-1.5">
@@ -483,7 +487,7 @@ export const AuditoriaForensePage: React.FC = () => {
             </div>
 
             {/* Pie del Modal */}
-            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end">
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end shrink-0">
               <button
                 type="button"
                 onClick={() => setRegistroSeleccionado(null)}

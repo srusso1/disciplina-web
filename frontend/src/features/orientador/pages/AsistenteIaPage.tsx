@@ -19,7 +19,12 @@ import {
   ArrowRight,
   ShieldCheck,
   X,
-  HeartHandshake
+  HeartHandshake,
+  RotateCcw,
+  Calendar,
+  Info,
+  Scale,
+  ExternalLink
 } from 'lucide-react';
 
 type TabAsistente = 'narrativa' | 'plan';
@@ -53,6 +58,50 @@ export const AsistenteIaPage: React.FC = () => {
   const [accionesEdit, setAccionesEdit] = useState<string>('');
   const [compromisoEdit, setCompromisoEdit] = useState<string>('');
   const [fechaSeguimientoEdit, setFechaSeguimientoEdit] = useState<string>('');
+  const [campoCopiado, setCampoCopiado] = useState<string | null>(null);
+
+  const handleCopiarCampo = (texto: string, campoId: string) => {
+    if (!texto) return;
+    navigator.clipboard.writeText(texto);
+    setCampoCopiado(campoId);
+    setTimeout(() => setCampoCopiado(null), 2000);
+  };
+
+  const handleRestablecerSugerencias = () => {
+    if (!resultadoPlan) return;
+    setDiagnosticoEdit(resultadoPlan.diagnosticoSituacional || '');
+    setAccionesEdit(resultadoPlan.accionesAcordadasSugeridas || '');
+    setCompromisoEdit(resultadoPlan.compromisoPadresSugerido || '');
+    if (resultadoPlan.semanasSeguimientoSugeridas) {
+      const fecha = new Date();
+      fecha.setDate(fecha.getDate() + resultadoPlan.semanasSeguimientoSugeridas * 7);
+      setFechaSeguimientoEdit(fecha.toISOString().split('T')[0]);
+    }
+  };
+
+  const handleCopiarPlanCompleto = () => {
+    if (!resultadoPlan || !estudianteSeleccionado) return;
+    const textoCompleto = `PLAN DE INTERVENCIÓN PEDAGÓGICA Y RESTAURATIVA
+Estudiante: ${estudianteSeleccionado.apellidos}, ${estudianteSeleccionado.nombres}
+Documento: ${estudianteSeleccionado.documento} • Grado: ${estudianteSeleccionado.grado}° ${estudianteSeleccionado.grupo}
+Fecha Próximo Seguimiento: ${fechaSeguimientoEdit || 'No definida'}
+
+1. DIAGNÓSTICO SITUACIONAL VALIDADO:
+${diagnosticoEdit}
+
+2. ACCIONES RESTAURATIVAS ACORDADAS:
+${accionesEdit}
+
+3. CORRESPONSABILIDAD Y COMPROMISO FAMILIAR:
+${compromisoEdit || 'No registrado'}
+
+4. ORIENTACIÓN DE IA (GEMINI):
+${resultadoPlan.recomendacionesIa}`;
+
+    navigator.clipboard.writeText(textoCompleto);
+    setCampoCopiado('todo');
+    setTimeout(() => setCampoCopiado(null), 2500);
+  };
 
   // Ejemplos de prueba para narrativa
   const ejemplosNarrativa = [
@@ -196,14 +245,14 @@ export const AsistenteIaPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Institucional */}
-      <div className="bg-gradient-to-r from-trujillo-dark via-slate-900 to-trujillo-navy rounded-2xl p-6 sm:p-8 text-white shadow-md border border-slate-800">
+      <div className="bg-trujillo-navy rounded-xl p-6 sm:p-7 text-white shadow-sm border border-slate-200/80">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-xs font-semibold text-amber-300 mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-amber-500/20 border border-amber-500/30 text-xs font-semibold text-amber-200 mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Inteligencia Artificial Cognitiva • RF-05 & RF-06</span>
+              <span>Inteligencia Artificial Asistiva • Asistencia Pedagógica</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Taller de Asistencia Pedagógica con IA
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
@@ -211,8 +260,8 @@ export const AsistenteIaPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="px-4 py-2 rounded-xl bg-slate-800/90 border border-slate-700/80 text-xs text-slate-300 flex items-center gap-2 max-w-xs shrink-0">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="px-4 py-2 rounded-lg bg-white/10 border border-white/15 text-xs text-slate-200 flex items-center gap-2 max-w-xs shrink-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
             <span className="text-[11px] leading-tight">
               <strong>Human-in-the-Loop:</strong> La IA propone, el orientador valida y decide.
             </span>
@@ -428,195 +477,449 @@ export const AsistenteIaPage: React.FC = () => {
 
       {/* TAB 2: Formulador de Intervenciones (CU-06) */}
       {tabActiva === 'plan' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* Columna Izquierda: Selección de Alumno y Petición */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-trujillo-sky" />
-                <span>Selección del Estudiante</span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Gemini consultará los antecedentes anonimizados del estudiante y formulará un plan restaurativo estructurado (SAD Sección 16.2).
-              </p>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Columna Izquierda: Selección de Alumno y Parámetros */}
+          <div className={`${resultadoPlan ? 'lg:col-span-4' : 'lg:col-span-5'} space-y-4`}>
+            {/* Tarjeta de Búsqueda y Selección */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-trujillo-sky" />
+                  <span>Selección del Estudiante</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Gemini consultará los antecedentes anonimizados del estudiante y formulará una propuesta de plan formativo estructurado.
+                </p>
+              </div>
 
-            {/* Buscador de Estudiante */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Buscar por Nombre o Documento:
-              </label>
-              {estudianteSeleccionado ? (
-                <div className="p-3.5 bg-trujillo-sky/10 border border-trujillo-sky/30 rounded-xl flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-sm text-trujillo-dark">
-                      {estudianteSeleccionado.apellidos}, {estudianteSeleccionado.nombres}
+              {/* Buscador de Estudiante */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Buscar por Nombre o Documento:
+                </label>
+                {estudianteSeleccionado ? (
+                  <div className="p-3.5 bg-trujillo-sky/10 border border-trujillo-sky/30 rounded-xl flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-sm text-trujillo-dark">
+                        {estudianteSeleccionado.apellidos}, {estudianteSeleccionado.nombres}
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        Doc: {estudianteSeleccionado.documento} • Grado: {estudianteSeleccionado.grado}° {estudianteSeleccionado.grupo}
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 font-mono">
-                      Doc: {estudianteSeleccionado.documento} • Grado: {estudianteSeleccionado.grado}° {estudianteSeleccionado.grupo}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEstudianteSeleccionado(null);
+                        setResultadoPlan(null);
+                      }}
+                      className="text-slate-400 hover:text-slate-600 p-1"
+                      title="Quitar estudiante"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEstudianteSeleccionado(null);
-                      setResultadoPlan(null);
-                    }}
-                    className="text-slate-400 hover:text-slate-600 p-1"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Escribe documento o nombre..."
-                    value={busquedaEstudiante}
-                    onChange={(e) => setBusquedaEstudiante(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
-                  />
-                  {buscandoEstudiante && (
-                    <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-slate-400" />
-                  )}
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Escribe documento o nombre..."
+                      value={busquedaEstudiante}
+                      onChange={(e) => setBusquedaEstudiante(e.target.value)}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
+                    />
+                    {buscandoEstudiante && (
+                      <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-slate-400" />
+                    )}
 
-                  {estudiantesResultados.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
-                      {estudiantesResultados.map((est) => (
-                        <div
-                          key={est.id}
-                          onClick={() => {
-                            setEstudianteSeleccionado(est);
-                            setEstudiantesResultados([]);
-                            setBusquedaEstudiante('');
-                          }}
-                          className="p-3 hover:bg-slate-50 cursor-pointer text-xs"
-                        >
-                          <span className="font-bold text-slate-800">{est.apellidos}, {est.nombres}</span>
-                          <span className="text-slate-400 ml-2 font-mono">({est.documento}) - {est.grado}° {est.grupo}</span>
-                        </div>
-                      ))}
-                    </div>
+                    {estudiantesResultados.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
+                        {estudiantesResultados.map((est) => (
+                          <div
+                            key={est.id}
+                            onClick={() => {
+                              setEstudianteSeleccionado(est);
+                              setEstudiantesResultados([]);
+                              setBusquedaEstudiante('');
+                            }}
+                            className="p-3 hover:bg-slate-50 cursor-pointer text-xs"
+                          >
+                            <span className="font-bold text-slate-800">{est.apellidos}, {est.nombres}</span>
+                            <span className="text-slate-400 ml-2 font-mono">({est.documento}) - {est.grado}° {est.grupo}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleGenerarPlan}
+                  disabled={procesandoPlan || !estudianteSeleccionado}
+                  className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm"
+                >
+                  {procesandoPlan ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
                   )}
+                  <span>{procesandoPlan ? 'Razonando diagnóstico pedagógico...' : 'Formular Plan con Google Gemini'}</span>
+                </button>
+              </div>
+
+              {errorPlan && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center justify-between">
+                  <span>{errorPlan}</span>
+                  <button onClick={() => setErrorPlan(null)} className="text-red-500 hover:text-red-700">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               )}
             </div>
 
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleGenerarPlan}
-                disabled={procesandoPlan || !estudianteSeleccionado}
-                className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm"
-              >
-                {procesandoPlan ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4" />
-                )}
-                <span>{procesandoPlan ? 'Razonando diagnóstico pedagógico...' : 'Formular Plan con Google Gemini'}</span>
-              </button>
-            </div>
+            {/* Sidebar Contextual Adicional si hay resultado de Plan */}
+            {resultadoPlan && (
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Control del Borrador</span>
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Borrador Pedagógico
+                  </span>
+                </div>
 
-            {errorPlan && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center justify-between">
-                <span>{errorPlan}</span>
-                <button onClick={() => setErrorPlan(null)} className="text-red-500 hover:text-red-700">
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-slate-600 py-1">
+                    <span className="text-slate-400">Motor de IA:</span>
+                    <span className="font-semibold text-slate-800">Google Gemini Pro</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 py-1">
+                    <span className="text-slate-400">Plazo sugerido:</span>
+                    <span className="font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      {resultadoPlan.semanasSeguimientoSugeridas} semanas
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 py-1">
+                    <span className="text-slate-400">Enfoque:</span>
+                    <span className="font-semibold text-slate-800">Restaurativo Ley 1620</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleRestablecerSugerencias}
+                    className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Restablecer sugerencias de IA</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleGenerarPlan}
+                    disabled={procesandoPlan}
+                    className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                  >
+                    {procesandoPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                    <span>Regenerar con otra formulación</span>
+                  </button>
+                </div>
               </div>
             )}
+
+            {/* Aviso de Gobernanza */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                <Scale className="w-4 h-4 text-trujillo-navy" />
+                <span>Gobernanza Human-in-the-Loop</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                La propuesta generada es una asistencia fáctica y orientativa. La decisión final, adecuación de términos y validez probatoria es potestad exclusiva del orientador escolar.
+              </p>
+            </div>
           </div>
 
-          {/* Columna Derecha: Formulario del Plan Generado */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                <HeartHandshake className="w-4 h-4 text-trujillo-sky" />
-                <span>Propuesta y Formalización del Plan</span>
-              </h2>
+          {/* Columna Derecha: Formulario del Plan Generado (Espacio Generoso) */}
+          <div className={`${resultadoPlan ? 'lg:col-span-8' : 'lg:col-span-7'} bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-6`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                  <HeartHandshake className="w-5 h-5 text-trujillo-sky" />
+                  <span>Propuesta y Formalización del Plan</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Revisa, amplía y valida las cláusulas pedagógicas antes de registrarlas en la hoja de vida convivencial.
+                </p>
+              </div>
+
               {resultadoPlan && (
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-extrabold uppercase">
-                  Borrador Asistido por IA
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleCopiarPlanCompleto}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                    title="Copiar el texto completo de la propuesta al portapapeles"
+                  >
+                    {campoCopiado === 'todo' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-emerald-700 font-bold">¡Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Copiar Propuesta</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-extrabold uppercase tracking-wider">
+                    Borrador Asistido por IA
+                  </span>
+                </div>
               )}
             </div>
 
             {planGuardadoExito && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{planGuardadoExito}</span>
+              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span className="font-bold">{planGuardadoExito}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/orientador/planes')}
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 transition-colors shadow-2xs"
+                >
+                  <span>Ir a Planes de Intervención</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 
             {!resultadoPlan ? (
-              <div className="p-12 text-center text-slate-400 space-y-2 border-2 border-dashed border-slate-200 rounded-xl">
-                <Layers className="w-10 h-10 mx-auto text-slate-300" />
-                <p className="text-sm font-bold text-slate-700">Sin propuesta generada</p>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Selecciona un estudiante a la izquierda y presiona &quot;Formular Plan con Google Gemini&quot;.
+              <div className="py-16 px-6 text-center text-slate-400 space-y-3 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/40">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
+                  <Layers className="w-7 h-7" />
+                </div>
+                <p className="text-base font-bold text-slate-700">Sin propuesta generada</p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Selecciona un estudiante a la izquierda y presiona &quot;Formular Plan con Google Gemini&quot; para obtener un diagnóstico situacional, acciones restaurativas y recomendaciones normativas automáticas.
                 </p>
+                <div className="pt-2 flex flex-wrap justify-center gap-2 text-[11px] text-slate-500">
+                  <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">Diagnóstico Situacional</span>
+                  <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">Acuerdos Restaurativos</span>
+                  <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">Compromiso de Acudientes</span>
+                </div>
               </div>
             ) : (
-              <div className="space-y-4 text-xs">
-                {/* Recomendaciones de IA */}
-                <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 space-y-1">
-                  <div className="flex items-center gap-1.5 font-extrabold text-[11px]">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Recomendación Teórica y Formativa de Gemini:</span>
+              <div className="space-y-6">
+                {/* Recomendaciones Teóricas y Normativas de Gemini */}
+                <div className="p-4 sm:p-5 bg-amber-50/80 rounded-xl border border-amber-200 text-amber-950 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 font-extrabold text-xs text-amber-900">
+                      <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>Orientación Pedagógica y Normativa de Gemini:</span>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700/80 bg-amber-100/70 px-2 py-0.5 rounded border border-amber-300/60">
+                      Marco Ley 1620
+                    </span>
                   </div>
-                  <p className="text-xs leading-relaxed">{resultadoPlan.recomendacionesIa}</p>
+                  <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-line text-amber-950 font-normal">
+                    {resultadoPlan.recomendacionesIa}
+                  </p>
+                  {resultadoPlan.advertenciaGobierno && (
+                    <div className="pt-2.5 mt-2 border-t border-amber-200/60 flex items-start gap-2 text-[11px] text-amber-800">
+                      <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <span>{resultadoPlan.advertenciaGobierno}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Campos editables para validación humana */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Diagnóstico Situacional Validado</label>
+                {/* Campo 1: Diagnóstico Situacional Validado */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-trujillo-navy text-white text-[11px] font-bold flex items-center justify-center">
+                        1
+                      </span>
+                      <label className="text-xs sm:text-sm font-bold text-slate-800">
+                        Diagnóstico Situacional Validado
+                      </label>
+                      <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                        Requerido
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopiarCampo(diagnosticoEdit, 'diagnostico')}
+                      className="text-slate-400 hover:text-slate-700 text-xs flex items-center gap-1 font-medium transition-colors"
+                      title="Copiar este campo"
+                    >
+                      {campoCopiado === 'diagnostico' ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700 font-bold">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={6}
                     value={diagnosticoEdit}
                     onChange={(e) => setDiagnosticoEdit(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
+                    placeholder="Describe el contexto de la situación observada, antecedentes y factores de riesgo detectados..."
+                    className="w-full p-4 rounded-xl border border-slate-300 focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 text-xs sm:text-sm text-slate-800 leading-relaxed bg-white shadow-xs resize-y font-sans transition-all min-h-[140px]"
                   />
+                  <p className="text-[11px] text-slate-500">
+                    Fundamentación del caso basada en la recurrencia y gravedad de faltas registradas.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Acciones Restaurativas Acordadas</label>
+                {/* Campo 2: Acciones Restaurativas Acordadas */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-trujillo-navy text-white text-[11px] font-bold flex items-center justify-center">
+                        2
+                      </span>
+                      <label className="text-xs sm:text-sm font-bold text-slate-800">
+                        Acciones Restaurativas Acordadas
+                      </label>
+                      <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                        Requerido
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopiarCampo(accionesEdit, 'acciones')}
+                      className="text-slate-400 hover:text-slate-700 text-xs flex items-center gap-1 font-medium transition-colors"
+                      title="Copiar este campo"
+                    >
+                      {campoCopiado === 'acciones' ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700 font-bold">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={6}
                     value={accionesEdit}
                     onChange={(e) => setAccionesEdit(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
+                    placeholder="Establece las actividades pedagógicas reparadoras, compromisos socioeducativos y metas de no repetición..."
+                    className="w-full p-4 rounded-xl border border-slate-300 focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 text-xs sm:text-sm text-slate-800 leading-relaxed bg-white shadow-xs resize-y font-sans transition-all min-h-[140px]"
                   />
+                  <p className="text-[11px] text-slate-500">
+                    Compromisos orientados a la reparación del daño escolar y desarrollo de habilidades socioemocionales.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Compromiso Familiar</label>
+                {/* Campo 3: Compromiso Familiar */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-trujillo-navy text-white text-[11px] font-bold flex items-center justify-center">
+                        3
+                      </span>
+                      <label className="text-xs sm:text-sm font-bold text-slate-800">
+                        Corresponsabilidad y Compromiso Familiar
+                      </label>
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                        Recomendado
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopiarCampo(compromisoEdit, 'compromiso')}
+                      className="text-slate-400 hover:text-slate-700 text-xs flex items-center gap-1 font-medium transition-colors"
+                      title="Copiar este campo"
+                    >
+                      {campoCopiado === 'compromiso' ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700 font-bold">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <textarea
-                    rows={2}
+                    rows={4}
                     value={compromisoEdit}
                     onChange={(e) => setCompromisoEdit(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
+                    placeholder="Pautas de acompañamiento acordadas con el acudiente en el entorno del hogar..."
+                    className="w-full p-4 rounded-xl border border-slate-300 focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 text-xs sm:text-sm text-slate-800 leading-relaxed bg-white shadow-xs resize-y font-sans transition-all min-h-[105px]"
                   />
+                  <p className="text-[11px] text-slate-500">
+                    Acuerdos de acompañamiento y canal directo de comunicación con los padres o acudientes.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Fecha Sugerida de Seguimiento</label>
-                  <input
-                    type="date"
-                    value={fechaSeguimientoEdit}
-                    onChange={(e) => setFechaSeguimientoEdit(e.target.value)}
-                    className="w-full p-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
-                  />
+                {/* Campo 4: Fecha Sugerida de Seguimiento */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-trujillo-navy text-white text-[11px] font-bold flex items-center justify-center">
+                      4
+                    </span>
+                    <label className="text-xs sm:text-sm font-bold text-slate-800">
+                      Fecha Límite de Seguimiento y Evaluación
+                    </label>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="relative max-w-xs w-full">
+                      <input
+                        type="date"
+                        value={fechaSeguimientoEdit}
+                        onChange={(e) => setFechaSeguimientoEdit(e.target.value)}
+                        className="w-full p-3 pl-9 rounded-xl border border-slate-300 focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 text-xs sm:text-sm bg-white font-sans transition-all"
+                      />
+                      <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+                    </div>
+                    {resultadoPlan.semanasSeguimientoSugeridas && (
+                      <span className="text-xs text-slate-500 font-medium">
+                        (Plazo estimado por IA: {resultadoPlan.semanasSeguimientoSugeridas} semanas conforme a la ruta convivencial)
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="pt-2 flex justify-end">
+                {/* Footer Institucional de Guardado */}
+                <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/80">
+                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="text-[11px] sm:text-xs">
+                      Al guardar, el plan se asigna formalmente a la hoja de vida convivencial del estudiante.
+                    </span>
+                  </div>
+
                   <button
                     type="button"
                     onClick={handleGuardarPlanOficial}
                     disabled={guardandoPlan}
-                    className="px-5 py-2.5 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-extrabold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm"
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm cursor-pointer shrink-0"
                   >
-                    {guardandoPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    {guardandoPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
                     <span>Guardar como Plan Oficial en Base de Datos</span>
                   </button>
                 </div>

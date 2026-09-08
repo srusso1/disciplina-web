@@ -20,6 +20,7 @@ import {
 import { incidentesApi } from '../api/incidentesApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
 import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
+import { notify } from '../../../core/utils/notify';
 import {
   Incidente,
   EstadoProceso,
@@ -81,8 +82,11 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      notify.success('Acta descargada', `Se descargó el acta oficial en PDF del expediente #${incidente.id}.`);
     } catch (err: unknown) {
-      setError('Error al generar el acta en PDF: ' + extraerMensajeError(err));
+      const msg = 'Error al generar el acta en PDF: ' + extraerMensajeError(err);
+      notify.error('Error al generar acta', msg);
+      setError(msg);
     } finally {
       setDescargandoPdf(false);
     }
@@ -139,9 +143,12 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
       });
       setIncidente(actualizado);
       setObservacionEstado('');
+      notify.success('Estado actualizado', `Expediente #${incidente.id} actualizado a ${nuevoEstado}.`);
       onUpdated();
     } catch (err: unknown) {
-      setError('No se pudo actualizar el estado: ' + extraerMensajeError(err));
+      const msg = 'No se pudo actualizar el estado: ' + extraerMensajeError(err);
+      notify.error('Error al cambiar estado', msg);
+      setError(msg);
     } finally {
       setActualizandoEstado(false);
     }
@@ -162,6 +169,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
   const guardarDescargo = async (estudianteId: number) => {
     if (!incidente) return;
     if (!descargoTexto.trim()) {
+      notify.error('Campo requerido', 'El descargo o declaración del estudiante no puede estar vacío.');
       setError('El descargo o declaración del estudiante no puede estar vacío.');
       return;
     }
@@ -186,9 +194,12 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
         };
       });
       setEditandoDescargoId(null);
+      notify.success('Descargo registrado', 'Se ha guardado la declaración y compromisos individuales del estudiante.');
       onUpdated();
     } catch (err: unknown) {
-      setError('Error al registrar descargo: ' + extraerMensajeError(err));
+      const msg = 'Error al registrar descargo: ' + extraerMensajeError(err);
+      notify.error('Error al registrar descargo', msg);
+      setError(msg);
     } finally {
       setGuardandoDescargo(false);
     }
@@ -214,11 +225,11 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
   const getBadgeClasificacionLey = (tipo?: ClasificacionLey) => {
     switch (tipo) {
       case 'TIPO_I':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-convivencia-tipo1-bg text-convivencia-tipo1-text border-convivencia-tipo1-border';
       case 'TIPO_II':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
+        return 'bg-convivencia-tipo2-bg text-convivencia-tipo2-text border-convivencia-tipo2-border';
       case 'TIPO_III':
-        return 'bg-rose-100 text-rose-800 border-rose-300';
+        return 'bg-convivencia-tipo3-bg text-convivencia-tipo3-text border-convivencia-tipo3-border';
       default:
         return 'bg-slate-100 text-slate-600 border-slate-200';
     }
@@ -226,11 +237,14 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-hidden overscroll-contain animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overscroll-contain animate-in fade-in duration-150"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-detalle-title"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        className="bg-white rounded-xl shadow-lg border border-slate-200/80 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden min-h-0 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -276,7 +290,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
         </div>
 
         {/* Contenido Principal */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6 modal-scroll-body">
           {cargando ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-500">
               <Loader2 className="w-8 h-8 animate-spin text-trujillo-sky mb-2" />
@@ -316,7 +330,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                       </div>
                     </div>
                     <span className="px-3 py-1 bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg tracking-wider shadow-xs shrink-0 text-center">
-                      REGISTRO INMUTABLE
+                      EXPEDIENTE DEFINITIVO CERRADO
                     </span>
                   </div>
                 ) : (
@@ -415,7 +429,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                     Estudiantes Vinculados al Expediente ({incidente.involucrados.length})
                   </span>
                   <span className="text-xs font-normal normal-case text-slate-500">
-                    Snapshots históricos inmutables de matrícula
+                    Información de matrícula registrada al momento del hecho
                   </span>
                 </h3>
 
@@ -590,18 +604,41 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
           ) : null}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <p className="text-xs text-slate-400">
-            IE Trujillo - Sistema de Convivencia Escolar
+        {/* Footer Fijo de Acciones */}
+        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <p className="text-xs text-slate-500 font-medium">
+            {incidente ? (
+              <>
+                Expediente <strong className="font-mono text-trujillo-navy">#{incidente.id}</strong> • Estado:{' '}
+                <span className="font-bold text-slate-700">{incidente.estadoProceso}</span>
+              </>
+            ) : (
+              'IE Trujillo - Sistema de Convivencia Escolar'
+            )}
           </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl transition shadow-sm"
-          >
-            Cerrar Expediente
-          </button>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            {incidente && (
+              <button
+                type="button"
+                onClick={handleDescargarActaPdf}
+                disabled={descargandoPdf}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold border border-slate-300 shadow-sm transition active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                title="Descargar acta oficial de debido proceso en PDF"
+              >
+                <FileDown className={`w-3.5 h-3.5 text-trujillo-sky ${descargandoPdf ? 'animate-bounce' : ''}`} />
+                <span>{descargandoPdf ? 'Generando...' : 'Descargar Acta PDF'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-white bg-trujillo-navy hover:bg-trujillo-dark rounded-lg transition shadow-sm active:scale-[0.98] cursor-pointer"
+            >
+              Cerrar Expediente
+            </button>
+          </div>
         </div>
 
       </div>

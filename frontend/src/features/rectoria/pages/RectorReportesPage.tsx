@@ -143,7 +143,7 @@ export const RectorReportesPage: React.FC = () => {
                 Emisión de Actas & Resoluciones Institucionales
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                Generación documental en memoria de expedientes y consolidados anuales (RF-08 & CU-11 - SAD)
+                Generación oficial de expedientes disciplinarios y consolidado anual de convivencia
               </p>
             </div>
           </div>
@@ -173,12 +173,12 @@ export const RectorReportesPage: React.FC = () => {
       )}
 
       {/* Tarjeta de Destacado del Informe Ejecutivo */}
-      <div className="bg-gradient-to-br from-trujillo-navy to-slate-900 rounded-2xl p-6 text-white shadow-sm border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-trujillo-navy rounded-xl p-6 text-white shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1.5 max-w-2xl">
-          <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-trujillo-sky text-[10px] font-bold tracking-wider uppercase border border-white/10">
+          <span className="px-2.5 py-0.5 rounded bg-white/10 text-sky-200 text-[10px] font-bold tracking-wider uppercase border border-white/10">
             Documento Oficial de Rectoría
           </span>
-          <h2 className="text-lg font-extrabold text-white tracking-tight">
+          <h2 className="text-lg font-bold text-white tracking-tight">
             Informe Ejecutivo Consolidado de Convivencia Escolar ({new Date().getFullYear()})
           </h2>
           <p className="text-xs text-slate-300 leading-relaxed">
@@ -190,7 +190,7 @@ export const RectorReportesPage: React.FC = () => {
           type="button"
           onClick={handleDescargarConsolidado}
           disabled={descargandoConsolidado}
-          className="px-4 py-2 rounded-xl bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark text-xs font-bold transition active:scale-[0.98] cursor-pointer shrink-0 inline-flex items-center gap-2"
+          className="px-4 py-2 rounded-lg bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark text-xs font-bold transition active:scale-[0.98] cursor-pointer shrink-0 inline-flex items-center gap-2"
         >
           <FileDown className="w-4 h-4" />
           <span>Exportar PDF Consolidado</span>
@@ -198,7 +198,7 @@ export const RectorReportesPage: React.FC = () => {
       </div>
 
       {/* Barra de Búsqueda y Filtros de Expedientes */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
         <form onSubmit={handleBuscar} className="w-full sm:w-80 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -206,7 +206,7 @@ export const RectorReportesPage: React.FC = () => {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar por estudiante, hechos o radicado..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy transition"
           />
         </form>
 
@@ -217,7 +217,7 @@ export const RectorReportesPage: React.FC = () => {
               setFiltroEstado(e.target.value as EstadoProceso | '');
               setPaginaActual(0);
             }}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition text-slate-700 font-medium"
+            className="px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy transition text-slate-700 font-medium"
           >
             <option value="">-- Todos los Estados --</option>
             <option value="REPORTADO">1. Reportado</option>
@@ -230,7 +230,7 @@ export const RectorReportesPage: React.FC = () => {
       </div>
 
       {/* Tabla de Expedientes para Descarga de Actas */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
         {cargando ? (
           <div className="py-20 flex flex-col items-center justify-center text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-trujillo-navy mb-3" />
@@ -246,25 +246,25 @@ export const RectorReportesPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">Radicado</th>
-                  <th className="py-3 px-4">Fecha & Hora</th>
-                  <th className="py-3 px-4">Estudiantes Involucrados</th>
-                  <th className="py-3 px-4">Docente Reporta</th>
-                  <th className="py-3 px-4">Estado Debido Proceso</th>
-                  <th className="py-3 px-4 text-right">Descarga Documental</th>
+                <tr className="bg-slate-100/75 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="py-2.5 px-3.5">Radicado</th>
+                  <th className="py-2.5 px-3.5">Fecha & Hora</th>
+                  <th className="py-2.5 px-3.5">Estudiantes Involucrados</th>
+                  <th className="py-2.5 px-3.5">Docente Reporta</th>
+                  <th className="py-2.5 px-3.5">Estado Debido Proceso</th>
+                  <th className="py-2.5 px-3.5 text-right">Descarga Documental</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {incidentes.map((inc) => (
-                  <tr key={inc.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-3 px-4 whitespace-nowrap">
+                  <tr key={inc.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <span className="font-mono font-bold text-trujillo-navy">
                         #{inc.id}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <div className="flex items-center gap-1.5 text-slate-800 font-medium">
                         <Calendar className="w-3.5 h-3.5 text-trujillo-sky shrink-0" />
                         <span>{inc.fechaIncidente}</span>
@@ -274,11 +274,11 @@ export const RectorReportesPage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-2.5 px-3.5">
                       <div className="space-y-1">
                         {inc.involucrados.map((inv) => (
                           <div key={inv.id} className="flex items-center gap-1.5">
-                            <span className="font-bold text-slate-800 text-[11px]">
+                            <span className="font-semibold text-slate-800 text-[11px]">
                               {inv.estudianteNombreCompleto}
                             </span>
                             <span className="text-[10px] text-slate-400">
@@ -292,15 +292,15 @@ export const RectorReportesPage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <span className="font-medium text-slate-800">
                         {inc.docenteReporta.nombreCompleto}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getBadgeEstado(
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${getBadgeEstado(
                           inc.estadoProceso
                         )}`}
                       >
@@ -308,7 +308,7 @@ export const RectorReportesPage: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
+                    <td className="py-2.5 px-3.5 text-right whitespace-nowrap space-x-2">
                       <button
                         type="button"
                         onClick={() => setIncidenteSeleccionadoId(inc.id)}

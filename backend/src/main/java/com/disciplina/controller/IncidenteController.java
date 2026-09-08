@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,10 @@ public class IncidenteController {
             @Valid @RequestBody RegistrarIncidenteDTO dto,
             Authentication authentication) {
 
-        String username = authentication != null ? authentication.getName() : "rector";
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Acceso no autenticado. Se requiere una sesión válida.");
+        }
+        String username = authentication.getName();
         IncidenteResponseDTO creado = incidenteService.registrarIncidente(dto, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }

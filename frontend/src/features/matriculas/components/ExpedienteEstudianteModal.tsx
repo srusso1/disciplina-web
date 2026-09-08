@@ -26,6 +26,7 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 import { PlanesIntervencionTab } from './PlanesIntervencionTab';
+import { notify } from '../../../core/utils/notify';
 
 interface ExpedienteEstudianteModalProps {
   estudianteId: number | null;
@@ -64,7 +65,9 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
         })
         .catch((err) => {
           console.error('Error al consultar expediente:', err);
-          setError(extraerMensajeError(err, 'No fue posible cargar el expediente histórico del estudiante.'));
+          const msg = extraerMensajeError(err, 'No fue posible cargar el expediente histórico del estudiante.');
+          notify.error('Error al cargar expediente', msg);
+          setError(msg);
         })
         .finally(() => {
           setCargando(false);
@@ -89,6 +92,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
   const handleCopiarTelefono = (telefono: string) => {
     navigator.clipboard.writeText(telefono);
     setTelefonoCopiado(true);
+    notify.info('Copiado al portapapeles', 'Número de acudiente copiado exitosamente.');
     setTimeout(() => setTelefonoCopiado(false), 2000);
   };
 
@@ -106,6 +110,19 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
         return 'bg-slate-50 text-slate-600 border-slate-200';
       default:
         return 'bg-slate-50 text-slate-600 border-slate-200';
+    }
+  };
+
+  const getBadgeTipoLey = (tipo?: string) => {
+    switch (tipo) {
+      case 'TIPO_I':
+        return 'bg-convivencia-tipo1-bg text-convivencia-tipo1-text border-convivencia-tipo1-border';
+      case 'TIPO_II':
+        return 'bg-convivencia-tipo2-bg text-convivencia-tipo2-text border-convivencia-tipo2-border';
+      case 'TIPO_III':
+        return 'bg-convivencia-tipo3-bg text-convivencia-tipo3-text border-convivencia-tipo3-border';
+      default:
+        return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
@@ -135,11 +152,11 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-200/80 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        className="bg-white rounded-xl shadow-lg border border-slate-200/80 w-full max-w-4xl max-h-[92vh] min-h-0 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera del Modal */}
-        <div className="bg-gradient-to-r from-slate-900 via-trujillo-navy to-slate-900 text-white p-5 sm:p-6 shrink-0 relative">
+        <div className="bg-trujillo-navy text-white p-5 sm:p-6 shrink-0 relative border-b border-trujillo-dark">
           <div className="flex items-start justify-between gap-4">
             {cargando ? (
               <div className="flex items-center gap-3 py-2">
@@ -151,7 +168,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             ) : expediente ? (
               <div className="flex items-start gap-4 min-w-0">
                 {/* Avatar con iniciales */}
-                <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-trujillo-sky shadow-inner shrink-0 font-extrabold text-lg sm:text-xl tracking-wider">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-trujillo-sky shadow-inner shrink-0 font-extrabold text-lg sm:text-xl tracking-wider">
                   {(expediente.nombres?.[0] || 'E').toUpperCase()}
                   {(expediente.apellidos?.[0] || '').toUpperCase()}
                 </div>
@@ -159,7 +176,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                 {/* Información de Identidad */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full bg-trujillo-sky/20 text-sky-200 border border-sky-400/30 text-[10px] font-bold tracking-wider uppercase">
+                    <span className="px-2.5 py-0.5 rounded bg-trujillo-sky/20 text-sky-200 border border-sky-400/30 text-[10px] font-bold tracking-wider uppercase">
                       Expediente Único Escolar
                     </span>
                     {expediente.matriculaActual ? (
@@ -215,114 +232,24 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
           </div>
         </div>
 
-        {/* Resumen Métrico de Convivencia */}
-        {expediente && (
-          <div className="bg-slate-50/80 border-b border-slate-200 p-4 shrink-0">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {/* Total Incidentes */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
-                <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-1">
-                  <span>Incidentes</span>
-                  <FileText className="w-4 h-4 text-trujillo-navy" />
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-trujillo-dark">
-                    {expediente.resumenConvivencia.totalIncidentes}
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-medium">
-                    en trayectoria
-                  </span>
-                </div>
-              </div>
-
-              {/* Como Agresor / Partícipe */}
-              <div className="bg-white border border-rose-200 rounded-xl p-3 shadow-2xs">
-                <div className="flex items-center justify-between text-xs text-rose-700 font-semibold mb-1">
-                  <span>Como Implicado</span>
-                  <ShieldAlert className="w-4 h-4 text-rose-600" />
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-rose-700">
-                    {expediente.resumenConvivencia.comoAgresorPrincipal +
-                      expediente.resumenConvivencia.comoParticipe}
-                  </span>
-                  <span className="text-[10px] text-rose-500 font-medium">
-                    ({expediente.resumenConvivencia.comoAgresorPrincipal} dir,{' '}
-                    {expediente.resumenConvivencia.comoParticipe} part)
-                  </span>
-                </div>
-              </div>
-
-              {/* Como Víctima / Testigo */}
-              <div className="bg-white border border-sky-200 rounded-xl p-3 shadow-2xs">
-                <div className="flex items-center justify-between text-xs text-sky-800 font-semibold mb-1">
-                  <span>Víctima / Testigo</span>
-                  <User className="w-4 h-4 text-sky-600" />
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-sky-800">
-                    {expediente.resumenConvivencia.comoVictima +
-                      expediente.resumenConvivencia.comoTestigo}
-                  </span>
-                  <span className="text-[10px] text-sky-600 font-medium">
-                    ({expediente.resumenConvivencia.comoVictima} víc,{' '}
-                    {expediente.resumenConvivencia.comoTestigo} test)
-                  </span>
-                </div>
-              </div>
-
-              {/* Faltas Ley 1620 */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-1">
-                  <span>Faltas Ley 1620</span>
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                </div>
-                <div className="flex items-center gap-1 text-xs font-bold mt-1">
-                  <span className="px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-800 border border-yellow-200 text-[10px]" title="Faltas Tipo I (Leves)">
-                    T-I: {expediente.resumenConvivencia.faltasTipoI}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200 text-[10px]" title="Faltas Tipo II (Graves)">
-                    T-II: {expediente.resumenConvivencia.faltasTipoII}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200 text-[10px]" title="Faltas Tipo III (Gravísimas)">
-                    T-III: {expediente.resumenConvivencia.faltasTipoIII}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Banner de Reincidencia si aplica */}
-            {expediente.resumenConvivencia.reincidente && (
-              <div className="mt-3 p-3 rounded-xl bg-rose-50 border-l-4 border-l-rose-600 border border-rose-200 text-rose-900 text-xs flex items-start gap-2.5">
-                <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <div className="leading-relaxed">
-                  <strong className="font-bold">Alerta Pedagógica de Reincidencia (Ley 1620):</strong>{' '}
-                  El alumno presenta faltas disciplinarias reiteradas. Se requiere activación de ruta integral,
-                  citación a acudientes y formulación de Plan de Intervención Pedagógica individual.
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Barra de Pestañas (Jitter-free: peso uniforme) */}
+        {/* Barra de Pestañas (Sin scroll horizontal invasivo, jitter-free) */}
         <div
           role="tablist"
-          className="border-b border-slate-200 px-6 bg-white flex items-center gap-2 sm:gap-6 shrink-0 text-xs sm:text-sm font-semibold overflow-x-auto"
+          className="border-b border-slate-200 px-4 sm:px-6 bg-white flex items-center gap-2 sm:gap-4 md:gap-6 shrink-0 text-xs sm:text-sm font-semibold overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           <button
             type="button"
             role="tab"
             aria-selected={tabActiva === 'convivencia'}
             onClick={() => setTabActiva('convivencia')}
-            className={`py-3.5 border-b-2 flex items-center gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
+            className={`py-3 border-b-2 flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
               tabActiva === 'convivencia'
                 ? 'border-trujillo-navy text-trujillo-navy font-bold'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <ShieldAlert className="w-4 h-4 text-trujillo-sky shrink-0" />
-            <span>Hoja de Vida de Convivencia</span>
+            <span><span className="hidden md:inline">Hoja de </span>Convivencia</span>
             {expediente && (
               <span
                 className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${
@@ -341,14 +268,14 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             role="tab"
             aria-selected={tabActiva === 'matriculas'}
             onClick={() => setTabActiva('matriculas')}
-            className={`py-3.5 border-b-2 flex items-center gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
+            className={`py-3 border-b-2 flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
               tabActiva === 'matriculas'
                 ? 'border-trujillo-navy text-trujillo-navy font-bold'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <GraduationCap className="w-4 h-4 text-trujillo-sky shrink-0" />
-            <span>Trayectoria de Matrículas</span>
+            <span><span className="hidden md:inline">Historial </span>Matrículas</span>
             {expediente && (
               <span
                 className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${
@@ -367,14 +294,14 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             role="tab"
             aria-selected={tabActiva === 'contacto'}
             onClick={() => setTabActiva('contacto')}
-            className={`py-3.5 border-b-2 flex items-center gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
+            className={`py-3 border-b-2 flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
               tabActiva === 'contacto'
                 ? 'border-trujillo-navy text-trujillo-navy font-bold'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <Phone className="w-4 h-4 text-trujillo-sky shrink-0" />
-            <span>Acudiente & Notificaciones</span>
+            <span>Acudiente<span className="hidden md:inline"> & Contacto</span></span>
           </button>
 
           <button
@@ -382,23 +309,23 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             role="tab"
             aria-selected={tabActiva === 'planes'}
             onClick={() => setTabActiva('planes')}
-            className={`py-3.5 border-b-2 flex items-center gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
+            className={`py-3 border-b-2 flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer active:scale-[0.98] shrink-0 ${
               tabActiva === 'planes'
                 ? 'border-trujillo-navy text-trujillo-navy font-bold'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <HeartHandshake className="w-4 h-4 text-trujillo-sky shrink-0" />
-            <span>Planes & Seguimiento</span>
+            <span>Planes<span className="hidden md:inline"> & Apoyo</span></span>
           </button>
         </div>
 
         {/* Cuerpo del Expediente con Scroll Independiente */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 bg-slate-50/50 space-y-4">
+        <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 bg-slate-50/50 space-y-4 modal-scroll-body">
           {cargando ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
               <Loader2 className="w-8 h-8 animate-spin text-trujillo-navy mb-3" />
-              <p className="text-sm font-medium">Reuniendo antecedentes y snapshots históricos...</p>
+              <p className="text-sm font-medium">Cargando antecedentes disciplinarios y trayectoria escolar...</p>
             </div>
           ) : error ? (
             <div className="p-6 text-center text-rose-700 bg-rose-50 border border-rose-200 rounded-2xl">
@@ -410,6 +337,92 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
               {/* Pestaña 1: Convivencia y Debido Proceso (Timeline sin recuadros excesivos) */}
               {tabActiva === 'convivencia' && (
                 <div className="space-y-4">
+                  {/* Resumen Métrico de Convivencia */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {/* Total Incidentes */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                      <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-1">
+                        <span>Incidentes</span>
+                        <FileText className="w-4 h-4 text-trujillo-navy" />
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl font-black text-trujillo-dark">
+                          {expediente.resumenConvivencia.totalIncidentes}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          en trayectoria
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Como Agresor / Partícipe */}
+                    <div className="bg-white border border-rose-200 rounded-xl p-3 shadow-2xs">
+                      <div className="flex items-center justify-between text-xs text-rose-700 font-semibold mb-1">
+                        <span>Como Implicado</span>
+                        <ShieldAlert className="w-4 h-4 text-rose-600" />
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl font-black text-rose-700">
+                          {expediente.resumenConvivencia.comoAgresorPrincipal +
+                            expediente.resumenConvivencia.comoParticipe}
+                        </span>
+                        <span className="text-[10px] text-rose-500 font-medium">
+                          ({expediente.resumenConvivencia.comoAgresorPrincipal} dir,{' '}
+                          {expediente.resumenConvivencia.comoParticipe} part)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Como Víctima / Testigo */}
+                    <div className="bg-white border border-sky-200 rounded-xl p-3 shadow-2xs">
+                      <div className="flex items-center justify-between text-xs text-sky-800 font-semibold mb-1">
+                        <span>Víctima / Testigo</span>
+                        <User className="w-4 h-4 text-sky-600" />
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl font-black text-sky-800">
+                          {expediente.resumenConvivencia.comoVictima +
+                            expediente.resumenConvivencia.comoTestigo}
+                        </span>
+                        <span className="text-[10px] text-sky-600 font-medium">
+                          ({expediente.resumenConvivencia.comoVictima} víc,{' '}
+                          {expediente.resumenConvivencia.comoTestigo} test)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Faltas Ley 1620 */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-1">
+                        <span>Faltas Ley 1620</span>
+                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                      </div>
+                      <div className="flex items-center gap-1 text-xs font-bold mt-1">
+                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo1-bg text-convivencia-tipo1-text border border-convivencia-tipo1-border text-[10px] font-semibold" title="Faltas Tipo I (Leves)">
+                          T-I: {expediente.resumenConvivencia.faltasTipoI}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo2-bg text-convivencia-tipo2-text border border-convivencia-tipo2-border text-[10px] font-semibold" title="Faltas Tipo II (Graves)">
+                          T-II: {expediente.resumenConvivencia.faltasTipoII}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo3-bg text-convivencia-tipo3-text border border-convivencia-tipo3-border text-[10px] font-semibold" title="Faltas Tipo III (Gravísimas)">
+                          T-III: {expediente.resumenConvivencia.faltasTipoIII}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Banner de Reincidencia si aplica */}
+                  {expediente.resumenConvivencia.reincidente && (
+                    <div className="p-3 rounded-xl bg-rose-50 border-l-4 border-l-rose-600 border border-rose-200 text-rose-900 text-xs flex items-start gap-2.5">
+                      <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div className="leading-relaxed">
+                        <strong className="font-bold">Alerta Pedagógica de Reincidencia (Ley 1620):</strong>{' '}
+                        El alumno presenta faltas disciplinarias reiteradas. Se requiere activación de ruta integral,
+                        citación a acudientes y formulación de Plan de Intervención Pedagógica individual.
+                      </div>
+                    </div>
+                  )}
+
                   {expediente.historialIncidentes.length === 0 ? (
                     <div className="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-2xs">
                       <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
@@ -479,7 +492,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                           </span>
 
                           {inc.falta && (
-                            <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200 text-xs font-medium">
+                            <span className={`px-2.5 py-1 rounded-lg border text-xs font-semibold ${getBadgeTipoLey(inc.falta.clasificacionLey)}`}>
                               {inc.falta.codigo} ({inc.falta.clasificacionLey} -{' '}
                               {inc.falta.gravedadInstitucional})
                             </span>
@@ -541,7 +554,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
 
               {/* Pestaña 2: Trayectoria de Matrículas */}
               {tabActiva === 'matriculas' && (
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+                <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm">
                   <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-bold text-slate-800">
@@ -559,28 +572,28 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
+                      <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-100/75 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                           <tr>
-                            <th className="py-3 px-4">Año Lectivo</th>
-                            <th className="py-3 px-4">Grado / Grupo</th>
-                            <th className="py-3 px-4">Jornada</th>
-                            <th className="py-3 px-4">Estado Matrícula</th>
+                            <th className="py-2.5 px-3.5">Año Lectivo</th>
+                            <th className="py-2.5 px-3.5">Grado / Grupo</th>
+                            <th className="py-2.5 px-3.5">Jornada</th>
+                            <th className="py-2.5 px-3.5">Estado Matrícula</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700">
+                        <tbody className="divide-y divide-slate-100 text-slate-700 text-xs">
                           {expediente.historialMatriculas.map((mat) => (
-                            <tr key={mat.id} className="hover:bg-slate-50/80 transition">
-                              <td className="py-3 px-4 font-bold font-mono text-trujillo-navy">
+                            <tr key={mat.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                              <td className="py-2.5 px-3.5 font-bold font-mono text-trujillo-navy">
                                 {mat.anioLectivo}
                               </td>
-                              <td className="py-3 px-4 font-semibold">
+                              <td className="py-2.5 px-3.5 font-semibold">
                                 <span className="px-2 py-0.5 rounded bg-sky-50 text-trujillo-navy border border-sky-200">
                                   Grado {mat.grado}° - Grupo {mat.grupo}
                                 </span>
                               </td>
-                              <td className="py-3 px-4">{mat.jornada}</td>
-                              <td className="py-3 px-4">
+                              <td className="py-2.5 px-3.5">{mat.jornada}</td>
+                              <td className="py-2.5 px-3.5">
                                 <span
                                   className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                     mat.estadoMatricula === 'ACTIVO'

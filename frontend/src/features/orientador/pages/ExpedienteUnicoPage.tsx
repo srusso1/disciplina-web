@@ -93,14 +93,14 @@ export const ExpedienteUnicoPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Institucional */}
-      <div className="bg-gradient-to-r from-trujillo-dark via-slate-900 to-trujillo-navy rounded-2xl p-6 sm:p-8 text-white shadow-md border border-slate-800">
+      <div className="bg-trujillo-navy rounded-xl p-6 sm:p-7 text-white shadow-sm border border-slate-200/80">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-trujillo-sky/20 border border-trujillo-sky/30 text-xs font-semibold text-trujillo-sky mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-trujillo-sky/20 border border-trujillo-sky/30 text-xs font-semibold text-sky-200 mb-2">
               <FolderOpen className="w-3.5 h-3.5" />
-              <span>Gestión de Convivencia Escolar • CU-08</span>
+              <span>Gestión de Convivencia Escolar • Expediente Integral</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Expediente Único del Estudiante
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
@@ -109,13 +109,13 @@ export const ExpedienteUnicoPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-4 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Año Lectivo</span>
-              <span className="text-lg font-black text-trujillo-sky">{new Date().getFullYear()}</span>
+            <div className="px-4 py-2 rounded-lg bg-white/10 border border-white/15 text-center">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-300">Año Lectivo</span>
+              <span className="text-lg font-bold text-trujillo-sky">{new Date().getFullYear()}</span>
             </div>
-            <div className="px-4 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Alumnos</span>
-              <span className="text-lg font-black text-white">{totalElementos}</span>
+            <div className="px-4 py-2 rounded-lg bg-white/10 border border-white/15 text-center">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-300">Total Alumnos</span>
+              <span className="text-lg font-bold text-white">{totalElementos}</span>
             </div>
           </div>
         </div>
@@ -123,42 +123,42 @@ export const ExpedienteUnicoPage: React.FC = () => {
 
       {/* Tarjetas de Información Rápida */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-trujillo-sky/10 text-trujillo-sky flex items-center justify-center shrink-0">
-            <Users className="w-6 h-6" />
+        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div className="w-11 h-11 rounded-lg bg-trujillo-ice text-trujillo-navy border border-sky-200 flex items-center justify-center shrink-0">
+            <Users className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Población Activa</span>
-            <p className="text-xl font-extrabold text-slate-800">{totalElementos} Estudiantes</p>
+            <span className="text-[11px] font-semibold uppercase text-slate-500 tracking-wider">Población Activa</span>
+            <p className="text-xl font-bold text-slate-900">{totalElementos} Estudiantes</p>
             <span className="text-xs text-slate-500">Registrados en matrículas {new Date().getFullYear()}</span>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-trujillo-navy/10 text-trujillo-navy flex items-center justify-center shrink-0">
-            <GraduationCap className="w-6 h-6" />
+        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div className="w-11 h-11 rounded-lg bg-trujillo-ice text-trujillo-navy border border-sky-200 flex items-center justify-center shrink-0">
+            <GraduationCap className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Cobertura Curricular</span>
-            <p className="text-xl font-extrabold text-slate-800">Grados 6° a 11°</p>
+            <span className="text-[11px] font-semibold uppercase text-slate-500 tracking-wider">Cobertura Curricular</span>
+            <p className="text-xl font-bold text-slate-900">Grados 6° a 11°</p>
             <span className="text-xs text-slate-500">Educación Básica y Media</span>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-            <Sparkles className="w-6 h-6" />
+        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div className="w-11 h-11 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Debido Proceso</span>
-            <p className="text-xl font-extrabold text-slate-800">Ley 1620 / 2013</p>
-            <span className="text-xs text-slate-500">Trazabilidad inmutable por snapshot</span>
+            <span className="text-[11px] font-semibold uppercase text-slate-500 tracking-wider">Debido Proceso</span>
+            <p className="text-xl font-bold text-slate-900">Ley 1620 / 2013</p>
+            <span className="text-xs text-slate-500">Historial escolar fidedigno y protegido</span>
           </div>
         </div>
       </div>
 
       {/* Barra de Búsqueda y Filtros */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-4">
         <form onSubmit={handleBuscar} className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -167,7 +167,7 @@ export const ExpedienteUnicoPage: React.FC = () => {
               placeholder="Buscar por documento, nombre o apellido del estudiante..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 focus:border-trujillo-sky"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-trujillo-navy focus:border-trujillo-navy"
             />
             {busqueda && (
               <button
@@ -187,7 +187,7 @@ export const ExpedienteUnicoPage: React.FC = () => {
                 setFiltroGrado(e.target.value);
                 setPaginaActual(0);
               }}
-              className="px-3 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 focus:border-trujillo-sky"
+              className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy focus:border-trujillo-navy"
             >
               <option value="">Todos los Grados</option>
               <option value="6">Grado 6°</option>
@@ -204,19 +204,19 @@ export const ExpedienteUnicoPage: React.FC = () => {
                 setFiltroGrupo(e.target.value);
                 setPaginaActual(0);
               }}
-              className="px-3 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 focus:border-trujillo-sky"
+              className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy focus:border-trujillo-navy"
             >
               <option value="">Todos los Grupos</option>
-              <option value="01">Grupo 01</option>
-              <option value="02">Grupo 02</option>
-              <option value="03">Grupo 03</option>
-              <option value="04">Grupo 04</option>
-              <option value="05">Grupo 05</option>
+              <option value="1">Grupo 1 (01)</option>
+              <option value="2">Grupo 2 (02)</option>
+              <option value="3">Grupo 3 (03)</option>
+              <option value="4">Grupo 4 (04)</option>
+              <option value="5">Grupo 5 (05)</option>
             </select>
 
             <button
               type="submit"
-              className="px-4 py-2.5 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-sm font-bold flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+              className="px-4 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-sm font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-sm"
             >
               <Search className="w-4 h-4" />
               <span>Filtrar</span>
@@ -226,7 +226,7 @@ export const ExpedienteUnicoPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLimpiarFiltros}
-                className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium flex items-center gap-1.5 transition-all"
+                className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium flex items-center gap-1.5 transition-all"
               >
                 <X className="w-3.5 h-3.5" />
                 <span>Limpiar</span>
@@ -263,43 +263,43 @@ export const ExpedienteUnicoPage: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-slate-100/75 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="px-5 py-3.5">Documento</th>
-                  <th className="px-5 py-3.5">Estudiante</th>
-                  <th className="px-5 py-3.5 text-center">Grado / Grupo</th>
-                  <th className="px-5 py-3.5">Acudiente</th>
-                  <th className="px-5 py-3.5">Contacto</th>
-                  <th className="px-5 py-3.5 text-center">Estado</th>
-                  <th className="px-5 py-3.5 text-right">Acción</th>
+                  <th className="py-2.5 px-3.5">Documento</th>
+                  <th className="py-2.5 px-3.5">Estudiante</th>
+                  <th className="py-2.5 px-3.5 text-center">Grado / Grupo</th>
+                  <th className="py-2.5 px-3.5">Acudiente</th>
+                  <th className="py-2.5 px-3.5">Contacto</th>
+                  <th className="py-2.5 px-3.5 text-center">Estado</th>
+                  <th className="py-2.5 px-3.5 text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 text-slate-700">
                 {estudiantes.map((est) => (
-                  <tr key={est.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5 font-mono text-xs font-semibold text-slate-700">
+                  <tr key={est.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                    <td className="py-2.5 px-3.5 font-mono text-xs font-semibold text-slate-700">
                       {est.documento}
                     </td>
-                    <td className="px-5 py-3.5">
-                      <div className="font-bold text-slate-800">
+                    <td className="py-2.5 px-3.5">
+                      <div className="font-semibold text-slate-800">
                         {est.apellidos}, {est.nombres}
                       </div>
-                      <div className="text-xs text-slate-400">ID #{est.id}</div>
+                      <div className="text-[11px] text-slate-400">ID #{est.id}</div>
                     </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-trujillo-sky/10 border border-trujillo-sky/30 text-trujillo-navy font-black text-xs">
+                    <td className="py-2.5 px-3.5 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-trujillo-ice border border-sky-200 text-trujillo-navy font-semibold text-xs">
                         {est.grado}° - {est.grupo}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-600">
-                      <div className="font-semibold text-slate-700">{est.nombreAcudiente || 'Sin registro'}</div>
+                    <td className="py-2.5 px-3.5 text-xs text-slate-600">
+                      <div className="font-medium text-slate-700">{est.nombreAcudiente || 'Sin registro'}</div>
                     </td>
-                    <td className="px-5 py-3.5 text-xs">
+                    <td className="py-2.5 px-3.5 text-xs">
                       {est.telefonoAcudiente ? (
                         <a
                           href={`tel:${est.telefonoAcudiente}`}
-                          className="inline-flex items-center gap-1.5 text-slate-700 hover:text-trujillo-sky font-medium font-mono"
+                          className="inline-flex items-center gap-1.5 text-slate-700 hover:text-trujillo-navy font-medium font-mono"
                         >
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
                           <span>{est.telefonoAcudiente}</span>
@@ -308,9 +308,9 @@ export const ExpedienteUnicoPage: React.FC = () => {
                         <span className="text-slate-400 font-mono text-xs">Sin teléfono</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-center">
+                    <td className="py-2.5 px-3.5 text-center">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${
                           est.estadoMatricula === 'ACTIVO'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : est.estadoMatricula === 'GRADUADO'
@@ -321,10 +321,10 @@ export const ExpedienteUnicoPage: React.FC = () => {
                         {est.estadoMatricula}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="py-2.5 px-3.5 text-right">
                       <button
                         onClick={() => setExpedienteEstudianteId(est.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-trujillo-sky/10 hover:bg-trujillo-sky hover:text-white text-trujillo-navy text-xs font-bold transition-all duration-150 active:scale-95 border border-trujillo-sky/30"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-xs font-semibold transition-all duration-150 active:scale-95 border border-sky-200"
                         title="Ver expediente e historial integral"
                       >
                         <FolderOpen className="w-3.5 h-3.5" />

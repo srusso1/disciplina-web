@@ -33,6 +33,7 @@ import {
   Send,
   ShieldCheck
 } from 'lucide-react';
+import { notify } from '../../../core/utils/notify';
 
 export const PlanesIntervencionPage: React.FC = () => {
   // Datos principales
@@ -83,6 +84,10 @@ export const PlanesIntervencionPage: React.FC = () => {
   const [guardandoNuevoPlan, setGuardandoNuevoPlan] = useState<boolean>(false);
   const [generandoIa, setGenerandoIa] = useState<boolean>(false);
   const [advertenciaIa, setAdvertenciaIa] = useState<string | null>(null);
+
+  // Referencias de scroll para modales
+  const modalNuevoScrollRef = React.useRef<HTMLDivElement>(null);
+  const modalDetalleScrollRef = React.useRef<HTMLDivElement>(null);
 
   // Modal de Expediente
   const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
@@ -171,7 +176,9 @@ export const PlanesIntervencionPage: React.FC = () => {
     e.preventDefault();
     if (!planSeleccionado) return;
     if (!observacionSeguimiento.trim()) {
+      notify.error('Campo requerido', 'La observación de seguimiento es obligatoria.');
       setError('La observación de seguimiento es obligatoria.');
+      modalDetalleScrollRef.current?.scrollTo({ top: modalDetalleScrollRef.current.scrollHeight, behavior: 'smooth' });
       return;
     }
 
@@ -187,12 +194,16 @@ export const PlanesIntervencionPage: React.FC = () => {
       const actualizado = await planesApi.registrarSeguimiento(planSeleccionado.id, data);
       setPlanSeleccionado(actualizado);
       setObservacionSeguimiento('');
+      notify.success('Seguimiento registrado', 'La evolución ha sido guardada en la bitácora del plan.');
       setMensajeExito('Seguimiento registrado exitosamente.');
       setTimeout(() => setMensajeExito(null), 4000);
       cargarPlanes();
     } catch (err) {
       console.error('Error al guardar seguimiento:', err);
-      setError(extraerMensajeError(err, 'Error al registrar la evolución del caso.'));
+      const msg = extraerMensajeError(err, 'Error al registrar la evolución del caso.');
+      notify.error('Error al registrar seguimiento', msg);
+      setError(msg);
+      modalDetalleScrollRef.current?.scrollTo({ top: modalDetalleScrollRef.current.scrollHeight, behavior: 'smooth' });
     } finally {
       setGuardandoSeguimiento(false);
     }
@@ -240,7 +251,7 @@ export const PlanesIntervencionPage: React.FC = () => {
   // Asistencia con IA para nuevo plan
   const handleGenerarIaNuevoPlan = async () => {
     if (!estudianteSeleccionado) {
-      setError('Debe seleccionar un estudiante para generar la propuesta con IA.');
+      notify.formError('Estudiante requerido', 'Debe seleccionar un estudiante para generar la propuesta con IA.', '#input-busqueda-estudiante-plan');
       return;
     }
 
@@ -262,9 +273,11 @@ export const PlanesIntervencionPage: React.FC = () => {
       if (prop.advertenciaGobierno) {
         setAdvertenciaIa(prop.advertenciaGobierno);
       }
+      notify.info('Propuesta generada', 'Se han cargado las sugerencias formativas de IA.');
     } catch (err) {
       console.error('Error al generar propuesta IA:', err);
       setAdvertenciaIa('No fue posible contactar a Gemini. Puedes completar los campos manualmente sin bloqueo.');
+      notify.warning('Asistente IA no disponible', 'Puedes completar los campos pedagógicos manualmente.');
     } finally {
       setGenerandoIa(false);
     }
@@ -274,11 +287,15 @@ export const PlanesIntervencionPage: React.FC = () => {
   const handleCrearNuevoPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!estudianteSeleccionado) {
-      setError('Debe seleccionar un estudiante.');
+      notify.formError('Seleccione un estudiante', 'Debe buscar y seleccionar un estudiante matriculado.', '#input-busqueda-estudiante-plan');
       return;
     }
-    if (!diagnostico.trim() || !accionesAcordadas.trim()) {
-      setError('El diagnóstico situacional y las acciones acordadas son campos obligatorios.');
+    if (!diagnostico.trim()) {
+      notify.formError('Diagnóstico obligatorio', 'El diagnóstico situacional es un campo obligatorio.', '#textarea-diagnostico-plan');
+      return;
+    }
+    if (!accionesAcordadas.trim()) {
+      notify.formError('Acciones obligatorias', 'Las acciones acordadas son un campo obligatorio.', '#textarea-acciones-plan');
       return;
     }
 
@@ -296,6 +313,7 @@ export const PlanesIntervencionPage: React.FC = () => {
       };
 
       await planesApi.crearPlan(req);
+      notify.success('Plan formulado', `Plan de intervención formulado exitosamente para ${estudianteSeleccionado.nombres}.`);
       setMensajeExito(`Plan de intervención formulado exitosamente para ${estudianteSeleccionado.nombres}.`);
       setTimeout(() => setMensajeExito(null), 4000);
       setIsModalNuevoOpen(false);
@@ -309,7 +327,10 @@ export const PlanesIntervencionPage: React.FC = () => {
       cargarPlanes();
     } catch (err) {
       console.error('Error al crear plan:', err);
-      setError(extraerMensajeError(err, 'Error al formular el plan de intervención.'));
+      const msg = extraerMensajeError(err, 'Error al formular el plan de intervención.');
+      notify.error('Error al formular plan', msg);
+      setError(msg);
+      modalNuevoScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setGuardandoNuevoPlan(false);
     }
@@ -331,14 +352,14 @@ export const PlanesIntervencionPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Institucional */}
-      <div className="bg-gradient-to-r from-trujillo-dark via-slate-900 to-trujillo-navy rounded-2xl p-6 sm:p-8 text-white shadow-md border border-slate-800">
+      <div className="bg-trujillo-navy rounded-xl p-6 sm:p-7 text-white shadow-sm border border-slate-200/80">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-trujillo-sky/20 border border-trujillo-sky/30 text-xs font-semibold text-trujillo-sky mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-trujillo-sky/20 border border-trujillo-sky/30 text-xs font-semibold text-sky-200 mb-2">
               <Layers className="w-3.5 h-3.5" />
-              <span>Acompañamiento Formativo y Restaurativo • RF-06 & CU-07</span>
+              <span>Acompañamiento Formativo y Restaurativo • Plan Integral</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Planes de Intervención Pedagógica
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
@@ -348,7 +369,7 @@ export const PlanesIntervencionPage: React.FC = () => {
 
           <button
             onClick={() => setIsModalNuevoOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark font-extrabold text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
+            className="px-4 py-2 rounded-lg bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark font-bold text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Formular Nuevo Plan</span>
@@ -494,32 +515,32 @@ export const PlanesIntervencionPage: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-slate-100/75 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="px-5 py-3.5">ID / Estudiante</th>
-                  <th className="px-5 py-3.5">Diagnóstico y Acciones</th>
-                  <th className="px-5 py-3.5">Próximo Seguimiento</th>
-                  <th className="px-5 py-3.5 text-center">Seguimientos</th>
-                  <th className="px-5 py-3.5 text-center">Estado</th>
-                  <th className="px-5 py-3.5 text-right">Acciones</th>
+                  <th className="py-2.5 px-3.5">ID / Estudiante</th>
+                  <th className="py-2.5 px-3.5">Diagnóstico y Acciones</th>
+                  <th className="py-2.5 px-3.5">Próximo Seguimiento</th>
+                  <th className="py-2.5 px-3.5 text-center">Seguimientos</th>
+                  <th className="py-2.5 px-3.5 text-center">Estado</th>
+                  <th className="py-2.5 px-3.5 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 text-slate-700">
                 {planes.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5">
+                  <tr key={plan.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                    <td className="py-2.5 px-3.5">
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded bg-slate-100 font-mono text-[11px] font-bold text-slate-600">
                           #{plan.id}
                         </span>
                         <div>
-                          <div className="font-bold text-slate-800">{plan.estudianteNombre}</div>
+                          <div className="font-semibold text-slate-800">{plan.estudianteNombre}</div>
                           <div className="text-xs font-mono text-slate-400">{plan.estudianteDocumento}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 max-w-xs sm:max-w-md">
+                    <td className="py-2.5 px-3.5 max-w-xs sm:max-w-md">
                       <div className="font-medium text-slate-800 text-xs line-clamp-1">
                         <strong className="text-slate-500 uppercase text-[10px]">Diagnóstico: </strong>
                         {plan.diagnosticoSituacional}
@@ -529,7 +550,7 @@ export const PlanesIntervencionPage: React.FC = () => {
                         {plan.accionesAcordadas}
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-600">
+                    <td className="py-2.5 px-3.5 text-xs text-slate-600">
                       {plan.fechaProximoSeguimiento ? (
                         <span className="inline-flex items-center gap-1.5 font-medium">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -539,37 +560,42 @@ export const PlanesIntervencionPage: React.FC = () => {
                         <span className="text-slate-400 italic">Sin fecha</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
+                    <td className="py-2.5 px-3.5 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
                         {plan.seguimientos?.length || 0} notas
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-center">
+                    <td className="py-2.5 px-3.5 text-center">
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${getBadgeEstado(
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide border ${getBadgeEstado(
                           plan.estado
                         )}`}
                       >
                         {plan.estado}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right space-x-2">
-                      <button
-                        onClick={() => handleAbrirDetalle(plan)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-trujillo-sky/10 hover:bg-trujillo-sky hover:text-white text-trujillo-navy text-xs font-bold transition-all duration-150 active:scale-95 border border-trujillo-sky/30"
-                        title="Ver detalle y registrar evolución (CU-07)"
-                      >
-                        <FileEdit className="w-3.5 h-3.5" />
-                        <span>Seguimiento</span>
-                      </button>
+                    <td className="py-2.5 px-3.5 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleAbrirDetalle(plan)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-xs font-semibold transition-all duration-150 active:scale-[0.98] border border-sky-200 cursor-pointer shadow-2xs"
+                          title="Ver detalle y registrar evolución pedagógica"
+                        >
+                          <FileEdit className="w-3.5 h-3.5 text-trujillo-navy" />
+                          <span>Seguimiento</span>
+                        </button>
 
-                      <button
-                        onClick={() => setExpedienteEstudianteId(plan.estudianteId)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
-                        title="Abrir expediente completo del alumno"
-                      >
-                        <FolderOpen className="w-3.5 h-3.5" />
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => setExpedienteEstudianteId(plan.estudianteId)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all duration-150 active:scale-[0.98] border border-slate-200 cursor-pointer shadow-2xs"
+                          title="Abrir expediente escolar integral del estudiante"
+                        >
+                          <FolderOpen className="w-3.5 h-3.5 text-trujillo-sky" />
+                          <span>Expediente</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -640,9 +666,13 @@ export const PlanesIntervencionPage: React.FC = () => {
 
       {/* Modal de Detalle y Registro de Seguimiento (CU-07) */}
       {isModalDetalleOpen && planSeleccionado && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 my-8 overflow-hidden">
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div 
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overscroll-contain"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-200/80 overflow-hidden min-h-0 animate-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-trujillo-navy text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-trujillo-sky/20 text-trujillo-sky flex items-center justify-center">
                   <FileEdit className="w-5 h-5" />
@@ -660,7 +690,7 @@ export const PlanesIntervencionPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+            <div ref={modalDetalleScrollRef} className="p-6 space-y-6 flex-1 overflow-y-auto min-h-0 modal-scroll-body">
               {/* Información del Plan */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
                 <div>
@@ -714,11 +744,11 @@ export const PlanesIntervencionPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Formulario para Registrar Nuevo Seguimiento (CU-07) */}
+              {/* Formulario para Registrar Nuevo Seguimiento */}
               <form onSubmit={handleRegistrarSeguimiento} className="p-4 bg-trujillo-ice/50 rounded-xl border border-trujillo-sky/30 space-y-4">
                 <div className="flex items-center gap-2 text-xs font-bold text-trujillo-navy">
                   <Plus className="w-4 h-4 text-trujillo-sky" />
-                  <span>Registrar Nueva Evolución / Seguimiento (CU-07)</span>
+                  <span>Registrar Nueva Evolución / Seguimiento Periódico</span>
                 </div>
 
                 <div>
@@ -774,15 +804,33 @@ export const PlanesIntervencionPage: React.FC = () => {
                 </div>
               </form>
             </div>
+
+            {/* Footer Fijo */}
+            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+              <span className="text-xs text-slate-500 font-medium">
+                Plan #{planSeleccionado.id} • Estado: <strong className="text-trujillo-navy">{planSeleccionado.estado}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsModalDetalleOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200/70 bg-white border border-slate-300 rounded-lg transition shadow-xs cursor-pointer"
+              >
+                Cerrar Detalle
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Modal de Formulación de Nuevo Plan */}
       {isModalNuevoOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 my-8 overflow-hidden">
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div 
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overscroll-contain"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-200/80 overflow-hidden min-h-0 animate-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-trujillo-navy text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-trujillo-sky/20 text-trujillo-sky flex items-center justify-center">
                   <Plus className="w-5 h-5" />
@@ -800,8 +848,9 @@ export const PlanesIntervencionPage: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCrearNuevoPlan} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              {/* Selector de Estudiante */}
+            <form noValidate onSubmit={handleCrearNuevoPlan} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div ref={modalNuevoScrollRef} className="p-6 space-y-4 flex-1 overflow-y-auto min-h-0 modal-scroll-body">
+                {/* Selector de Estudiante */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Buscar Estudiante Matriculado *
@@ -827,6 +876,7 @@ export const PlanesIntervencionPage: React.FC = () => {
                 ) : (
                   <div className="relative">
                     <input
+                      id="input-busqueda-estudiante-plan"
                       type="text"
                       placeholder="Escribe documento o nombre del alumno..."
                       value={busquedaEstudianteTexto}
@@ -890,6 +940,7 @@ export const PlanesIntervencionPage: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Diagnóstico Situacional *</label>
                 <textarea
+                  id="textarea-diagnostico-plan"
                   rows={3}
                   placeholder="Factores desencadenantes, historial de convivencia y estado socioemocional observado..."
                   value={diagnostico}
@@ -902,6 +953,7 @@ export const PlanesIntervencionPage: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Acciones Formativas y Restaurativas Acordadas *</label>
                 <textarea
+                  id="textarea-acciones-plan"
                   rows={3}
                   placeholder="Talleres, cartas de reparación, servicio pedagógico comunitario o acompañamiento en orientación..."
                   value={accionesAcordadas}
@@ -914,6 +966,7 @@ export const PlanesIntervencionPage: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Compromiso de los Padres / Familia</label>
                 <textarea
+                  id="textarea-compromiso-padres"
                   rows={2}
                   placeholder="Pautas de crianza positiva, control de horarios, asistencia a escuela de padres..."
                   value={compromisoPadres}
@@ -925,31 +978,42 @@ export const PlanesIntervencionPage: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Fecha de Primer Seguimiento</label>
                 <input
+                  id="input-fecha-seguimiento"
                   type="date"
                   value={fechaProximoSeguimiento}
                   onChange={(e) => setFechaProximoSeguimiento(e.target.value)}
                   className="w-full p-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
                 />
               </div>
+            </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
+            {/* Footer Fijo */}
+            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+              <div className="min-w-0 flex-1">
+                <span className="text-[11px] text-slate-400">Los campos marcados con asterisco (*) son obligatorios</span>
+              </div>
+              <div className="flex items-center gap-2.5 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setIsModalNuevoOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all"
+                  onClick={() => {
+                    setIsModalNuevoOpen(false);
+                    setError(null);
+                  }}
+                  className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-200/70 transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={guardandoNuevoPlan || !estudianteSeleccionado}
-                  className="px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm"
+                  className="px-4 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-semibold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm cursor-pointer"
                 >
-                  {guardandoNuevoPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                  {guardandoNuevoPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin text-trujillo-sky" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                   <span>Formular Plan Oficial</span>
                 </button>
               </div>
-            </form>
+            </div>
+          </form>
           </div>
         </div>
       )}

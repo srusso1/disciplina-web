@@ -9,6 +9,7 @@ import com.disciplina.service.EstudianteService;
 import com.disciplina.service.ImportadorMatriculasService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping({"/matriculas", "/api/v1/matriculas"})
 @RequiredArgsConstructor
@@ -60,6 +62,7 @@ public class MatriculaController {
                     .importarPlanilla(file.getInputStream(), anioLectivo);
             return ResponseEntity.ok(resumen);
         } catch (IOException e) {
+            log.error("Error de E/S al procesar la planilla de matrículas Excel: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }
