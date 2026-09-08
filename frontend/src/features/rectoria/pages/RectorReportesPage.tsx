@@ -15,7 +15,6 @@ import {
   Eye,
   FileText,
   AlertCircle,
-  Download,
 } from 'lucide-react';
 
 export const RectorReportesPage: React.FC = () => {
@@ -148,20 +147,6 @@ export const RectorReportesPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={handleDescargarConsolidado}
-          disabled={descargandoConsolidado}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-bold shadow-md shadow-trujillo-navy/20 transition active:scale-[0.98] cursor-pointer disabled:opacity-50"
-        >
-          {descargandoConsolidado ? (
-            <Loader2 className="w-4 h-4 animate-spin text-white" />
-          ) : (
-            <Download className="w-4 h-4 text-trujillo-sky" />
-          )}
-          <span>{descargandoConsolidado ? 'Generando PDF...' : 'Descargar Consolidado Anual'}</span>
-        </button>
       </div>
 
       {/* Banner de Error si ocurre */}
@@ -190,10 +175,14 @@ export const RectorReportesPage: React.FC = () => {
           type="button"
           onClick={handleDescargarConsolidado}
           disabled={descargandoConsolidado}
-          className="px-4 py-2 rounded-lg bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark text-xs font-bold transition active:scale-[0.98] cursor-pointer shrink-0 inline-flex items-center gap-2"
+          className="px-4 py-2.5 rounded-lg bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark text-xs font-bold transition active:scale-[0.98] cursor-pointer shrink-0 inline-flex items-center gap-2 disabled:opacity-50"
         >
-          <FileDown className="w-4 h-4" />
-          <span>Exportar PDF Consolidado</span>
+          {descargandoConsolidado ? (
+            <Loader2 className="w-4 h-4 animate-spin text-trujillo-dark" />
+          ) : (
+            <FileDown className="w-4 h-4" />
+          )}
+          <span>{descargandoConsolidado ? 'Generando PDF...' : 'Exportar PDF Consolidado'}</span>
         </button>
       </div>
 
