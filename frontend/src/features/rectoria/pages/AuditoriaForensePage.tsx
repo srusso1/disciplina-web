@@ -283,9 +283,9 @@ export const AuditoriaForensePage: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto overflow-y-auto max-h-[560px] relative">
+            <div className="overflow-x-auto relative">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="sticky top-0 z-10 bg-slate-100 shadow-2xs border-b border-slate-200">
+                <thead className="bg-slate-100 border-b border-slate-200">
                   <tr className="text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5 bg-slate-100">Timestamp</th>
                     <th className="py-3 px-3.5 bg-slate-100">Acción</th>
