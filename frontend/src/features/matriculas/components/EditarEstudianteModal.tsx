@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { EstudianteMatricula, ActualizarEstudianteData } from '../types/matricula.types';
 import { matriculasApi } from '../api/matriculasApi';
 import { X, Save, AlertCircle, Phone, UserCheck, ShieldAlert, Loader2 } from 'lucide-react';
+import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 
 interface EditarEstudianteModalProps {
   estudiante: EstudianteMatricula | null;
@@ -60,12 +61,10 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
     }
   }, [estudiante]);
 
+  useLockBodyScroll(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('modal-open');
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isSubmitting) {
@@ -75,8 +74,6 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, isSubmitting, onClose]);

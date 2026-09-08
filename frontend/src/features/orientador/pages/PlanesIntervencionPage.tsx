@@ -10,6 +10,7 @@ import {
 import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
 import { extraerMensajeError } from '../../../core/api/apiClient';
 import { useDebounce } from '../../../core/hooks/useDebounce';
+import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 import { ExpedienteEstudianteModal } from '../../matriculas/components/ExpedienteEstudianteModal';
 import {
   Layers,
@@ -85,6 +86,23 @@ export const PlanesIntervencionPage: React.FC = () => {
 
   // Modal de Expediente
   const [expedienteEstudianteId, setExpedienteEstudianteId] = useState<number | null>(null);
+
+  // Bloquear scroll de fondo cuando los modales propios de la pagina esten abiertos
+  useLockBodyScroll(isModalDetalleOpen || isModalNuevoOpen);
+
+  // Soporte para cerrar con tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isModalDetalleOpen) setIsModalDetalleOpen(false);
+        if (isModalNuevoOpen) setIsModalNuevoOpen(false);
+      }
+    };
+    if (isModalDetalleOpen || isModalNuevoOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isModalDetalleOpen, isModalNuevoOpen]);
 
   // Cargar lista de planes paginados
   const cargarPlanes = async () => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ExpedienteEstudiante } from '../types/matricula.types';
 import { matriculasApi } from '../api/matriculasApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 import {
   X,
   User,
@@ -47,19 +48,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
   const [telefonoCopiado, setTelefonoCopiado] = useState<boolean>(false);
 
   // Bloqueo total de scroll en body y contenedores de layout
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add('modal-open');
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  useLockBodyScroll(isOpen);
 
   // Cargar datos al abrir modal
   useEffect(() => {

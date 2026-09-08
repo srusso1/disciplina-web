@@ -9,6 +9,7 @@ import com.disciplina.service.EstudianteService;
 import com.disciplina.service.ImportadorMatriculasService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,16 @@ public class MatriculaController {
 
     private final ImportadorMatriculasService importadorMatriculasService;
     private final EstudianteService estudianteService;
+
+    @GetMapping(value = "/plantilla-ejemplo", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    public ResponseEntity<byte[]> descargarPlantillaEjemplo() {
+        byte[] excel = importadorMatriculasService.generarPlantillaEjemplo();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"plantilla_matricula_oficial.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
+    }
 
     @PostMapping(value = "/importar-masivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
