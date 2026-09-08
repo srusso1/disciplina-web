@@ -106,8 +106,8 @@ public class IncidenteService {
 
             Optional<MatriculaEstudiante> matriculaOpt = matriculaEstudianteRepository.findByEstudianteAndAnioLectivo(estudiante, anioLectivo);
             if (matriculaOpt.isPresent()) {
-                gradoMomento = matriculaOpt.get().getGrado();
-                grupoMomento = matriculaOpt.get().getGrupo();
+                gradoMomento = com.disciplina.common.util.GradoEscolarUtil.normalizarGrado(matriculaOpt.get().getGrado());
+                grupoMomento = com.disciplina.common.util.GradoEscolarUtil.normalizarGrupo(matriculaOpt.get().getGrupo());
             }
 
             String descargoInicial = invDto.getDescargoEstudiante() != null

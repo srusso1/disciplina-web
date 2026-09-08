@@ -184,7 +184,7 @@ class IncidenteControllerTest {
                 .andExpect(jsonPath("$.involucrados", hasSize(1)))
                 .andExpect(jsonPath("$.involucrados[0].estudianteId", is(est.getId())))
                 .andExpect(jsonPath("$.involucrados[0].gradoMomento", is("10")))
-                .andExpect(jsonPath("$.involucrados[0].grupoMomento", is("1001")))
+                .andExpect(jsonPath("$.involucrados[0].grupoMomento", is("1")))
                 .andExpect(jsonPath("$.involucrados[0].rolEstudiante", is("AGRESOR_PRINCIPAL")));
     }
 
@@ -224,8 +224,8 @@ class IncidenteControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.involucrados", hasSize(3)))
-                .andExpect(jsonPath("$.involucrados[?(@.rolEstudiante == 'AGRESOR_PRINCIPAL')].gradoMomento", contains("09")))
-                .andExpect(jsonPath("$.involucrados[?(@.rolEstudiante == 'VICTIMA')].gradoMomento", contains("09")));
+                .andExpect(jsonPath("$.involucrados[?(@.rolEstudiante == 'AGRESOR_PRINCIPAL')].gradoMomento", contains("9")))
+                .andExpect(jsonPath("$.involucrados[?(@.rolEstudiante == 'VICTIMA')].gradoMomento", contains("9")));
     }
 
     @Test

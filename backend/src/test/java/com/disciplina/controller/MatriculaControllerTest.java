@@ -308,7 +308,7 @@ class MatriculaControllerTest {
                 .andExpect(jsonPath("$.nombreAcudiente", is("MARIA GOMEZ")))
                 .andExpect(jsonPath("$.telefonoAcudiente", is("3114165509")))
                 .andExpect(jsonPath("$.grado", is("11")))
-                .andExpect(jsonPath("$.grupo", is("1102")));
+                .andExpect(jsonPath("$.grupo", is("2")));
     }
 
     @Test
@@ -513,13 +513,13 @@ class MatriculaControllerTest {
                 .andExpect(jsonPath("$.documento", is(doc)))
                 .andExpect(jsonPath("$.nombreCompleto", is("CAMILO VALENCIA")))
                 .andExpect(jsonPath("$.matriculaActual.anioLectivo", is(2026)))
-                .andExpect(jsonPath("$.matriculaActual.grado", is("08")))
+                .andExpect(jsonPath("$.matriculaActual.grado", is("8")))
                 .andExpect(jsonPath("$.historialMatriculas", hasSize(2)))
                 .andExpect(jsonPath("$.resumenConvivencia.totalIncidentes", is(1)))
                 .andExpect(jsonPath("$.resumenConvivencia.comoAgresorPrincipal", is(1)))
                 .andExpect(jsonPath("$.resumenConvivencia.faltasTipoII", is(1)))
                 .andExpect(jsonPath("$.historialIncidentes", hasSize(1)))
-                .andExpect(jsonPath("$.historialIncidentes[0].gradoMomento", is("08")))
+                .andExpect(jsonPath("$.historialIncidentes[0].gradoMomento", is("8")))
                 .andExpect(jsonPath("$.historialIncidentes[0].descargoEstudiante", is("Versión del estudiante en descargos")))
                 .andExpect(jsonPath("$.historialIncidentes[0].falta.clasificacionLey", is("TIPO_II")));
     }

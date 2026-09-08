@@ -47,4 +47,11 @@ public class MatriculaEstudiante {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
+
+    @PrePersist
+    @PreUpdate
+    public void normalizarDatos() {
+        this.grado = com.disciplina.common.util.GradoEscolarUtil.normalizarGrado(this.grado);
+        this.grupo = com.disciplina.common.util.GradoEscolarUtil.normalizarGrupo(this.grupo);
+    }
 }

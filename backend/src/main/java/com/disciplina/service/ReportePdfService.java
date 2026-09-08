@@ -216,7 +216,10 @@ public class ReportePdfService {
 
             if (metricas.getDistribucionPorGrado() != null && !metricas.getDistribucionPorGrado().isEmpty()) {
                 for (GradoMetricaDTO g : metricas.getDistribucionPorGrado()) {
-                    agregarCelda(tableGrados, "Grado " + g.getGrado() + "°", Element.ALIGN_LEFT, false);
+                    String gradoTexto = (g.getGrado() != null && g.getGrado().matches("^\\d+$"))
+                            ? "Grado " + g.getGrado() + "°"
+                            : (g.getGrado() != null ? g.getGrado() : "Sin Grado");
+                    agregarCelda(tableGrados, gradoTexto, Element.ALIGN_LEFT, false);
                     agregarCelda(tableGrados, String.valueOf(g.getCantidad()), Element.ALIGN_CENTER, false);
                     agregarCelda(tableGrados, g.getPorcentaje() + "%", Element.ALIGN_CENTER, false);
                 }
@@ -483,7 +486,9 @@ public class ReportePdfService {
 
             String nomEst = est != null ? (est.getNombres() + " " + est.getApellidos()) : "Estudiante";
             String docEst = est != null ? est.getDocumento() : "Sin documento";
-            String matriculaMomento = "Grado " + ie.getGradoMomento() + "°-" + ie.getGrupoMomento() + " (Año Lectivo " + ie.getAnioLectivo() + ")";
+            String grado = com.disciplina.common.util.GradoEscolarUtil.normalizarGrado(ie.getGradoMomento());
+            String grupo = com.disciplina.common.util.GradoEscolarUtil.normalizarGrupo(ie.getGrupoMomento());
+            String matriculaMomento = "Grado " + grado + "°-" + grupo + " (Año Lectivo " + ie.getAnioLectivo() + ")";
             String rol = formatearRol(ie.getRolEstudiante());
 
             Paragraph pEst = new Paragraph((idx + 1) + ". " + nomEst + "  |  Doc: " + docEst + "  |  " + matriculaMomento + "  |  Rol: " + rol, FONT_BOLD);
@@ -589,7 +594,8 @@ public class ReportePdfService {
                 cDatos.addElement(new Paragraph("____________________________________", FONT_BOLD));
                 cDatos.addElement(new Paragraph(nom, FONT_BOLD));
                 cDatos.addElement(new Paragraph("Estudiante | Doc: " + docNum, FONT_MUTED));
-                cDatos.addElement(new Paragraph("Rol: " + formatearRol(ie.getRolEstudiante()) + " • Grado: " + ie.getGradoMomento() + "°", FONT_MUTED));
+                String gradoFirma = com.disciplina.common.util.GradoEscolarUtil.normalizarGrado(ie.getGradoMomento());
+                cDatos.addElement(new Paragraph("Rol: " + formatearRol(ie.getRolEstudiante()) + " • Grado: " + gradoFirma + "°", FONT_MUTED));
                 subFirma.addCell(cDatos);
 
                 PdfPCell cHuella = new PdfPCell();

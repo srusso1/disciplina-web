@@ -3,6 +3,7 @@ package com.disciplina.service;
 import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.domain.repository.IncidenteEstudianteRepository;
+import com.disciplina.common.util.GradoEscolarUtil;
 import com.disciplina.domain.repository.IncidenteRepository;
 import com.disciplina.dto.rectoria.*;
 import lombok.RequiredArgsConstructor;
@@ -94,17 +95,27 @@ public class RectoriaService {
                     .build());
         }
 
-        // Distribución por Grado Escolar
+        // Distribución por Grado Escolar (unificada canónicamente y con orden natural numérico)
         List<Object[]> gradosRaw = incidenteEstudianteRepository.contarIncidentesPorGrado();
-        List<GradoMetricaDTO> distribucionGrado = new ArrayList<>();
+        Map<String, Long> acumuladorGrados = new LinkedHashMap<>();
         for (Object[] row : gradosRaw) {
             String grado = (String) row[0];
             Long cant = (Long) row[1];
+            String gradoNorm = GradoEscolarUtil.normalizarGrado(grado);
+            acumuladorGrados.put(gradoNorm, acumuladorGrados.getOrDefault(gradoNorm, 0L) + (cant != null ? cant : 0L));
+        }
+
+        List<String> gradosOrdenados = new ArrayList<>(acumuladorGrados.keySet());
+        gradosOrdenados.sort(Comparator.comparingInt(GradoEscolarUtil::parseGradoOrdinal).thenComparing(String::compareTo));
+
+        List<GradoMetricaDTO> distribucionGrado = new ArrayList<>();
+        for (String g : gradosOrdenados) {
+            Long cant = acumuladorGrados.get(g);
             double pct = totalIncidentes > 0
                     ? Math.round((cant * 100.0 / totalIncidentes) * 10.0) / 10.0
                     : 0.0;
             distribucionGrado.add(GradoMetricaDTO.builder()
-                    .grado(grado != null ? grado : "Sin Grado")
+                    .grado(g)
                     .cantidad(cant)
                     .porcentaje(pct)
                     .build());

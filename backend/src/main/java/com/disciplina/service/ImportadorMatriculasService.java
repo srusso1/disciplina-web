@@ -4,6 +4,7 @@ import com.disciplina.domain.enums.EstadoMatricula;
 import com.disciplina.domain.model.Estudiante;
 import com.disciplina.domain.model.MatriculaEstudiante;
 import com.disciplina.domain.repository.EstudianteRepository;
+import com.disciplina.common.util.GradoEscolarUtil;
 import com.disciplina.domain.repository.MatriculaEstudianteRepository;
 import com.disciplina.dto.matricula.AdvertenciaFilaDTO;
 import com.disciplina.dto.matricula.ErrorFilaDTO;
@@ -374,20 +375,25 @@ public class ImportadorMatriculasService {
         }
         String clean = rawGrado.trim();
 
+        String g;
+        String grp;
+
         if (clean.length() == 4 && clean.matches("\\d{4}")) {
-            String g = clean.substring(0, 2).replaceFirst("^0+(?!$)", "");
-            String grp = clean.substring(2, 4).replaceFirst("^0+(?!$)", "");
-            return new String[]{g, grp};
+            g = clean.substring(0, 2);
+            grp = clean.substring(2, 4);
         } else if (clean.contains("-")) {
             String[] parts = clean.split("-");
-            return new String[]{parts[0].trim(), parts.length > 1 ? parts[1].trim() : "1"};
+            g = parts[0].trim();
+            grp = parts.length > 1 ? parts[1].trim() : "1";
         } else if (clean.length() == 3 && clean.matches("\\d{3}")) {
-            String g = clean.substring(0, 1);
-            String grp = clean.substring(1).replaceFirst("^0+(?!$)", "");
-            return new String[]{g, grp};
+            g = clean.substring(0, 1);
+            grp = clean.substring(1);
+        } else {
+            g = clean;
+            grp = "1";
         }
 
-        return new String[]{clean, "1"};
+        return new String[]{GradoEscolarUtil.normalizarGrado(g), GradoEscolarUtil.normalizarGrupo(grp)};
     }
 
     private String resolverJornada(String sede) {

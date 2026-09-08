@@ -61,4 +61,11 @@ public class IncidenteEstudiante {
     @Column(name = "version", nullable = false)
     @Builder.Default
     private Long version = 0L;
+
+    @PrePersist
+    @PreUpdate
+    public void normalizarDatos() {
+        this.gradoMomento = com.disciplina.common.util.GradoEscolarUtil.normalizarGrado(this.gradoMomento);
+        this.grupoMomento = com.disciplina.common.util.GradoEscolarUtil.normalizarGrupo(this.grupoMomento);
+    }
 }
