@@ -138,7 +138,7 @@ public class AuditoriaService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size), Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.min(100, Math.max(1, size)), Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<AuditoriaSistema> resultado = auditoriaRepository.findAll(spec, pageable);
 
         List<AuditoriaResponseDTO> dtos = resultado.getContent().stream()

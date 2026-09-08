@@ -30,9 +30,9 @@ export const RectorLayout: React.FC = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-trujillo-ice text-trujillo-dark flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-trujillo-ice text-trujillo-dark flex flex-col md:flex-row font-sans">
       {/* Sidebar Directivo Institucional */}
-      <aside className="w-full md:w-64 bg-trujillo-dark text-slate-200 border-r border-slate-800 flex flex-col justify-between shrink-0 p-4">
+      <aside className="w-full md:w-64 bg-trujillo-dark text-slate-200 border-r border-slate-800 flex flex-col justify-between shrink-0 p-4 md:h-screen md:overflow-y-auto">
         <div>
           {/* Logo & Marca Institucional */}
           <div className="px-2 py-3 mb-6 border-b border-slate-800">
@@ -115,7 +115,7 @@ export const RectorLayout: React.FC = () => {
       </aside>
 
       {/* Área Principal de Trabajo */}
-      <div data-scroll-container className="flex-1 flex flex-col min-h-screen overflow-y-auto layout-content-scroll">
+      <div data-scroll-container className="flex-1 flex flex-col min-h-screen md:min-h-0 md:h-screen overflow-y-auto layout-content-scroll">
         {/* Barra Superior Institucional */}
         <header className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
           <div className="flex items-center gap-2">

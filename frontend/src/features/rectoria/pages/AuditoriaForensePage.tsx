@@ -12,6 +12,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Loader2,
   Database,
   ArrowRightLeft,
@@ -27,6 +29,7 @@ export const AuditoriaForensePage: React.FC = () => {
   const [paginaActual, setPaginaActual] = useState<number>(0);
   const [totalPaginas, setTotalPaginas] = useState<number>(1);
   const [totalElementos, setTotalElementos] = useState<number>(0);
+  const [tamanoPagina, setTamanoPagina] = useState<number>(15);
 
   // Filtros
   const [filtroEntidad, setFiltroEntidad] = useState<string>('');
@@ -54,13 +57,13 @@ export const AuditoriaForensePage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [registroSeleccionado]);
 
-  const cargarAuditorias = async (page: number = 0) => {
+  const cargarAuditorias = async (page: number = 0, size: number = tamanoPagina) => {
     setCargando(true);
     setError(null);
     try {
       const filtros: FiltrosAuditoria = {
         page,
-        size: 15,
+        size,
         entidad: filtroEntidad || undefined,
         accion: filtroAccion || undefined,
         busqueda: busqueda.trim() || undefined,
@@ -82,34 +85,13 @@ export const AuditoriaForensePage: React.FC = () => {
   };
 
   useEffect(() => {
-    cargarAuditorias(0);
-  }, [filtroEntidad, filtroAccion]);
-
-  useEffect(() => {
-    if (!registroSeleccionado) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('modal-open');
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setRegistroSeleccionado(null);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.classList.remove('modal-open');
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [registroSeleccionado]);
+    cargarAuditorias(0, tamanoPagina);
+  }, [filtroEntidad, filtroAccion, tamanoPagina]);
 
   const handleBuscar = (e: React.FormEvent) => {
     e.preventDefault();
     setPaginaActual(0);
-    cargarAuditorias(0);
+    cargarAuditorias(0, tamanoPagina);
   };
 
   const handleLimpiarFiltros = () => {
@@ -119,7 +101,13 @@ export const AuditoriaForensePage: React.FC = () => {
     setFechaDesde('');
     setFechaHasta('');
     setPaginaActual(0);
-    cargarAuditorias(0);
+    cargarAuditorias(0, tamanoPagina);
+  };
+
+  const handleCambiarTamano = (nuevoTamano: number) => {
+    setTamanoPagina(nuevoTamano);
+    setPaginaActual(0);
+    cargarAuditorias(0, nuevoTamano);
   };
 
   const getBadgeAccion = (accion: string) => {
@@ -294,116 +282,169 @@ export const AuditoriaForensePage: React.FC = () => {
             <p className="text-xs text-slate-400">Intente modificar los filtros o el rango de fechas.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-100/75 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="py-2.5 px-3.5">Timestamp</th>
-                  <th className="py-2.5 px-3.5">Acción</th>
-                  <th className="py-2.5 px-3.5">Entidad Afectada</th>
-                  <th className="py-2.5 px-3.5">Usuario Actor</th>
-                  <th className="py-2.5 px-3.5">IP Origen</th>
-                  <th className="py-2.5 px-3.5 text-center">Registro de Cambios</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {registros.map((r) => (
-                  <tr key={r.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-slate-800 font-medium">
-                        <Clock className="w-3.5 h-3.5 text-trujillo-sky shrink-0" />
-                        <span>{new Date(r.createdAt).toLocaleString()}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${getBadgeAccion(
-                          r.accion
-                        )}`}
-                      >
-                        {r.accion}
-                      </span>
-                    </td>
-
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-slate-800">{r.entidad}</span>
-                        <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                          #{r.entidadId}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
-                      <div>
-                        <span className="font-semibold text-slate-800 block">
-                          {r.usuarioNombreCompleto || r.usuarioUsername}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium">
-                          {r.usuarioUsername} ({r.usuarioRol?.replace('ROLE_', '') || 'SISTEMA'})
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-2.5 px-3.5 whitespace-nowrap font-mono text-[11px] text-slate-500">
-                      {r.ipOrigen || '127.0.0.1'}
-                    </td>
-
-                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => setRegistroSeleccionado(r)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200 transition active:scale-[0.98] cursor-pointer"
-                        title="Inspeccionar detalle del cambio realizado"
-                      >
-                        <Code2 className="w-3.5 h-3.5" />
-                        <span>Ver Diff</span>
-                      </button>
-                    </td>
+          <>
+            <div className="overflow-x-auto overflow-y-auto max-h-[560px] relative">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 z-10 bg-slate-100 shadow-2xs border-b border-slate-200">
+                  <tr className="text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-3.5 bg-slate-100">Timestamp</th>
+                    <th className="py-3 px-3.5 bg-slate-100">Acción</th>
+                    <th className="py-3 px-3.5 bg-slate-100">Entidad Afectada</th>
+                    <th className="py-3 px-3.5 bg-slate-100">Usuario Actor</th>
+                    <th className="py-3 px-3.5 bg-slate-100">IP Origen</th>
+                    <th className="py-3 px-3.5 text-center bg-slate-100">Registro de Cambios</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {registros.map((r) => (
+                    <tr key={r.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-slate-800 font-medium">
+                          <Clock className="w-3.5 h-3.5 text-trujillo-sky shrink-0" />
+                          <span>{new Date(r.createdAt).toLocaleString()}</span>
+                        </div>
+                      </td>
 
-        {/* Paginación */}
-        {totalPaginas > 1 && (
-          <div className="p-4 bg-slate-50/50 border-t border-slate-200 flex items-center justify-between text-xs">
-            <span className="text-slate-500">
-              Página <strong className="text-slate-800">{paginaActual + 1}</strong> de{' '}
-              <strong className="text-slate-800">{totalPaginas}</strong>
-            </span>
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${getBadgeAccion(
+                            r.accion
+                          )}`}
+                        >
+                          {r.accion}
+                        </span>
+                      </td>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                disabled={paginaActual === 0}
-                onClick={() => {
-                  const nueva = paginaActual - 1;
-                  setPaginaActual(nueva);
-                  cargarAuditorias(nueva);
-                }}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-800">{r.entidad}</span>
+                          <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            #{r.entidadId}
+                          </span>
+                        </div>
+                      </td>
 
-              <button
-                type="button"
-                disabled={paginaActual >= totalPaginas - 1}
-                onClick={() => {
-                  const nueva = paginaActual + 1;
-                  setPaginaActual(nueva);
-                  cargarAuditorias(nueva);
-                }}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <div>
+                          <span className="font-semibold text-slate-800 block">
+                            {r.usuarioNombreCompleto || r.usuarioUsername}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {r.usuarioUsername} ({r.usuarioRol?.replace('ROLE_', '') || 'SISTEMA'})
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-2.5 px-3.5 whitespace-nowrap font-mono text-[11px] text-slate-500">
+                        {r.ipOrigen || '127.0.0.1'}
+                      </td>
+
+                      <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => setRegistroSeleccionado(r)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200 transition active:scale-[0.98] cursor-pointer"
+                          title="Inspeccionar detalle del cambio realizado"
+                        >
+                          <Code2 className="w-3.5 h-3.5" />
+                          <span>Ver Diff</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
+
+            {/* Paginación Completa Conectada a Base de Datos */}
+            <div className="p-4 bg-slate-50/80 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs">
+              <div className="flex items-center gap-3 text-slate-500">
+                <span>
+                  Mostrando <strong className="text-slate-800 font-semibold">{totalElementos === 0 ? 0 : paginaActual * tamanoPagina + 1}</strong> a{' '}
+                  <strong className="text-slate-800 font-semibold">{Math.min(totalElementos, (paginaActual + 1) * tamanoPagina)}</strong> de{' '}
+                  <strong className="text-slate-800 font-semibold">{totalElementos}</strong> eventos
+                </span>
+                <div className="h-4 w-[1px] bg-slate-300 hidden sm:block" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500">Por página:</span>
+                  <select
+                    value={tamanoPagina}
+                    onChange={(e) => handleCambiarTamano(Number(e.target.value))}
+                    className="px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-trujillo-navy"
+                  >
+                    <option value={10}>10</option>
+                    <option value={15}>15</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 mr-1">
+                  Página <strong className="text-slate-800 font-semibold">{paginaActual + 1}</strong> de{' '}
+                  <strong className="text-slate-800 font-semibold">{totalPaginas}</strong>
+                </span>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    title="Primera página"
+                    disabled={paginaActual === 0}
+                    onClick={() => {
+                      setPaginaActual(0);
+                      cargarAuditorias(0, tamanoPagina);
+                    }}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+                  >
+                    <ChevronsLeft className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Página anterior"
+                    disabled={paginaActual === 0}
+                    onClick={() => {
+                      const nueva = paginaActual - 1;
+                      setPaginaActual(nueva);
+                      cargarAuditorias(nueva, tamanoPagina);
+                    }}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Página siguiente"
+                    disabled={paginaActual >= totalPaginas - 1}
+                    onClick={() => {
+                      const nueva = paginaActual + 1;
+                      setPaginaActual(nueva);
+                      cargarAuditorias(nueva, tamanoPagina);
+                    }}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Última página"
+                    disabled={paginaActual >= totalPaginas - 1}
+                    onClick={() => {
+                      const ultima = totalPaginas - 1;
+                      setPaginaActual(ultima);
+                      cargarAuditorias(ultima, tamanoPagina);
+                    }}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+                  >
+                    <ChevronsRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
