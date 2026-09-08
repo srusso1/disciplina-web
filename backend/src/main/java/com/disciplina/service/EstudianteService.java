@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,7 @@ public class EstudianteService {
     private final EstudianteRepository estudianteRepository;
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
     private final IncidenteEstudianteRepository incidenteEstudianteRepository;
+    private final AuditoriaService auditoriaService;
 
     public PaginaRespuestaDTO<EstudianteMatriculaResponseDTO> listarEstudiantesPaginados(
             Integer anioLectivo,
@@ -54,7 +57,7 @@ public class EstudianteService {
         Pageable pageable = PageRequest.of(paginaValida, tamanoValido);
         String filtro = (busqueda != null && !busqueda.trim().isEmpty()) ? busqueda.trim() : null;
         String g = (grado != null && !grado.trim().isEmpty()) ? grado.trim() : null;
-        String grp = (grupo != null && !grupo.trim().isEmpty()) ? grupo.trim() : null;
+        String grp = (grupo != null && !grupo.trim().isEmpty()) ? grupo.trim().replaceFirst("^0+(?!$)", "") : null;
 
         Page<MatriculaEstudiante> pagina = matriculaEstudianteRepository
                 .buscarMatriculasPaginadas(anio, g, grp, filtro, pageable);
@@ -65,10 +68,11 @@ public class EstudianteService {
 
     public List<EstudianteMatriculaResponseDTO> listarEstudiantesPorMatricula(Integer anioLectivo, String grado, String grupo, String busqueda) {
         int anio = (anioLectivo != null && anioLectivo > 2000) ? anioLectivo : LocalDate.now().getYear();
+        String grp = (grupo != null && !grupo.trim().isEmpty()) ? grupo.trim().replaceFirst("^0+(?!$)", "") : null;
 
         List<MatriculaEstudiante> matriculas;
-        if (grado != null && !grado.trim().isEmpty() && grupo != null && !grupo.trim().isEmpty()) {
-            matriculas = matriculaEstudianteRepository.findByAnioLectivoYGradoYGrupo(anio, grado.trim(), grupo.trim());
+        if (grado != null && !grado.trim().isEmpty() && grp != null) {
+            matriculas = matriculaEstudianteRepository.findByAnioLectivoYGradoYGrupo(anio, grado.trim(), grp);
         } else if (grado != null && !grado.trim().isEmpty()) {
             matriculas = matriculaEstudianteRepository.findByAnioLectivoYGrado(anio, grado.trim());
         } else {
@@ -93,6 +97,13 @@ public class EstudianteService {
         Estudiante estudiante = estudianteRepository.findById(estudianteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
 
+        Map<String, Object> datosAnteriores = new HashMap<>();
+        datosAnteriores.put("documento", estudiante.getDocumento());
+        datosAnteriores.put("nombres", estudiante.getNombres());
+        datosAnteriores.put("apellidos", estudiante.getApellidos());
+        datosAnteriores.put("nombreAcudiente", estudiante.getNombreAcudiente());
+        datosAnteriores.put("telefonoAcudiente", estudiante.getTelefonoAcudiente());
+
         String nuevoDoc = dto.getDocumento().trim();
         if (!estudiante.getDocumento().equalsIgnoreCase(nuevoDoc)) {
             if (estudianteRepository.existsByDocumento(nuevoDoc)) {
@@ -113,6 +124,11 @@ public class EstudianteService {
         MatriculaEstudiante matricula;
         if (matriculaOpt.isPresent()) {
             matricula = matriculaOpt.get();
+            datosAnteriores.put("grado", matricula.getGrado());
+            datosAnteriores.put("grupo", matricula.getGrupo());
+            datosAnteriores.put("jornada", matricula.getJornada());
+            datosAnteriores.put("estadoMatricula", matricula.getEstadoMatricula() != null ? matricula.getEstadoMatricula().name() : "N/A");
+
             if (dto.getGrado() != null && !dto.getGrado().trim().isEmpty()) {
                 matricula.setGrado(dto.getGrado().trim());
             }
@@ -137,6 +153,25 @@ public class EstudianteService {
                     .build();
             matricula = matriculaEstudianteRepository.save(matricula);
         }
+
+        Map<String, Object> datosNuevos = new HashMap<>();
+        datosNuevos.put("documento", estudiante.getDocumento());
+        datosNuevos.put("nombres", estudiante.getNombres());
+        datosNuevos.put("apellidos", estudiante.getApellidos());
+        datosNuevos.put("nombreAcudiente", estudiante.getNombreAcudiente());
+        datosNuevos.put("telefonoAcudiente", estudiante.getTelefonoAcudiente());
+        datosNuevos.put("grado", matricula.getGrado());
+        datosNuevos.put("grupo", matricula.getGrupo());
+        datosNuevos.put("jornada", matricula.getJornada());
+        datosNuevos.put("estadoMatricula", matricula.getEstadoMatricula() != null ? matricula.getEstadoMatricula().name() : "N/A");
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR_ESTUDIANTE",
+                "Estudiante",
+                estudiante.getId(),
+                datosAnteriores,
+                datosNuevos,
+                null);
 
         return mapToDTO(matricula);
     }

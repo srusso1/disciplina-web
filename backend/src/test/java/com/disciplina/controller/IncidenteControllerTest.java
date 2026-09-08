@@ -62,6 +62,9 @@ class IncidenteControllerTest {
     @Autowired
     private MatriculaEstudianteRepository matriculaEstudianteRepository;
 
+    @Autowired
+    private IncidenteRepository incidenteRepository;
+
     private String tokenRector;
     private String tokenOrientador;
     private Docente docentePrueba;
@@ -238,6 +241,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build(),
                         InvolucradoRequestDTO.builder()
@@ -256,6 +260,34 @@ class IncidenteControllerTest {
     }
 
     @Test
+    @DisplayName("Debe rechazar con 400 Bad Request si no se especifica falta tipificada para agresores o participes")
+    void testRegistrarIncidenteSinFaltaTipificadaRechazado() throws Exception {
+        Estudiante agresor = crearEstudianteConMatricula("08", "0801", 2026);
+
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .horaIncidente(LocalTime.of(9, 0))
+                .descripcionHechos("Agresion verbal en el pasillo sin falta tipificada seleccionada.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(agresor.getId())
+                                .catalogoFaltaId(null)
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("falta disciplinaria tipificada")));
+    }
+
+    @Test
     @DisplayName("Debe permitir actualizar el estado del proceso del incidente (debido proceso)")
     void testActualizarEstadoIncidente() throws Exception {
         Estudiante est = crearEstudianteConMatricula("08", "0801", 2026);
@@ -268,6 +300,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build()
                 ))
@@ -305,6 +338,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build()
                 ))
@@ -418,6 +452,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build()
                 ))
@@ -459,6 +494,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build()
                 ))
@@ -507,6 +543,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build()
                 ))
@@ -567,6 +604,7 @@ class IncidenteControllerTest {
                 .involucrados(List.of(
                         InvolucradoRequestDTO.builder()
                                 .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
                                 .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
                                 .build()
                 ))
@@ -596,5 +634,63 @@ class IncidenteControllerTest {
                         .content("{\"estadoProceso\":\"EN_INDAGACION\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", containsString("CERRADO")));
+    }
+
+    @Test
+    @DisplayName("Debe inicializar version en 0 e incrementarla en cada mutacion garantizando bloqueo optimista")
+    void testBloqueoOptimistaIncidente() throws Exception {
+        Estudiante est = estudianteRepository.save(Estudiante.builder()
+                .documento("DOC_OPT_" + System.nanoTime())
+                .nombres("Bloqueo")
+                .apellidos("Optimista")
+                .nombreAcudiente("Acudiente")
+                .telefonoAcudiente("3100000000")
+                .build());
+
+        matriculaEstudianteRepository.save(MatriculaEstudiante.builder()
+                .estudiante(est)
+                .anioLectivo(2026)
+                .grado("09")
+                .grupo("0901")
+                .jornada("MANANA")
+                .estadoMatricula(EstadoMatricula.ACTIVO)
+                .build());
+
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Incidente para probar incremento de version de bloqueo optimista.")
+                .involucrados(List.of(
+                        InvolucradoRequestDTO.builder()
+                                .estudianteId(est.getId())
+                                .catalogoFaltaId(faltaPrueba.getId())
+                                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                                .build()
+                ))
+                .build();
+
+        String res = mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Integer incidenteId = objectMapper.readTree(res).get("id").asInt();
+
+        Incidente incCreado = incidenteRepository.findById(incidenteId).orElseThrow();
+        org.junit.jupiter.api.Assertions.assertNotNull(incCreado.getVersion());
+        org.junit.jupiter.api.Assertions.assertEquals(0L, incCreado.getVersion());
+
+        // Mutar estado
+        mockMvc.perform(patch("/api/v1/incidentes/" + incidenteId + "/estado")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estadoProceso\":\"EN_INDAGACION\"}"))
+                .andExpect(status().isOk());
+
+        Incidente incMutado = incidenteRepository.findById(incidenteId).orElseThrow();
+        org.junit.jupiter.api.Assertions.assertTrue(incMutado.getVersion() >= 1L);
     }
 }

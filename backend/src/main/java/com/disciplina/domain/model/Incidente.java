@@ -63,6 +63,11 @@ public class Incidente {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    @Builder.Default
+    private Long version = 0L;
+
     public void agregarInvolucrado(IncidenteEstudiante involucrado) {
         involucrados.add(involucrado);
         involucrado.setIncidente(this);

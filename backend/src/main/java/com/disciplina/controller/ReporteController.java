@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping({"/reportes", "/api/v1/reportes"})
 @RequiredArgsConstructor
@@ -45,7 +47,8 @@ public class ReporteController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("inline", "Informe-Ejecutivo-Convivencia-2026.pdf");
+        String nombrePdf = "Informe-Ejecutivo-Convivencia-" + LocalDate.now().getYear() + ".pdf";
+        headers.setContentDispositionFormData("inline", nombrePdf);
         headers.setContentLength(pdfBytes.length);
 
         return ResponseEntity.ok()
