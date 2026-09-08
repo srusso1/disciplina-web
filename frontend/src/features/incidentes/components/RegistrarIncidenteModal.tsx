@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Plus,
-  AlertTriangle,
   Users,
   Shield,
   Loader2,
@@ -20,6 +19,7 @@ import { AsistenteIaPanel } from './AsistenteIaPanel';
 import { InvolucradoItemCard, InvolucradoItemData } from './InvolucradoItemCard';
 import { ContextoHechosSection } from './ContextoHechosSection';
 import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
+import { notify } from '../../../core/utils/notify';
 
 interface RegistrarIncidenteModalProps {
   isOpen: boolean;
@@ -85,7 +85,41 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
   const [cargandoCatalogos, setCargandoCatalogos] = useState<boolean>(false);
   const [guardando, setGuardando] = useState<boolean>(false);
-  const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const resetFormulario = () => {
+    setModoColectivo(false);
+    setDocenteReportaId('');
+    setLugarId('');
+    setFechaIncidente(getTodayLocalDate());
+    setHoraIncidente(getCurrentLocalTime());
+    setDescripcionHechos('');
+    setSugerenciaDocentePendiente(null);
+    setAlertaDocenteNoMencionado(false);
+    setSugerenciaLugarPendiente(null);
+    setAlertaLugarNoMencionado(false);
+    setInvolucrados([
+      {
+        idTemp: '1',
+        estudianteId: null,
+        estudianteSeleccionado: null,
+        busquedaEstudiante: '',
+        catalogoFaltaId: null,
+        rolEstudiante: 'AGRESOR_PRINCIPAL',
+        descripcionIndividual: '',
+      },
+    ]);
+  };
+
+  const handleCerrar = () => {
+    resetFormulario();
+    onClose();
+  };
+
+  const reportarError = (mensaje: string, targetSelector?: string) => {
+    notify.formError('Atención: Formulario incompleto', mensaje, targetSelector);
+  };
 
   useLockBodyScroll(isOpen);
 
@@ -95,7 +129,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleCerrar();
       }
     };
 
@@ -103,23 +137,19 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
-  // Cargar catálogos al abrir modal
+  // Cargar catálogos y restablecer formulario al abrir modal
   useEffect(() => {
     if (isOpen) {
       cargarCatalogos();
-      setErrorGlobal(null);
-      setFechaIncidente(getTodayLocalDate());
-      setHoraIncidente(getCurrentLocalTime());
-      setDocenteReportaId('');
-      setLugarId('');
-      setSugerenciaDocentePendiente(null);
-      setAlertaDocenteNoMencionado(false);
-      setSugerenciaLugarPendiente(null);
-      setAlertaLugarNoMencionado(false);
+      if (initialData) {
+        handleAplicarResultadoIa(initialData);
+      } else {
+        resetFormulario();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const cargarCatalogos = async () => {
     setCargandoCatalogos(true);
@@ -135,7 +165,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       // No autoseleccionar docs[0] ni lugs[0] para evitar asignaciones erróneas por omisión
     } catch (err: unknown) {
       const e = err as Error;
-      setErrorGlobal('No se pudieron cargar los catálogos institucionales: ' + e.message);
+      notify.error('Error de catálogos', 'No se pudieron cargar los catálogos institucionales: ' + e.message);
     } finally {
       setCargandoCatalogos(false);
     }
@@ -218,12 +248,6 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     }
   };
 
-  useEffect(() => {
-    if (isOpen && initialData) {
-      handleAplicarResultadoIa(initialData);
-    }
-  }, [isOpen, initialData]);
-
   const actualizarInvolucrado = (index: number, updated: Partial<InvolucradoItemData>) => {
     setInvolucrados((prev) => {
       const copy = [...prev];
@@ -261,39 +285,62 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorGlobal(null);
 
     if (!docenteReportaId) {
-      if (sugerenciaDocentePendiente) {
-        setErrorGlobal(`Docente informante pendiente de vincular: "${sugerenciaDocentePendiente}". Debe seleccionar al funcionario correspondiente de la lista institucional.`);
-      } else {
-        setErrorGlobal('Debe seleccionar el docente o funcionario que reporta el incidente.');
-      }
+      const msg = sugerenciaDocentePendiente
+        ? `Docente informante pendiente de vincular: "${sugerenciaDocentePendiente}". Debe seleccionar al funcionario correspondiente de la lista institucional.`
+        : 'Debe seleccionar el docente o funcionario que reporta el incidente.';
+      reportarError(msg, '#select-docente-reporta');
       return;
     }
     if (!lugarId) {
-      if (sugerenciaLugarPendiente) {
-        setErrorGlobal(`Lugar institucional pendiente de vincular: "${sugerenciaLugarPendiente}". Debe seleccionar la ubicación oficial del catálogo.`);
-      } else {
-        setErrorGlobal('Debe seleccionar el lugar institucional del hecho.');
-      }
+      const msg = sugerenciaLugarPendiente
+        ? `Lugar institucional pendiente de vincular: "${sugerenciaLugarPendiente}". Debe seleccionar la ubicación oficial del catálogo.`
+        : 'Debe seleccionar el lugar institucional del hecho.';
+      reportarError(msg, '#select-lugar-reporta');
       return;
     }
     if (!fechaIncidente) {
-      setErrorGlobal('Indique la fecha del incidente.');
+      reportarError('Indique la fecha del incidente.', '#input-fecha-incidente');
       return;
     }
     if (!descripcionHechos || descripcionHechos.trim().length < 10) {
-      setErrorGlobal('La descripción fáctica de los hechos debe contener al menos 10 caracteres.');
+      reportarError('La descripción fáctica de los hechos debe contener al menos 10 caracteres.', '#textarea-descripcion-hechos');
       return;
     }
 
-    const sinSeleccionar = involucrados.filter((inv) => !inv.estudianteId);
-    if (sinSeleccionar.length > 0) {
-      const nombresPendientes = sinSeleccionar
-        .map((inv) => (inv.busquedaEstudiante ? `"${inv.busquedaEstudiante}"` : 'estudiante sin seleccionar'))
-        .join(', ');
-      setErrorGlobal(`Debe seleccionar un estudiante válido del censo escolar para cada involucrado. Pendiente(s) de vincular: ${nombresPendientes}.`);
+    const sinSeleccionar = involucrados.find((inv) => !inv.estudianteId);
+    if (sinSeleccionar) {
+      const nombrePendiente = sinSeleccionar.busquedaEstudiante ? `"${sinSeleccionar.busquedaEstudiante}"` : 'estudiante sin vincular';
+      reportarError(
+        `Debe seleccionar un estudiante válido del censo escolar para cada involucrado. Pendiente: ${nombrePendiente}.`,
+        `#input-buscar-estudiante-${sinSeleccionar.idTemp}`
+      );
+      return;
+    }
+
+    // Validar que todo agresor o partícipe tenga su falta tipificada obligatoriamente (Punto 2)
+    const agresorSinFalta = involucrados.find(
+      (inv) => (inv.rolEstudiante === 'AGRESOR_PRINCIPAL' || inv.rolEstudiante === 'PARTICIPE') && !inv.catalogoFaltaId
+    );
+    if (agresorSinFalta) {
+      const nombreEstudiante = agresorSinFalta.estudianteSeleccionado
+        ? `${agresorSinFalta.estudianteSeleccionado.nombres} ${agresorSinFalta.estudianteSeleccionado.apellidos}`
+        : 'el estudiante involucrado';
+      reportarError(
+        `Debe seleccionar la falta disciplinaria tipificada (Ley 1620) para ${nombreEstudiante}.`,
+        `#select-falta-${agresorSinFalta.idTemp}`
+      );
+      return;
+    }
+
+    // Validar que el caso tenga al menos una falta tipificada en general
+    const tieneAlgunaFalta = involucrados.some((inv) => Boolean(inv.catalogoFaltaId));
+    if (!tieneAlgunaFalta) {
+      reportarError(
+        'Todo incidente de convivencia escolar debe tipificarse con al menos una falta según la Ley 1620.',
+        `#select-falta-${involucrados[0].idTemp}`
+      );
       return;
     }
 
@@ -316,6 +363,8 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     setGuardando(true);
     try {
       await incidentesApi.registrar(data);
+      notify.success('Incidente registrado oficialmente', 'El caso ha sido anexado a la bitácora y hojas de vida de convivencia.');
+      resetFormulario();
       onSuccess();
       onClose();
     } catch (err: unknown) {
@@ -323,7 +372,7 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
         response?: { data?: { message?: string } };
         message?: string;
       };
-      setErrorGlobal(
+      reportarError(
         e.response?.data?.message || e.message || 'Error inesperado al registrar el incidente.'
       );
     } finally {
@@ -335,20 +384,20 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overscroll-contain transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overscroll-contain transition-opacity animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-registro-incidente-title"
     >
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-4xl max-h-[92vh] min-h-0 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Cabecera del Modal */}
-        <div className="bg-gradient-to-r from-trujillo-navy via-slate-900 to-trujillo-navy text-white px-6 py-5 flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div className="bg-trujillo-navy text-white px-5 py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-trujillo-sky/20 border border-trujillo-sky/30 flex items-center justify-center text-trujillo-sky shadow-inner">
-              <Shield className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center text-trujillo-sky shadow-xs">
+              <Shield size={18} />
             </div>
             <div>
-              <h2 id="modal-registro-incidente-title" className="text-base font-bold text-white tracking-tight">
+              <h2 id="modal-registro-incidente-title" className="text-sm sm:text-base font-bold text-white tracking-tight">
                 Registrar Incidente de Convivencia Escolar
               </h2>
               <p className="text-xs text-sky-200/80">
@@ -359,28 +408,18 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
           <button
             type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition active:scale-[0.97] cursor-pointer"
+            onClick={handleCerrar}
+            className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition active:scale-[0.97] cursor-pointer"
             aria-label="Cerrar ventana"
           >
-            <X className="w-5 h-5" />
+            <X size={18} />
           </button>
         </div>
 
         {/* Formulario Principal con Cuerpo Scrolleable y Footer Fijo */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col flex-1 overflow-hidden min-h-0">
           {/* Cuerpo Scrolleable */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {errorGlobal && (
-              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-3 shadow-xs animate-in fade-in">
-                <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-bold text-rose-800">No fue posible registrar el incidente</p>
-                  <p className="text-rose-600 leading-relaxed">{errorGlobal}</p>
-                </div>
-              </div>
-            )}
-
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 p-5 space-y-5 modal-scroll-body">
             {/* Asistente IA */}
             <AsistenteIaPanel onAplicar={handleAplicarResultadoIa} />
 
@@ -466,7 +505,9 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
                     totalInvolucrados={involucrados.length}
                     onChange={(updated) => actualizarInvolucrado(idx, updated)}
                     onRemover={() => removerInvolucrado(idx)}
-                    onErrorGlobal={setErrorGlobal}
+                    onErrorGlobal={(msg) => {
+                      if (msg) notify.formError('Atención al involucrado', msg);
+                    }}
                   />
                 ))}
 
@@ -474,9 +515,9 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
                   <button
                     type="button"
                     onClick={agregarInvolucrado}
-                    className="w-full py-3 border-2 border-dashed border-sky-300 hover:border-trujillo-sky rounded-2xl text-xs sm:text-sm font-bold text-trujillo-navy bg-sky-50/40 hover:bg-sky-50 flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
+                    className="w-full py-2.5 border border-dashed border-sky-300 hover:border-trujillo-navy rounded-lg text-xs font-semibold text-trujillo-navy bg-sky-50/40 hover:bg-sky-50/80 flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                   >
-                    <Plus className="w-4 h-4 text-trujillo-sky" />
+                    <Plus size={16} className="text-trujillo-sky" />
                     <span>Vincular Otro Estudiante al Mismo Incidente Colectivo</span>
                   </button>
                 )}
@@ -484,11 +525,11 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
             </div>
           </div>
 
-          {/* Footer Fijo de Acciones (Siempre Visible) */}
-          <div className="bg-slate-50/95 backdrop-blur-sm px-6 py-4 border-t border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          {/* Footer Fijo con Acciones */}
+          <div className="bg-slate-50/95 backdrop-blur-xs px-5 py-3 border-t border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">
-                <Users className="w-3.5 h-3.5 text-trujillo-sky" />
+                <Users size={16} className="text-trujillo-sky" />
                 {modoColectivo
                   ? `Caso Colectivo (${involucrados.length} involucrados)`
                   : 'Caso Individual (1 estudiante)'}
@@ -497,23 +538,23 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
               <span className="text-[11px] text-slate-400">Ley 1620 y Debido Proceso</span>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleCerrar}
                 disabled={guardando}
-                className="px-5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100/80 transition active:scale-[0.97] cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition active:scale-[0.97] cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={guardando}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-trujillo-navy hover:bg-slate-800 disabled:opacity-50 text-xs sm:text-sm font-bold text-white shadow-md hover:shadow transition active:scale-[0.97] cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-trujillo-navy hover:bg-slate-800 disabled:opacity-50 text-xs font-semibold text-white shadow-2xs hover:shadow-xs transition active:scale-[0.97] cursor-pointer"
               >
                 {guardando ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-trujillo-sky" />
+                    <Loader2 size={16} className="animate-spin text-trujillo-sky" />
                     <span>Guardando en Expediente...</span>
                   </>
                 ) : (

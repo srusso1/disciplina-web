@@ -6,22 +6,22 @@ import { useEffect } from 'react';
  * Resuelve de forma definitiva el problema de fugas de scroll en layouts complejos.
  */
 let activeLocksCount = 0;
-let originalBodyOverflow = '';
 
 export function useLockBodyScroll(isLocked: boolean = true): void {
   useEffect(() => {
     if (!isLocked) return;
 
     if (activeLocksCount === 0) {
-      originalBodyOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       document.body.classList.add('modal-open');
     }
     activeLocksCount++;
 
-    const scrollContainers = document.querySelectorAll<HTMLElement>(
-      '[data-scroll-container], .layout-content-scroll, #root div.overflow-y-auto'
-    );
+    // Solo bloquear contenedores de layout principal de fondo, NUNCA elementos dentro de un diálogo o modal emergente
+    const scrollContainers = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-scroll-container], .layout-content-scroll')
+    ).filter((el) => !el.closest('[role="dialog"]') && !el.closest('.fixed'));
+
     const originalContainerStyles: Array<{ el: HTMLElement; overflowY: string }> = [];
 
     scrollContainers.forEach((el) => {

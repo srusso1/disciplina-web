@@ -1,6 +1,4 @@
 package com.disciplina.controller;
-
-import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.RolUsuario;
 import com.disciplina.domain.model.*;
 import com.disciplina.domain.repository.*;
@@ -50,23 +48,13 @@ class IaControllerTest {
     @Autowired
     private MatriculaEstudianteRepository matriculaEstudianteRepository;
 
-    @Autowired
-    private LugarRepository lugarRepository;
-
-    @Autowired
-    private DocenteRepository docenteRepository;
-
-    @Autowired
-    private CatalogoFaltaRepository catalogoFaltaRepository;
 
     private String tokenRector;
     private Estudiante estudiantePrueba;
-    private Lugar lugarPrueba;
-    private Docente docentePrueba;
 
     @BeforeEach
     void setUp() {
-        Usuario rector = usuarioRepository.findByUsername("rector_ia_test").orElseGet(() ->
+        usuarioRepository.findByUsername("rector_ia_test").orElseGet(() ->
                 usuarioRepository.save(Usuario.builder()
                         .username("rector_ia_test")
                         .passwordHash(passwordEncoder.encode("Password123!"))
@@ -78,23 +66,6 @@ class IaControllerTest {
                         .build())
         );
         tokenRector = jwtTokenProvider.generateToken("rector_ia_test", "ROLE_RECTOR");
-
-        lugarPrueba = lugarRepository.findAll().stream().findFirst().orElseGet(() ->
-                lugarRepository.save(Lugar.builder()
-                        .nombre("Patio Principal")
-                        .activo(true)
-                        .build())
-        );
-
-        docentePrueba = docenteRepository.findAll().stream().findFirst().orElseGet(() ->
-                docenteRepository.save(Docente.builder()
-                        .documento("DOC-IA-01")
-                        .nombres("Carlos")
-                        .apellidos("Pérez")
-                        .areaDesempeno("Ciencias Sociales")
-                        .activo(true)
-                        .build())
-        );
 
         estudiantePrueba = estudianteRepository.findAll().stream().findFirst().orElseGet(() -> {
             Estudiante e = estudianteRepository.save(Estudiante.builder()

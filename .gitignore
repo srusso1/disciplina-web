@@ -16,3 +16,7 @@ Thumbs.db
 # Environment files
 .env
 .env.local
+
+# Tooling
+.antigravity/
+frontend/DESIGN_SKILL.md

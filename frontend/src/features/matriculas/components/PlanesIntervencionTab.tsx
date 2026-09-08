@@ -322,7 +322,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                 type="button"
                 onClick={handleGenerarIa}
                 disabled={generandoIa}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
                 title="Genera propuesta pedagógica estructurada analizando el historial del estudiante"
               >
                 {generandoIa ? (
@@ -332,7 +332,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    <Sparkles className="w-3.5 h-3.5 text-trujillo-sky" />
                     <span>Sugerir con Asistente IA</span>
                   </>
                 )}

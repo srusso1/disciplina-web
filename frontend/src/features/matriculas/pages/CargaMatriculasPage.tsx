@@ -475,7 +475,7 @@ export const CargaMatriculasPage: React.FC = () => {
       )}
 
       {/* Explorador de Estudiantes Matriculados Paginado */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-card space-y-4">
+      <div className="bg-white border border-slate-200/80 rounded-xl p-5 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <h2 className="text-base font-bold text-trujillo-dark flex items-center gap-2">
@@ -494,7 +494,7 @@ export const CargaMatriculasPage: React.FC = () => {
               value={busqueda}
               onChange={handleBusquedaChange}
               placeholder="Buscar por nombre, documento..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-1 focus:ring-trujillo-navy/20"
+              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-trujillo-navy focus:ring-1 focus:ring-trujillo-navy"
             />
           </form>
         </div>
@@ -519,21 +519,21 @@ export const CargaMatriculasPage: React.FC = () => {
         </div>
 
         {/* Tabla de Estudiantes */}
-        <div className="overflow-x-auto border border-slate-100 rounded-xl">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider border-b border-slate-200">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-100/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="px-3 py-2.5">Documento</th>
-                <th className="px-3 py-2.5">Nombre Completo</th>
-                <th className="px-3 py-2.5">Grado / Grupo</th>
-                <th className="px-3 py-2.5">Jornada</th>
-                <th className="px-3 py-2.5">Acudiente</th>
-                <th className="px-3 py-2.5">Teléfono Contacto</th>
-                <th className="px-3 py-2.5">Estado</th>
-                <th className="px-3 py-2.5 text-right">Acciones</th>
+                <th className="py-2.5 px-3.5">Documento</th>
+                <th className="py-2.5 px-3.5">Nombre Completo</th>
+                <th className="py-2.5 px-3.5">Grado / Grupo</th>
+                <th className="py-2.5 px-3.5">Jornada</th>
+                <th className="py-2.5 px-3.5">Acudiente</th>
+                <th className="py-2.5 px-3.5">Teléfono Contacto</th>
+                <th className="py-2.5 px-3.5">Estado</th>
+                <th className="py-2.5 px-3.5 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {isLoadingEstudiantes ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
@@ -549,8 +549,8 @@ export const CargaMatriculasPage: React.FC = () => {
                 </tr>
               ) : (
                 estudiantes.map((est) => (
-                  <tr key={est.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-3 py-2.5 font-mono font-medium text-slate-700">
+                  <tr key={est.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+                    <td className="py-2.5 px-3.5 font-mono font-medium text-slate-700">
                       {est.documento.startsWith('PENDIENTE_') ? (
                         <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">
                           {est.documento}
@@ -559,24 +559,24 @@ export const CargaMatriculasPage: React.FC = () => {
                         est.documento
                       )}
                     </td>
-                    <td className="px-3 py-2.5 font-semibold text-slate-800">
+                    <td className="py-2.5 px-3.5 font-semibold text-slate-800">
                       {est.nombreCompleto}
                     </td>
-                    <td className="px-3 py-2.5">
-                      <span className="px-2 py-0.5 rounded-md bg-sky-50 text-trujillo-navy border border-sky-200 font-bold">
+                    <td className="py-2.5 px-3.5">
+                      <span className="px-2 py-0.5 rounded bg-sky-50 text-trujillo-navy border border-sky-200 font-bold">
                         {est.grado}° - {est.grupo}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-slate-600">{est.jornada}</td>
-                    <td className="px-3 py-2.5 text-slate-600">{est.nombreAcudiente}</td>
-                    <td className="px-3 py-2.5 text-slate-600 font-mono">{est.telefonoAcudiente}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="py-2.5 px-3.5 text-slate-600">{est.jornada}</td>
+                    <td className="py-2.5 px-3.5 text-slate-600">{est.nombreAcudiente}</td>
+                    <td className="py-2.5 px-3.5 text-slate-600 font-mono">{est.telefonoAcudiente}</td>
+                    <td className="py-2.5 px-3.5">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>{est.estadoMatricula}</span>
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="py-2.5 px-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"

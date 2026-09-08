@@ -137,6 +137,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
+    @ExceptionHandler(DemasiadasPeticionesException.class)
+    public ResponseEntity<ErrorResponse> handleDemasiadasPeticiones(DemasiadasPeticionesException ex, HttpServletRequest request) {
+        log.warn("Limite de peticiones excedido: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .error("Too Many Requests")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(ex.getSegundosRestantes()))
+                .body(error);
+    }
+
     @ExceptionHandler(OperacionInvalidaException.class)
     public ResponseEntity<ErrorResponse> handleOperacionInvalida(OperacionInvalidaException ex, HttpServletRequest request) {
         log.warn("Operacion invalida: {}", ex.getMessage());

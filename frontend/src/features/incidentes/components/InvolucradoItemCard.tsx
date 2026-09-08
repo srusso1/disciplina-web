@@ -122,11 +122,11 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
   const esVictimaOTestigo = data.rolEstudiante === 'VICTIMA' || data.rolEstudiante === 'TESTIGO';
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:border-slate-300 transition-all space-y-4 relative">
+    <div id={`involucrado-card-${data.idTemp}`} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm space-y-3.5 relative">
       {/* Cabecera del Involucrado */}
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-sky-50 text-trujillo-navy text-xs font-black flex items-center justify-center border border-sky-200">
+          <div className="w-5 h-5 rounded-md bg-trujillo-ice text-trujillo-navy text-xs font-bold flex items-center justify-center border border-sky-200">
             {index + 1}
           </div>
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
@@ -141,7 +141,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
             className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition active:scale-[0.97] cursor-pointer"
             title="Quitar estudiante de la lista"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 size={16} />
           </button>
         )}
       </div>
@@ -149,24 +149,24 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
       {/* Selector o Ficha del Estudiante */}
       {data.estudianteSeleccionado ? (
         /* Ficha de Estudiante Seleccionado */
-        <div className="p-3.5 rounded-2xl bg-sky-50/70 border border-sky-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
+        <div className="p-3 rounded-lg bg-sky-50/60 border border-sky-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-trujillo-navy text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs ring-1 ring-sky-300">
+            <div className="w-9 h-9 rounded-lg bg-trujillo-navy text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
               {data.estudianteSeleccionado.nombres.charAt(0)}
               {data.estudianteSeleccionado.apellidos?.charAt(0) || ''}
             </div>
             <div>
-              <p className="font-bold text-sm text-trujillo-navy">
+              <p className="font-bold text-xs sm:text-sm text-trujillo-navy">
                 {data.estudianteSeleccionado.nombres} {data.estudianteSeleccionado.apellidos}
               </p>
               <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
-                <span>Doc: <strong>{data.estudianteSeleccionado.documento}</strong></span>
+                <span>Doc: <strong className="text-slate-700">{data.estudianteSeleccionado.documento}</strong></span>
                 <span>•</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-trujillo-navy bg-white px-2 py-0.5 rounded-md border border-sky-200 text-[11px]">
-                  <GraduationCap className="w-3 h-3 text-trujillo-sky" />
-                  Grado {data.estudianteSeleccionado.grado} - Grupo {data.estudianteSeleccionado.grupo}
+                <span className="inline-flex items-center gap-1 font-semibold text-trujillo-navy bg-white px-2 py-0.5 rounded border border-sky-200 text-[11px]">
+                  <GraduationCap size={14} className="text-trujillo-sky" />
+                  Grado {data.estudianteSeleccionado.grado}-{data.estudianteSeleccionado.grupo}
                 </span>
-                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                   Matrícula Activa
                 </span>
               </div>
@@ -176,7 +176,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
           <button
             type="button"
             onClick={handleDeseleccionar}
-            className="self-start sm:self-auto px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl shadow-2xs transition active:scale-[0.97] cursor-pointer"
+            className="self-start sm:self-auto px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg shadow-2xs transition active:scale-[0.97] cursor-pointer"
           >
             Cambiar Estudiante
           </button>
@@ -186,8 +186,8 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
         <div className="relative">
           {/* Alerta contextual cuando la IA sugirió un nombre no matriculado */}
           {searchTerm && !data.estudianteId && (
-            <div className="mb-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
+              <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
                 <p className="font-bold text-amber-900 flex items-center gap-1.5">
                   <span>Estudiante pendiente de vincular:</span>
@@ -202,12 +202,13 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
             </div>
           )}
 
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5">
             Buscar Estudiante por Nombre, Apellido o Documento *
           </label>
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            <Search size={16} className="text-slate-400 absolute left-3 top-2.5" />
             <input
+              id={`input-buscar-estudiante-${data.idTemp}`}
               type="text"
               value={searchTerm}
               onChange={(e) => {
@@ -215,29 +216,29 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                 onChange({ busquedaEstudiante: e.target.value });
               }}
               placeholder="Escriba apellido, nombre o documento (ej: Gomez, 1066...)"
-              className={`w-full pl-9 pr-9 py-2.5 text-xs sm:text-sm bg-white border rounded-xl focus:ring-2 transition placeholder:text-slate-400 ${
+              className={`w-full pl-9 pr-9 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition placeholder:text-slate-400 ${
                 searchTerm && !data.estudianteId
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
-                  : 'border-slate-300 focus:ring-trujillo-sky focus:border-trujillo-sky'
+                  : 'border-slate-300 focus:ring-trujillo-navy/20 focus:border-trujillo-navy'
               }`}
             />
             {buscando && (
-              <Loader2 className="w-4 h-4 text-trujillo-sky animate-spin absolute right-3.5 top-3" />
+              <Loader2 size={16} className="text-trujillo-sky animate-spin absolute right-3 top-2.5" />
             )}
           </div>
 
           {/* Dropdown de Resultados de Búsqueda */}
           {resultados.length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-30 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
               {resultados.map((est) => (
                 <button
                   key={est.id}
                   type="button"
                   onClick={() => handleSeleccionarEstudiante(est)}
-                  className="w-full px-4 py-2.5 text-left text-xs hover:bg-sky-50/70 transition flex items-center justify-between group cursor-pointer active:scale-[0.99]"
+                  className="w-full px-3.5 py-2 text-left text-xs hover:bg-sky-50/70 transition flex items-center justify-between group cursor-pointer active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-sky-100 text-trujillo-navy font-bold text-xs flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-md bg-slate-100 group-hover:bg-sky-100 text-trujillo-navy font-bold text-xs flex items-center justify-center shrink-0">
                       {est.nombres.charAt(0)}
                     </div>
                     <div>
@@ -249,7 +250,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                       </p>
                     </div>
                   </div>
-                  <span className="px-2 py-1 rounded-lg bg-slate-100 group-hover:bg-trujillo-navy group-hover:text-white text-slate-700 text-[10px] font-bold transition">
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 group-hover:bg-trujillo-navy group-hover:text-white text-slate-700 text-[10px] font-semibold transition">
                     Seleccionar
                   </span>
                 </button>
@@ -259,8 +260,8 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
 
           {/* Ayuda contextual si no hay resultados */}
           {searchTerm.trim().length >= 2 && !buscando && resultados.length === 0 && !data.estudianteId && (
-            <div className="mt-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-[11px] flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <div className="mt-1.5 p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-[11px] flex items-center gap-1.5">
+              <Info size={16} className="text-slate-400 shrink-0" />
               <span>No se encontraron estudiantes con "{searchTerm}". Intente buscar por número de documento o apellido.</span>
             </div>
           )}
@@ -271,13 +272,13 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
         {/* Rol */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5">
             Rol en el Hecho *
           </label>
           <select
             value={data.rolEstudiante}
             onChange={(e) => handleCambioRol(e.target.value as RolEstudianteIncidente)}
-            className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition font-medium text-slate-800"
+            className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition font-medium text-slate-800"
           >
             <option value="AGRESOR_PRINCIPAL">Agresor Principal</option>
             <option value="PARTICIPE">Partícipe / Coautor</option>
@@ -288,30 +289,33 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
 
         {/* Tipificación de Falta Disciplinaria */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
-            <span>Falta Tipificada (Ley 1620)</span>
+          <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5 flex items-center justify-between">
+            <span>
+              Falta Tipificada (Ley 1620) {!esVictimaOTestigo && <span className="text-rose-500 font-bold">*</span>}
+            </span>
             {esVictimaOTestigo && (
-              <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200">
+              <span className="text-[10px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
                 Debido Proceso
               </span>
             )}
           </label>
           {esVictimaOTestigo ? (
-            <div className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-500 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-sky-600 shrink-0" />
+            <div className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-500 flex items-center gap-2">
+              <Shield size={16} className="text-sky-600 shrink-0" />
               <span className="truncate italic">Parte protegida (exenta de falta disciplinaria)</span>
             </div>
           ) : (
             <select
+              id={`select-falta-${data.idTemp}`}
               value={data.catalogoFaltaId || ''}
               onChange={(e) =>
                 onChange({
                   catalogoFaltaId: e.target.value ? Number(e.target.value) : null,
                 })
               }
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
+              className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-800"
             >
-              <option value="">Sin falta tipificada específica...</option>
+              <option value="">Seleccione falta tipificada *...</option>
               {faltas.filter((f) => f.clasificacionLey === 'TIPO_I').length > 0 && (
                 <optgroup label="Faltas Tipo I (Leves / Conflictos Cotidianos)">
                   {faltas
@@ -353,7 +357,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
       {/* Fila 2: Observación / Justificación Individual en Textarea */}
       <div className="pt-1">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-semibold text-slate-700">
+          <label className="block text-xs font-semibold text-slate-700 tracking-wide">
             Observación / Justificación Individual del Estudiante
           </label>
           <span className="text-[11px] text-slate-400">
@@ -367,7 +371,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
           value={data.descripcionIndividual}
           onChange={(e) => onChange({ descripcionIndividual: e.target.value })}
           placeholder="Registre aquí el descargo preliminar, versión del estudiante o circunstancias atenuantes/agravantes particulares..."
-          className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition placeholder:text-slate-400 resize-none leading-relaxed text-slate-800"
+          className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition placeholder:text-slate-400 resize-none leading-relaxed text-slate-800"
         />
       </div>
     </div>

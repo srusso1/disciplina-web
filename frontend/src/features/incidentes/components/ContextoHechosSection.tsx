@@ -59,10 +59,10 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
   return (
     <>
       {/* Bloque 1: Contexto Institucional del Hecho */}
-      <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/90 space-y-4">
+      <div className="bg-slate-50/60 p-4 rounded-xl border border-slate-200/80 space-y-3.5">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold text-trujillo-navy uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-trujillo-sky" />
+            <Calendar size={16} className="text-trujillo-sky" />
             1. Contexto Institucional del Suceso
           </h3>
           <span className="text-[11px] text-slate-400">Campos obligatorios marcados con *</span>
@@ -71,15 +71,15 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Docente Reporta */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-              <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+            <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5 flex items-center gap-1.5">
+              <UserCheck size={16} className="text-slate-400" />
               Docente o Funcionario Informante *
             </label>
 
             {/* Alerta de sugerencia no encontrada o no detectada */}
             {sugerenciaDocentePendiente && !docenteReportaId && (
-              <div className="mb-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
+                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <p className="font-bold text-amber-900 flex items-center gap-1.5 flex-wrap">
                     <span>Docente pendiente de vincular:</span>
@@ -95,8 +95,8 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
             )}
 
             {alertaDocenteNoMencionado && !docenteReportaId && !sugerenciaDocentePendiente && (
-              <div className="mb-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
+                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <p className="font-bold text-amber-900">
                     Docente informante no identificado en el relato
@@ -109,6 +109,7 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
             )}
 
             <select
+              id="select-docente-reporta"
               value={docenteReportaId}
               onChange={(e) => {
                 const val = e.target.value ? Number(e.target.value) : '';
@@ -116,10 +117,10 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
                 if (onLimpiarAlertaDocente) onLimpiarAlertaDocente();
               }}
               disabled={cargandoCatalogos}
-              className={`w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border rounded-xl focus:ring-2 transition font-medium text-slate-800 ${
+              className={`w-full px-3.5 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition font-medium text-slate-800 ${
                 tieneAlertaDocente
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
-                  : 'border-slate-300 focus:ring-trujillo-sky focus:border-trujillo-sky'
+                  : 'border-slate-300 focus:ring-trujillo-navy/20 focus:border-trujillo-navy'
               }`}
               required
             >
@@ -134,15 +135,15 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
 
           {/* Lugar */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+            <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5 flex items-center gap-1.5">
+              <MapPin size={16} className="text-slate-400" />
               Lugar Institucional del Hecho *
             </label>
 
             {/* Alerta de lugar sugerido no encontrado o no detectado */}
             {sugerenciaLugarPendiente && !lugarId && (
-              <div className="mb-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
+                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <p className="font-bold text-amber-900 flex items-center gap-1.5 flex-wrap">
                     <span>Lugar institucional pendiente de vincular:</span>
@@ -158,8 +159,8 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
             )}
 
             {alertaLugarNoMencionado && !lugarId && !sugerenciaLugarPendiente && (
-              <div className="mb-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
+                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <p className="font-bold text-amber-900">
                     Lugar del hecho no identificado en el relato
@@ -172,6 +173,7 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
             )}
 
             <select
+              id="select-lugar-reporta"
               value={lugarId}
               onChange={(e) => {
                 const val = e.target.value ? Number(e.target.value) : '';
@@ -179,10 +181,10 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
                 if (onLimpiarAlertaLugar) onLimpiarAlertaLugar();
               }}
               disabled={cargandoCatalogos}
-              className={`w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border rounded-xl focus:ring-2 transition font-medium text-slate-800 ${
+              className={`w-full px-3.5 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition font-medium text-slate-800 ${
                 tieneAlertaLugar
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
-                  : 'border-slate-300 focus:ring-trujillo-sky focus:border-trujillo-sky'
+                  : 'border-slate-300 focus:ring-trujillo-navy/20 focus:border-trujillo-navy'
               }`}
               required
             >
@@ -197,32 +199,33 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
 
           {/* Fecha */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5 flex items-center gap-1.5">
+              <Calendar size={16} className="text-slate-400" />
               Fecha del Hecho *
             </label>
             <input
+              id="input-fecha-incidente"
               type="date"
               max={getTodayLocalDate()}
               value={fechaIncidente}
               onChange={(e) => setFechaIncidente(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
+              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-800"
               required
-            >
-            </input>
+            />
           </div>
 
           {/* Hora */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5 flex items-center gap-1.5">
+              <Clock size={16} className="text-slate-400" />
               Hora Aproximada *
             </label>
             <input
+              id="input-hora-incidente"
               type="time"
               value={horaIncidente}
               onChange={(e) => setHoraIncidente(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition text-slate-800"
+              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-800"
               required
             />
           </div>
@@ -230,10 +233,10 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
       </div>
 
       {/* Bloque 2: Descripción Fáctica General */}
-      <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/90 space-y-2.5">
+      <div className="bg-slate-50/60 p-4 rounded-xl border border-slate-200/80 space-y-2">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-trujillo-navy uppercase tracking-wider flex items-center gap-2">
-            <FileText className="w-4 h-4 text-trujillo-sky" />
+            <FileText size={16} className="text-trujillo-sky" />
             2. Descripción Fáctica General del Incidente *
           </label>
           <span className="text-[11px] text-slate-400">
@@ -244,11 +247,12 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
           Relate de forma clara, objetiva, cronológica e imparcial los hechos acontecidos. Evite juicios de valor subjetivos.
         </p>
         <textarea
+          id="textarea-descripcion-hechos"
           rows={4}
           value={descripcionHechos}
           onChange={(e) => setDescripcionHechos(e.target.value)}
           placeholder="Escriba la descripción fáctica formal de los hechos ocurridos..."
-          className="w-full px-4 py-3 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-trujillo-sky focus:border-trujillo-sky transition placeholder:text-slate-400 leading-relaxed text-slate-800"
+          className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition placeholder:text-slate-400 leading-relaxed text-slate-800"
           required
         />
       </div>

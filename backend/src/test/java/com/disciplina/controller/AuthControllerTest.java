@@ -5,6 +5,7 @@ import com.disciplina.domain.model.Usuario;
 import com.disciplina.domain.repository.UsuarioRepository;
 import com.disciplina.dto.auth.LoginRequest;
 import com.disciplina.security.JwtTokenProvider;
+import com.disciplina.security.LoginRateLimiterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,8 +45,12 @@ class AuthControllerTest {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private LoginRateLimiterService loginRateLimiterService;
+
     @BeforeEach
     void setUp() {
+        loginRateLimiterService.resetParaPruebas();
         if (usuarioRepository.findByUsername("test_rector").isEmpty()) {
             Usuario rector = Usuario.builder()
                     .username("test_rector")
@@ -175,5 +181,31 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.status", is(403)))
                 .andExpect(jsonPath("$.error", is("Forbidden")))
                 .andExpect(jsonPath("$.message", containsString("Acceso denegado")));
+    }
+
+    @Test
+    @DisplayName("Debe bloquear con 429 Too Many Requests tras 5 intentos fallidos consecutivos")
+    void testRateLimitingLogin() throws Exception {
+        LoginRequest fallido = LoginRequest.builder()
+                .username("usuario_bruteforce")
+                .password("ClaveErrada123!")
+                .build();
+
+        // 5 intentos fallidos consecutivos (401 Unauthorized)
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(post("/api/v1/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(fallido)))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        // El 6to intento debe ser bloqueado con 429 Too Many Requests
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(fallido)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().exists("Retry-After"))
+                .andExpect(jsonPath("$.status", is(429)))
+                .andExpect(jsonPath("$.message", containsString("Demasiados intentos fallidos")));
     }
 }

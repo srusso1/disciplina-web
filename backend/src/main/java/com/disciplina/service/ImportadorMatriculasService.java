@@ -35,7 +35,6 @@ public class ImportadorMatriculasService {
     private static class FilaParsed {
         int numeroFila;
         String codigo;
-        String rawDoc;
         String documento;
         String nombres;
         String apellidos;
@@ -166,7 +165,6 @@ public class ImportadorMatriculasService {
         FilaParsed f = new FilaParsed();
         f.numeroFila = numeroFila;
         f.codigo = codigo;
-        f.rawDoc = rawDoc;
         f.documento = documento;
         f.nombres = nombres;
         f.apellidos = apellidos;

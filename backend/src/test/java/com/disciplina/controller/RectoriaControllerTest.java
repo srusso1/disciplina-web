@@ -1,9 +1,5 @@
 package com.disciplina.controller;
 
-import com.disciplina.domain.enums.ClasificacionLey;
-import com.disciplina.domain.enums.EstadoProceso;
-import com.disciplina.domain.enums.GravedadInstitucional;
-import com.disciplina.domain.enums.RolEstudianteIncidente;
 import com.disciplina.domain.enums.RolUsuario;
 import com.disciplina.domain.model.*;
 import com.disciplina.domain.repository.*;
@@ -17,9 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,20 +34,6 @@ class RectoriaControllerTest {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private DocenteRepository docenteRepository;
-
-    @Autowired
-    private LugarRepository lugarRepository;
-
-    @Autowired
-    private CatalogoFaltaRepository catalogoFaltaRepository;
-
-    @Autowired
-    private EstudianteRepository estudianteRepository;
-
-    @Autowired
-    private IncidenteRepository incidenteRepository;
 
     private String tokenRector;
     private String tokenOrientador;

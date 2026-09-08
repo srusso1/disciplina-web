@@ -1,7 +1,6 @@
 package com.disciplina.service;
 
 import com.disciplina.common.exception.RecursoNoEncontradoException;
-import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.domain.enums.RolEstudianteIncidente;
 import com.disciplina.domain.model.Docente;
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -36,7 +34,6 @@ public class ReportePdfService {
 
     // Paleta institucional
     private static final Color COLOR_NAVY = new Color(30, 58, 138);       // #1E3A8A
-    private static final Color COLOR_NAVY_LIGHT = new Color(37, 99, 235); // #2563EB
     private static final Color COLOR_SLATE_DARK = new Color(15, 23, 42);   // #0F172A
     private static final Color COLOR_BG_HEADER = new Color(241, 245, 249); // #F1F5F9
     private static final Color COLOR_BG_SUBTLE = new Color(248, 250, 252); // #F8FAFC

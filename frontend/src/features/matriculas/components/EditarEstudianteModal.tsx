@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { EstudianteMatricula, ActualizarEstudianteData } from '../types/matricula.types';
 import { matriculasApi } from '../api/matriculasApi';
-import { X, Save, AlertCircle, Phone, UserCheck, ShieldAlert, Loader2 } from 'lucide-react';
+import { X, Save, Phone, UserCheck, ShieldAlert, Loader2 } from 'lucide-react';
 import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
+import { notify } from '../../../core/utils/notify';
 
 interface EditarEstudianteModalProps {
   estudiante: EstudianteMatricula | null;
@@ -28,8 +29,12 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
   const [estadoMatricula, setEstadoMatricula] = useState('ACTIVO');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
   const [erroresCampos, setErroresCampos] = useState<Record<string, string>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const reportarError = (mensaje: string, targetSelector?: string) => {
+    notify.formError('Atención al formulario', mensaje, targetSelector);
+  };
 
   useEffect(() => {
     if (estudiante) {
@@ -56,7 +61,6 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
       setJornada(j);
 
       setEstadoMatricula(estudiante.estadoMatricula || 'ACTIVO');
-      setErrorGlobal(null);
       setErroresCampos({});
     }
   }, [estudiante]);
@@ -89,49 +93,74 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
 
   const validarFormulario = (): boolean => {
     const errores: Record<string, string> = {};
+    let primerSelector: string | undefined;
+    let primerMensaje: string | undefined;
 
     if (!documento.trim()) {
       errores.documento = 'El documento de identidad es obligatorio.';
+      primerSelector = primerSelector || '#input-editar-documento';
+      primerMensaje = primerMensaje || errores.documento;
     }
 
     if (!nombres.trim()) {
       errores.nombres = 'Los nombres son obligatorios.';
+      primerSelector = primerSelector || '#input-editar-nombres';
+      primerMensaje = primerMensaje || errores.nombres;
     }
 
     if (!apellidos.trim()) {
       errores.apellidos = 'Los apellidos son obligatorios.';
+      primerSelector = primerSelector || '#input-editar-apellidos';
+      primerMensaje = primerMensaje || errores.apellidos;
     }
 
     if (!nombreAcudiente.trim()) {
       errores.nombreAcudiente = 'El nombre del acudiente es obligatorio.';
+      primerSelector = primerSelector || '#input-editar-nombre-acudiente';
+      primerMensaje = primerMensaje || errores.nombreAcudiente;
     }
 
     const regexTelefono = /^3\d{9}$/;
     const telLimpio = telefonoAcudiente.trim();
     if (!telLimpio) {
       errores.telefonoAcudiente = 'El teléfono del acudiente es obligatorio.';
+      primerSelector = primerSelector || '#input-editar-telefono-acudiente';
+      primerMensaje = primerMensaje || errores.telefonoAcudiente;
     } else if (!regexTelefono.test(telLimpio)) {
       errores.telefonoAcudiente = 'Debe ser un número celular colombiano de 10 dígitos (ej. 3114165509).';
+      primerSelector = primerSelector || '#input-editar-telefono-acudiente';
+      primerMensaje = primerMensaje || errores.telefonoAcudiente;
     }
 
     if (!grado.trim()) {
       errores.grado = 'El grado es obligatorio.';
+      primerSelector = primerSelector || '#select-editar-grado';
+      primerMensaje = primerMensaje || errores.grado;
     }
 
     if (!grupo.trim()) {
       errores.grupo = 'El grupo es obligatorio.';
+      primerSelector = primerSelector || '#input-editar-grupo';
+      primerMensaje = primerMensaje || errores.grupo;
     }
 
     setErroresCampos(errores);
-    return Object.keys(errores).length === 0;
+
+    if (primerSelector && primerMensaje) {
+      reportarError(primerMensaje, primerSelector);
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validarFormulario()) return;
+    if (!validarFormulario()) {
+      return;
+    }
 
     setIsSubmitting(true);
-    setErrorGlobal(null);
 
     const data: ActualizarEstudianteData = {
       documento: documento.trim(),
@@ -148,17 +177,30 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
 
     try {
       const actualizado = await matriculasApi.actualizarEstudiante(estudiante.id, data);
+      notify.success('Estudiante actualizado con éxito', `${actualizado.nombres} ${actualizado.apellidos} ha sido actualizado.`);
       onSuccess(actualizado);
       onClose();
     } catch (err: unknown) {
       const errorObj = err as { response?: { status?: number; data?: { message?: string; fieldErrors?: Record<string, string> } } };
       if (errorObj.response?.status === 409) {
-        setErrorGlobal(errorObj.response.data?.message || 'Ya existe otro estudiante con este documento.');
+        reportarError(errorObj.response.data?.message || 'Ya existe otro estudiante con este documento.', '#input-editar-documento');
       } else if (errorObj.response?.status === 400 && errorObj.response.data?.fieldErrors) {
-        setErroresCampos(errorObj.response.data.fieldErrors);
-        setErrorGlobal('Corrija los campos indicados a continuación.');
+        const fieldErrors = errorObj.response.data.fieldErrors;
+        setErroresCampos(fieldErrors);
+        const firstKey = Object.keys(fieldErrors)[0];
+        const selectorMap: Record<string, string> = {
+          documento: '#input-editar-documento',
+          nombres: '#input-editar-nombres',
+          apellidos: '#input-editar-apellidos',
+          nombreAcudiente: '#input-editar-nombre-acudiente',
+          telefonoAcudiente: '#input-editar-telefono-acudiente',
+          grado: '#select-editar-grado',
+          grupo: '#input-editar-grupo',
+        };
+        const targetSel = firstKey ? (selectorMap[firstKey] || `#input-editar-${firstKey}`) : undefined;
+        reportarError(fieldErrors[firstKey] || 'Corrija los campos indicados en el formulario.', targetSel);
       } else {
-        setErrorGlobal(errorObj.response?.data?.message || 'Ocurrió un error al guardar los cambios.');
+        reportarError(errorObj.response?.data?.message || 'Ocurrió un error al guardar los cambios.');
       }
     } finally {
       setIsSubmitting(false);
@@ -176,11 +218,11 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
       aria-labelledby="modal-editar-estudiante-title"
     >
       <div 
-        className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-white w-full max-w-2xl rounded-xl shadow-lg border border-slate-200/80 overflow-hidden flex flex-col max-h-[90vh] min-h-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-trujillo-navy/10 text-trujillo-navy flex items-center justify-center">
               <UserCheck className="w-4 h-4" />
@@ -201,14 +243,9 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-4 flex-1">
-          {errorGlobal && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-xs text-red-800">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-              <span>{errorGlobal}</span>
-            </div>
-          )}
-
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Cuerpo Scrolleable */}
+          <div ref={scrollContainerRef} className="overflow-y-auto p-6 space-y-4 flex-1 min-h-0 modal-scroll-body">
           {esDocumentoPendiente && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-xs text-amber-800">
               <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
@@ -230,6 +267,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Documento <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="input-editar-documento"
                   type="text"
                   value={documento}
                   onChange={(e) => {
@@ -253,6 +291,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Nombres <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="input-editar-nombres"
                   type="text"
                   value={nombres}
                   onChange={(e) => {
@@ -276,6 +315,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Apellidos <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="input-editar-apellidos"
                   type="text"
                   value={apellidos}
                   onChange={(e) => {
@@ -309,6 +349,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   <span className="text-[10px] text-slate-400 ml-1 font-normal">(Se guarda en MAYÚSCULAS)</span>
                 </label>
                 <input
+                  id="input-editar-nombre-acudiente"
                   type="text"
                   value={nombreAcudiente}
                   onChange={handleNombreAcudienteChange}
@@ -334,6 +375,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
+                    id="input-editar-telefono-acudiente"
                     type="tel"
                     maxLength={10}
                     value={telefonoAcudiente}
@@ -371,6 +413,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Grado <span className="text-red-500">*</span>
                 </label>
                 <select
+                  id="select-editar-grado"
                   value={grado}
                   onChange={(e) => setGrado(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-trujillo-navy"
@@ -389,6 +432,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Grupo <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="input-editar-grupo"
                   type="text"
                   value={grupo}
                   onChange={(e) => setGrupo(e.target.value)}
@@ -402,6 +446,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Jornada
                 </label>
                 <select
+                  id="select-editar-jornada"
                   value={jornada}
                   onChange={(e) => setJornada(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-trujillo-navy font-semibold text-slate-700"
@@ -419,6 +464,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                   Estado
                 </label>
                 <select
+                  id="select-editar-estado"
                   value={estadoMatricula}
                   onChange={(e) => setEstadoMatricula(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-trujillo-navy font-semibold text-slate-700"
@@ -430,14 +476,20 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Footer de botones */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+          {/* Footer fijo de acciones */}
+          <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div className="text-[11px] text-slate-400">
+              Los campos marcados con asterisco (*) son obligatorios
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200/70 rounded-lg transition-colors cursor-pointer"
             >
               Cancelar
             </button>
@@ -445,11 +497,11 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-trujillo-navy hover:bg-slate-900 rounded-xl shadow-xs transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-trujillo-navy hover:bg-trujillo-dark rounded-lg shadow-sm transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-trujillo-sky" />
                   <span>Guardando...</span>
                 </>
               ) : (
@@ -459,6 +511,7 @@ export const EditarEstudianteModal: React.FC<EditarEstudianteModalProps> = ({
                 </>
               )}
             </button>
+            </div>
           </div>
         </form>
       </div>

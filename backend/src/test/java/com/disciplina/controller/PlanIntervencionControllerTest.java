@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -55,7 +54,7 @@ class PlanIntervencionControllerTest {
 
     @BeforeEach
     void setUp() {
-        Usuario orientador = usuarioRepository.findByUsername("orientador_plan_test").orElseGet(() ->
+        usuarioRepository.findByUsername("orientador_plan_test").orElseGet(() ->
                 usuarioRepository.save(Usuario.builder()
                         .username("orientador_plan_test")
                         .passwordHash(passwordEncoder.encode("Password123!"))

@@ -60,6 +60,15 @@ public class IncidenteService {
             }
         }
 
+        // Validar que el incidente contenga al menos una falta disciplinaria tipificada
+        boolean tieneFaltaValida = dto.getInvolucrados().stream()
+                .anyMatch(inv -> inv.getCatalogoFaltaId() != null &&
+                        inv.getRolEstudiante() != RolEstudianteIncidente.VICTIMA &&
+                        inv.getRolEstudiante() != RolEstudianteIncidente.TESTIGO);
+        if (!tieneFaltaValida) {
+            throw new OperacionInvalidaException("Todo incidente debe incluir al menos una falta disciplinaria tipificada para los estudiantes agresores o participes.");
+        }
+
         Incidente incidente = Incidente.builder()
                 .docenteReporta(docente)
                 .lugar(lugar)
@@ -83,7 +92,10 @@ public class IncidenteService {
             if (esParteProtegida && invDto.getCatalogoFaltaId() != null) {
                 log.warn("Salvaguarda Debido Proceso (Ley 1620): Se ignora catalogoFaltaId {} para estudiante {} con rol protegido {}",
                         invDto.getCatalogoFaltaId(), estudiante.getId(), invDto.getRolEstudiante());
-            } else if (!esParteProtegida && invDto.getCatalogoFaltaId() != null) {
+            } else if (!esParteProtegida) {
+                if (invDto.getCatalogoFaltaId() == null) {
+                    throw new OperacionInvalidaException("Debe seleccionar una falta tipificada para cada agresor o participe involucrado.");
+                }
                 falta = catalogoFaltaRepository.findById(invDto.getCatalogoFaltaId())
                         .orElseThrow(() -> new RecursoNoEncontradoException("Falta disciplinaria no encontrada con ID: " + invDto.getCatalogoFaltaId()));
             }

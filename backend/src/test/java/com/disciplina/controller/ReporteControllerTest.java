@@ -63,7 +63,7 @@ class ReporteControllerTest {
 
     @BeforeEach
     void setUp() {
-        Usuario rector = usuarioRepository.findByUsername("rector_rep_test").orElseGet(() ->
+        usuarioRepository.findByUsername("rector_rep_test").orElseGet(() ->
                 usuarioRepository.save(Usuario.builder()
                         .username("rector_rep_test")
                         .passwordHash(passwordEncoder.encode("Password123!"))

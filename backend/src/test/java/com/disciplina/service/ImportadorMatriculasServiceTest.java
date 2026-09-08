@@ -1,8 +1,6 @@
 package com.disciplina.service;
 
-import com.disciplina.domain.enums.EstadoMatricula;
 import com.disciplina.domain.model.Estudiante;
-import com.disciplina.domain.model.MatriculaEstudiante;
 import com.disciplina.domain.repository.EstudianteRepository;
 import com.disciplina.domain.repository.MatriculaEstudianteRepository;
 import com.disciplina.dto.matricula.ImportacionMatriculasResumenDTO;

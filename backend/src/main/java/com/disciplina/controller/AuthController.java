@@ -1,10 +1,13 @@
 package com.disciplina.controller;
 
+import com.disciplina.common.exception.DemasiadasPeticionesException;
 import com.disciplina.domain.model.Usuario;
 import com.disciplina.domain.repository.UsuarioRepository;
 import com.disciplina.dto.auth.JwtResponse;
 import com.disciplina.dto.auth.LoginRequest;
 import com.disciplina.security.JwtTokenProvider;
+import com.disciplina.security.LoginRateLimiterService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,19 +30,39 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UsuarioRepository usuarioRepository;
+    private final LoginRateLimiterService loginRateLimiterService;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         String normalizedUsername = loginRequest.getUsername().trim();
-        log.info("Intento de inicio de sesion para usuario: {}", normalizedUsername);
+        String clientIp = obtenerIpCliente(request);
+        String rateLimitKey = clientIp + "_" + normalizedUsername.toLowerCase();
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        normalizedUsername,
-                        loginRequest.getPassword()
-                )
-        );
+        if (loginRateLimiterService.isBlocked(rateLimitKey)) {
+            long segundosRestantes = loginRateLimiterService.getSegundosRestantesBloqueo(rateLimitKey);
+            long minutos = Math.max(1, (segundosRestantes / 60) + 1);
+            throw new DemasiadasPeticionesException(
+                    "Demasiados intentos fallidos de inicio de sesion. Acceso temporalmente bloqueado por seguridad. Intente nuevamente en " + minutos + " minutos.",
+                    segundosRestantes
+            );
+        }
 
+        log.info("Intento de inicio de sesion para usuario: {} desde IP: {}", normalizedUsername, clientIp);
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            normalizedUsername,
+                            loginRequest.getPassword()
+                    )
+            );
+        } catch (Exception ex) {
+            loginRateLimiterService.registrarIntentoFallido(rateLimitKey);
+            throw ex;
+        }
+
+        loginRateLimiterService.registrarLoginExitoso(rateLimitKey);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = jwtTokenProvider.generateToken(authentication);
@@ -60,5 +83,16 @@ public class AuthController {
 
         log.info("Inicio de sesion exitoso para usuario: {} con rol: {}", usuario.getUsername(), usuario.getRol());
         return ResponseEntity.ok(response);
+    }
+
+    private String obtenerIpCliente(HttpServletRequest request) {
+        if (request == null) {
+            return "127.0.0.1";
+        }
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "127.0.0.1";
     }
 }
