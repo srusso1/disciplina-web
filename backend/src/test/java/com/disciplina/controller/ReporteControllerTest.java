@@ -166,6 +166,11 @@ class ReporteControllerTest {
         // Validar firma mágica de archivo PDF (%PDF-)
         String headerMagic = new String(pdfBytes, 0, 5);
         assertEquals("%PDF-", headerMagic, "El documento generado debe iniciar con el número mágico %PDF-");
+
+        java.nio.file.Files.write(java.nio.file.Paths.get("target/acta-incidente-prueba.pdf"), pdfBytes);
+        com.lowagie.text.pdf.PdfReader reader = new com.lowagie.text.pdf.PdfReader(pdfBytes);
+        assertTrue(reader.getNumberOfPages() >= 1, "Debe tener al menos 1 página");
+        reader.close();
     }
 
     @Test
@@ -184,6 +189,11 @@ class ReporteControllerTest {
 
         String headerMagic = new String(pdfBytes, 0, 5);
         assertEquals("%PDF-", headerMagic);
+
+        java.nio.file.Files.write(java.nio.file.Paths.get("target/consolidado-rectoria-prueba.pdf"), pdfBytes);
+        com.lowagie.text.pdf.PdfReader reader = new com.lowagie.text.pdf.PdfReader(pdfBytes);
+        assertTrue(reader.getNumberOfPages() >= 1, "Debe tener al menos 1 página");
+        reader.close();
     }
 
     @Test
