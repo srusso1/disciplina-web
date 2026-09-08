@@ -574,7 +574,7 @@ public class ReportePdfService {
         cAcud.addElement(new Paragraph(telAcudiente, FONT_MUTED));
         tableFirmas.addCell(cAcud);
 
-        // 3. Firmas de Estudiantes con Casilla de Huella Dactilar
+        // 3. Firmas de Estudiantes Involucrados
         if (involucrados != null) {
             for (IncidenteEstudiante ie : involucrados) {
                 Estudiante est = ie.getEstudiante();
@@ -583,33 +583,12 @@ public class ReportePdfService {
 
                 PdfPCell cEst = new PdfPCell();
                 cEst.setBorder(Rectangle.NO_BORDER);
-                cEst.setPaddingBottom(12f);
-
-                // Subtabla interna para firma + recuadro de huella
-                PdfPTable subFirma = new PdfPTable(new float[]{72f, 28f});
-                subFirma.setWidthPercentage(100f);
-
-                PdfPCell cDatos = new PdfPCell();
-                cDatos.setBorder(Rectangle.NO_BORDER);
-                cDatos.addElement(new Paragraph("____________________________________", FONT_BOLD));
-                cDatos.addElement(new Paragraph(nom, FONT_BOLD));
-                cDatos.addElement(new Paragraph("Estudiante | Doc: " + docNum, FONT_MUTED));
+                cEst.setPaddingBottom(14f);
+                cEst.addElement(new Paragraph("____________________________________________", FONT_BOLD));
+                cEst.addElement(new Paragraph(nom, FONT_BOLD));
+                cEst.addElement(new Paragraph("Estudiante | Doc: " + docNum, FONT_MUTED));
                 String gradoFirma = com.disciplina.common.util.GradoEscolarUtil.normalizarGrado(ie.getGradoMomento());
-                cDatos.addElement(new Paragraph("Rol: " + formatearRol(ie.getRolEstudiante()) + " • Grado: " + gradoFirma + "°", FONT_MUTED));
-                subFirma.addCell(cDatos);
-
-                PdfPCell cHuella = new PdfPCell();
-                cHuella.setBorderColor(COLOR_BORDER);
-                cHuella.setBorderWidth(0.75f);
-                cHuella.setFixedHeight(36f);
-                cHuella.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cHuella.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                Paragraph pHuella = new Paragraph("Huella\nÍndice Der.", FontFactory.getFont(FontFactory.HELVETICA, 5.5f, COLOR_TEXT_MUTED));
-                pHuella.setAlignment(Element.ALIGN_CENTER);
-                cHuella.addElement(pHuella);
-                subFirma.addCell(cHuella);
-
-                cEst.addElement(subFirma);
+                cEst.addElement(new Paragraph("Rol: " + formatearRol(ie.getRolEstudiante()) + " • Grado: " + gradoFirma + "°", FONT_MUTED));
                 tableFirmas.addCell(cEst);
             }
         }
