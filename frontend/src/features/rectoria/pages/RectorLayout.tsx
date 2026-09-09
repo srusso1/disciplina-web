@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
+import { PageLoader } from '../../../core/components/PageLoader';
 import { 
   BarChart3, 
   ShieldAlert, 
   FileCheck, 
+  FileSpreadsheet, 
   LogOut, 
   ScrollText,
   Bell,
@@ -28,9 +30,9 @@ export const RectorLayout: React.FC = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-trujillo-ice text-trujillo-dark flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-trujillo-ice text-trujillo-dark flex flex-col md:flex-row font-sans">
       {/* Sidebar Directivo Institucional */}
-      <aside className="w-full md:w-64 bg-trujillo-dark text-slate-200 border-r border-slate-800 flex flex-col justify-between shrink-0 p-4">
+      <aside className="w-full md:w-64 bg-trujillo-dark text-slate-200 border-r border-slate-800 flex flex-col justify-between shrink-0 p-4 md:h-screen md:overflow-y-auto">
         <div>
           {/* Logo & Marca Institucional */}
           <div className="px-2 py-3 mb-6 border-b border-slate-800">
@@ -62,6 +64,11 @@ export const RectorLayout: React.FC = () => {
             <NavLink to="/rectoria/dashboard" className={navItemClass}>
               <BarChart3 className="w-4 h-4 shrink-0" />
               <span>Tablero Estratégico</span>
+            </NavLink>
+
+            <NavLink to="/rectoria/matriculas" className={navItemClass}>
+              <FileSpreadsheet className="w-4 h-4 shrink-0 text-trujillo-sky" />
+              <span>Carga de Matrículas</span>
             </NavLink>
 
             <NavLink to="/rectoria/faltas-graves" className={navItemClass}>
@@ -108,7 +115,7 @@ export const RectorLayout: React.FC = () => {
       </aside>
 
       {/* Área Principal de Trabajo */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+      <div data-scroll-container className="flex-1 flex flex-col min-h-screen md:min-h-0 md:h-screen overflow-y-auto layout-content-scroll">
         {/* Barra Superior Institucional */}
         <header className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
           <div className="flex items-center gap-2">
@@ -129,14 +136,16 @@ export const RectorLayout: React.FC = () => {
               <HelpCircle className="w-4 h-4" />
             </button>
             <span className="px-2.5 py-1 rounded-full bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200">
-              Vigencia 2026
+              Vigencia {new Date().getFullYear()}
             </span>
           </div>
         </header>
 
-        {/* Contenido de la Página */}
+        {/* Contenido de la Pagina */}
         <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
+          <Suspense fallback={<PageLoader mensaje="Cargando módulo..." />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

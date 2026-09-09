@@ -29,7 +29,7 @@ public class DisciplinaWebApplication {
                 });
             }
         } catch (Exception ignored) {
-            // En producción los secretos provienen de las variables de entorno del contenedor
+            // En producciï¿½n los secretos provienen de las variables de entorno del contenedor
         }
 
         SpringApplication.run(DisciplinaWebApplication.class, args);

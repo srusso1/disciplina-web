@@ -51,62 +51,62 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-trujillo-ice via-sky-50/50 to-slate-100 flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
         {/* Encabezado Institucional con Escudo Oficial */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 mb-3 transition-transform duration-200 hover:scale-105">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 mb-3">
             <img 
               src="/escudo-ie-trujillo.png" 
               alt="Escudo Institución Educativa Trujillo" 
-              className="w-full h-full object-contain drop-shadow-md"
+              className="w-full h-full object-contain"
             />
           </div>
           
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-2 rounded-full bg-white border border-slate-200 text-xs text-trujillo-navy font-semibold shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-trujillo-laurel animate-pulse"></span>
-            <span>Institucion Educativa Trujillo</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mb-2 rounded-md bg-slate-100 border border-slate-200 text-[11px] text-trujillo-navy font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-trujillo-laurel"></span>
+            <span>Institución Educativa Trujillo</span>
           </div>
 
-          <h1 className="text-3xl font-extrabold text-trujillo-dark tracking-tight">
-            Disciplina<span className="text-trujillo-navy font-black">+</span>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Disciplina<span className="text-trujillo-navy font-extrabold">+</span>
           </h1>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xs mx-auto">
-            Plataforma Centralizada de Convivencia Escolar y Trazabilidad de Debido Proceso
+          <p className="text-slate-500 text-xs mt-1">
+            Plataforma Centralizada de Convivencia Escolar y Debido Proceso
           </p>
         </div>
 
-        {/* Tarjeta de Inicio de Sesi�n */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-elevated transition-all">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+        {/* Tarjeta de Inicio de Sesión Enterprise */}
+        <div className="bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-5">
             <div>
-              <h2 className="text-base font-bold text-trujillo-dark">
+              <h2 className="text-sm font-bold text-slate-900">
                 Acceso al Portal Directivo
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Ingrese sus credenciales de funcionario
               </p>
             </div>
-            <div className="p-2 rounded-lg bg-trujillo-ice text-trujillo-navy">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="p-1.5 rounded-md bg-slate-100 text-trujillo-navy">
+              <ShieldCheck size={18} strokeWidth={1.75} />
             </div>
           </div>
 
           {(formError || error) && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-800 text-xs font-medium animate-fadeIn">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-800 text-xs font-medium">
+              <AlertCircle size={16} strokeWidth={1.75} className="text-rose-600 shrink-0 mt-0.5" />
               <span>{formError || error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5">
                 Usuario Institucional
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <User className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <User size={18} strokeWidth={1.75} />
                 </div>
                 <input
                   type="text"
@@ -114,7 +114,7 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={isLoading}
                   placeholder="Ej: rector u orientador"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 transition-all duration-150"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/20 transition-all"
                   autoComplete="username"
                   required
                 />
@@ -122,20 +122,20 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Contrasena
+              <label className="block text-xs font-semibold text-slate-700 tracking-wide mb-1.5">
+                Contraseña
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock size={18} strokeWidth={1.75} />
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  placeholder="Ingrese su contrasena"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/15 transition-all duration-150"
+                  placeholder="Ingrese su contraseña"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-trujillo-navy/20 transition-all"
                   autoComplete="current-password"
                   required
                 />
@@ -145,39 +145,39 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-2.5 px-4 bg-trujillo-navy hover:bg-trujillo-navy-light active:scale-[0.98] text-white font-semibold rounded-xl shadow-md shadow-trujillo-navy/20 transition-all duration-150 flex items-center justify-center gap-2 text-sm disabled:opacity-60 cursor-pointer"
+              className="w-full mt-1.5 py-2.5 px-4 bg-trujillo-navy hover:bg-trujillo-navy-dark text-white font-semibold rounded-lg shadow-sm transition-all duration-150 flex items-center justify-center gap-2 text-xs sm:text-sm disabled:opacity-60 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-trujillo-navy focus-visible:ring-offset-2 active:scale-[0.99]"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-trujillo-sky" />
+                  <Loader2 size={18} strokeWidth={1.75} className="animate-spin text-white" />
                   <span>Validando credenciales...</span>
                 </>
               ) : (
                 <>
                   <span>Ingresar a Disciplina+</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight size={18} strokeWidth={1.75} />
                 </>
               )}
             </button>
           </form>
 
-          {/* Accesos Rapidos Institucionales */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <p className="text-[11px] font-medium text-slate-400 text-center mb-2.5">
-              Acceso rapido para demostracion institucional:
+          {/* Accesos Rápidos Institucionales */}
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <p className="text-[11px] font-medium text-slate-400 text-center mb-2">
+              Acceso rápido para demostración institucional:
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickFill('rector')}
-                className="py-2 px-3 rounded-xl bg-trujillo-ice hover:bg-sky-100/80 border border-trujillo-sky/30 text-xs font-semibold text-trujillo-navy transition-all duration-150 active:scale-[0.98] text-center"
+                className="py-1.5 px-2.5 rounded-lg bg-slate-100/80 hover:bg-slate-200/80 border border-slate-200 text-xs font-semibold text-slate-700 transition-all text-center focus-visible:ring-2 focus-visible:ring-trujillo-navy"
               >
                 Rector Institucional
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickFill('orientador')}
-                className="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-xs font-semibold text-trujillo-laurel transition-all duration-150 active:scale-[0.98] text-center"
+                className="py-1.5 px-2.5 rounded-lg bg-slate-100/80 hover:bg-slate-200/80 border border-slate-200 text-xs font-semibold text-slate-700 transition-all text-center focus-visible:ring-2 focus-visible:ring-trujillo-navy"
               >
                 Orientador Escolar
               </button>
@@ -185,12 +185,12 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Pie de Pagina */}
-        <div className="text-center mt-6 text-xs text-slate-500 space-y-1">
-          <p className="font-medium text-slate-600">
-            Institucion Educativa Trujillo | Colombia
+        {/* Pie de Página */}
+        <div className="text-center mt-5 text-xs text-slate-500 space-y-0.5">
+          <p className="font-medium text-slate-600 text-[11px]">
+            Institución Educativa Trujillo | Colombia
           </p>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[10px] text-slate-400">
             Marco normativo de convivencia escolar - Ley 1620 y Decreto 1965
           </p>
         </div>

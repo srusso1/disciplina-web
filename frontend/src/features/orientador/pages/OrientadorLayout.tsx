@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
+import { PageLoader } from '../../../core/components/PageLoader';
 import { 
   FileText, 
   Users, 
@@ -57,11 +58,11 @@ export const OrientadorLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Men� de Navegaci�n Operativo */}
+          {/* Menú de Navegación Operativo */}
           <nav className="space-y-1.5">
             <NavLink to="/orientador/incidentes" className={navItemClass}>
               <FileText className="w-4 h-4 shrink-0" />
-              <span>Bitacora de Incidentes</span>
+              <span>Bitácora de Incidentes</span>
             </NavLink>
 
             <NavLink to="/orientador/expedientes" className={navItemClass}>
@@ -107,8 +108,8 @@ export const OrientadorLayout: React.FC = () => {
         </div>
       </aside>
 
-      {/* �rea Principal de Trabajo */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+      {/* Área Principal de Trabajo */}
+      <div data-scroll-container className="flex-1 flex flex-col min-h-screen overflow-y-auto layout-content-scroll">
         {/* Barra Superior Institucional */}
         <header className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
           <div className="flex items-center gap-2">
@@ -129,14 +130,16 @@ export const OrientadorLayout: React.FC = () => {
               <HelpCircle className="w-4 h-4" />
             </button>
             <span className="px-2.5 py-1 rounded-full bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200">
-              Vigencia 2026
+              Vigencia {new Date().getFullYear()}
             </span>
           </div>
         </header>
 
-        {/* Contenido de la P�gina */}
+        {/* Contenido de la Pgina */}
         <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
+          <Suspense fallback={<PageLoader mensaje="Cargando módulo..." />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

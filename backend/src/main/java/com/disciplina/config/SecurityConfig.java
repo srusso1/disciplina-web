@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +43,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173}")
+    private List<String> allowedOrigins;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -114,12 +118,20 @@ public class SecurityConfig {
                         // Endpoints publicos de autenticacion y error
                         .requestMatchers("/auth/**", "/api/v1/auth/**", "/error").permitAll()
                         
-                        // Defensa en profundidad a nivel de rutas directivas
-                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**").hasAuthority("ROLE_RECTOR")
+                        // Defensa en profundidad a nivel de rutas directivas y auditoria forense
+                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**", "/auditoria/**", "/api/v1/auditoria/**", "/reportes/pdf/consolidado-anual", "/api/v1/reportes/pdf/consolidado-anual").hasAuthority("ROLE_RECTOR")
                         .requestMatchers("/orientador/**", "/api/v1/orientador/**").hasAuthority("ROLE_ORIENTADOR")
                         
-                        // Rutas compartidas de incidentes, matriculas y expedientes
-                        .requestMatchers("/api/v1/**").hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
+                        // Rutas compartidas de incidentes, catalogos, matriculas, planes, reportes de actas e IA
+                        .requestMatchers(
+                                "/matriculas/**", "/api/v1/matriculas/**",
+                                "/catalogos/**", "/api/v1/catalogos/**",
+                                "/incidentes/**", "/api/v1/incidentes/**",
+                                "/planes-intervencion/**", "/api/v1/planes-intervencion/**",
+                                "/reportes/**", "/api/v1/reportes/**",
+                                "/ia/**", "/api/v1/ia/**",
+                                "/api/v1/**"
+                        ).hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
                         
                         .anyRequest().authenticated()
                 )
@@ -132,7 +144,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
+        configuration.setAllowedOrigins((allowedOrigins != null && !allowedOrigins.isEmpty())
+                ? allowedOrigins
+                : List.of("http://localhost:5173", "http://127.0.0.1:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
         configuration.setExposedHeaders(List.of("Authorization"));

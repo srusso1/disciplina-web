@@ -1,11 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 15000,
 });
 
 // Interceptor de Peticiones: inyecta Bearer token JWT si existe
@@ -35,3 +35,32 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export interface ApiErrorPayload {
+  status?: number;
+  message?: string;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+}
+
+export const extraerMensajeError = (err: unknown, mensajePorDefecto = 'Ocurrió un error inesperado'): string => {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as ApiErrorPayload | undefined;
+    if (data) {
+      if (data.fieldErrors && Object.keys(data.fieldErrors).length > 0) {
+        return Object.values(data.fieldErrors).join('. ');
+      }
+      if (data.message) {
+        return data.message;
+      }
+    }
+    if (err.message) {
+      return err.message;
+    }
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return mensajePorDefecto;
+};
+
