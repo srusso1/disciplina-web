@@ -10,7 +10,6 @@ const OrientadorLayout = React.lazy(() => import('../features/orientador/pages/O
 const IncidentesPage = React.lazy(() => import('../features/orientador/pages/IncidentesPage').then(m => ({ default: m.IncidentesPage })));
 const ExpedienteUnicoPage = React.lazy(() => import('../features/orientador/pages/ExpedienteUnicoPage').then(m => ({ default: m.ExpedienteUnicoPage })));
 const PlanesIntervencionPage = React.lazy(() => import('../features/orientador/pages/PlanesIntervencionPage').then(m => ({ default: m.PlanesIntervencionPage })));
-const AsistenteIaPage = React.lazy(() => import('../features/orientador/pages/AsistenteIaPage').then(m => ({ default: m.AsistenteIaPage })));
 const RectorLayout = React.lazy(() => import('../features/rectoria/pages/RectorLayout').then(m => ({ default: m.RectorLayout })));
 const RectorDashboardPage = React.lazy(() => import('../features/rectoria/pages/RectorDashboardPage').then(m => ({ default: m.RectorDashboardPage })));
 const CargaMatriculasPage = React.lazy(() => import('../features/matriculas/pages/CargaMatriculasPage').then(m => ({ default: m.CargaMatriculasPage })));
@@ -51,7 +50,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="incidentes" element={<IncidentesPage />} />
           <Route path="expedientes" element={<ExpedienteUnicoPage />} />
           <Route path="planes" element={<PlanesIntervencionPage />} />
-          <Route path="asistente-ia" element={<AsistenteIaPage />} />
+          <Route path="asistente-ia" element={<Navigate to="/orientador/planes" replace />} />
         </Route>
 
         {/* Rutas Protegidas - Rectoria */}
