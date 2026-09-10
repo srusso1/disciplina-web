@@ -1,5 +1,6 @@
 package com.disciplina.service.ia;
 
+import com.disciplina.common.exception.OperacionInvalidaException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
 import com.disciplina.domain.enums.ClasificacionLey;
 import com.disciplina.domain.enums.RolEstudianteIncidente;
@@ -72,9 +73,17 @@ public class IaConvivenciaService {
         Estudiante est = estudianteRepository.findById(dto.getEstudianteId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + dto.getEstudianteId()));
 
-        Incidente incOrigen = null;
-        if (dto.getIncidenteOrigenId() != null) {
-            incOrigen = incidenteRepository.findById(dto.getIncidenteOrigenId()).orElse(null);
+        if (dto.getIncidenteOrigenId() == null) {
+            throw new OperacionInvalidaException("Debe especificar el incidente de origen para generar una propuesta pedagógica.");
+        }
+
+        Incidente incOrigen = incidenteRepository.findById(dto.getIncidenteOrigenId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Incidente no encontrado con ID: " + dto.getIncidenteOrigenId()));
+
+        boolean estudianteInvolucrado = incidenteEstudianteRepository.findByIncidenteIdAndEstudianteId(
+                incOrigen.getId(), est.getId()).isPresent();
+        if (!estudianteInvolucrado) {
+            throw new OperacionInvalidaException("El estudiante no está vinculado al incidente especificado.");
         }
 
         List<IncidenteEstudiante> antecedentes = incidenteEstudianteRepository.findByEstudianteIdConIncidente(est.getId());
@@ -624,19 +633,23 @@ public class IaConvivenciaService {
             Incidente incOrigen,
             List<IncidenteEstudiante> antecedentes) {
 
-        String hechos = incOrigen != null ? incOrigen.getDescripcionHechos() : "Conductas que alteran la convivencia escolar.";
+        String hechos = (incOrigen != null && incOrigen.getDescripcionHechos() != null)
+                ? incOrigen.getDescripcionHechos()
+                : "Hechos reportados en el caso convivencial.";
+
+        String origenCasoStr = incOrigen != null ? " (Caso #" + incOrigen.getId() + ")" : "";
 
         return PropuestaIntervencionIADTO.builder()
                 .estudianteId(est.getId())
                 .estudianteNombre(est.getNombreCompleto())
                 .incidenteOrigenId(incOrigen != null ? incOrigen.getId() : null)
-                .diagnosticoSituacional("El estudiante " + est.getNombreCompleto() + " presenta situaciones de convivencia que requieren intervención pedagógica formativa (" + antecedentes.size() + " antecedentes registrados). Situación detonante: " + hechos)
+                .diagnosticoSituacional("El estudiante " + est.getNombreCompleto() + " presenta una situación de convivencia" + origenCasoStr + " que requiere intervención pedagógica formativa (" + antecedentes.size() + " antecedentes en historial). Hechos de origen: " + hechos)
                 .recomendacionesIa("1. Sesión individual de orientación para desarrollar empatía y manejo de la frustración. 2. Acompañamiento docente en aula para canalizar su liderazgo de forma positiva. 3. Monitoreo formativo quincenal.")
                 .accionesAcordadasSugeridas("Compromiso de autorregulación emocional, participación en taller de resolución pacífica de conflictos y realización de una actividad pedagógica reparadora en su salón.")
                 .compromisoPadresSugerido("Acudiente se compromete a dialogar diariamente sobre la jornada escolar, reforzar pautas de respeto en casa y asistir puntualmente a citaciones de seguimiento.")
                 .semanasSeguimientoSugeridas(4)
                 .asistidoPorIa(false)
-                .advertenciaGobierno("Plantilla institucional formativa generada por defecto. Ajuste los acuerdos en conjunto con el estudiante y su acudiente.")
+                .advertenciaGobierno("Plantilla institucional formativa generada con base en los hechos reportados. Ajuste los acuerdos en conjunto con el estudiante y su acudiente.")
                 .build();
     }
 }

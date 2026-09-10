@@ -1,5 +1,6 @@
 package com.disciplina.service;
 
+import com.disciplina.common.exception.OperacionInvalidaException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
 import com.disciplina.domain.enums.EstadoPlanIntervencion;
 import com.disciplina.domain.model.*;
@@ -27,6 +28,7 @@ public class PlanIntervencionService {
     private final SeguimientoCasoRepository seguimientoCasoRepository;
     private final EstudianteRepository estudianteRepository;
     private final IncidenteRepository incidenteRepository;
+    private final IncidenteEstudianteRepository incidenteEstudianteRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaService auditoriaService;
 
@@ -38,10 +40,17 @@ public class PlanIntervencionService {
         Usuario orientador = usuarioRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con username: " + username));
 
-        Incidente incidente = null;
-        if (dto.getIncidenteOrigenId() != null) {
-            incidente = incidenteRepository.findById(dto.getIncidenteOrigenId())
-                    .orElseThrow(() -> new RecursoNoEncontradoException("Incidente de origen no encontrado con ID: " + dto.getIncidenteOrigenId()));
+        if (dto.getIncidenteOrigenId() == null) {
+            throw new OperacionInvalidaException("Todo plan de intervención formativa debe estar asociado a un incidente convivencial previo.");
+        }
+
+        Incidente incidente = incidenteRepository.findById(dto.getIncidenteOrigenId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Incidente de origen no encontrado con ID: " + dto.getIncidenteOrigenId()));
+
+        boolean estudianteInvolucrado = incidenteEstudianteRepository.findByIncidenteIdAndEstudianteId(
+                incidente.getId(), estudiante.getId()).isPresent();
+        if (!estudianteInvolucrado) {
+            throw new OperacionInvalidaException("El estudiante no está vinculado al incidente seleccionado como origen del plan.");
         }
 
         PlanIntervencion plan = PlanIntervencion.builder()
