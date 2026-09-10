@@ -9,14 +9,14 @@ import {
   Search,
   FolderOpen,
   GraduationCap,
-  Phone,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   Loader2,
   X,
-  Sparkles
+  FileText,
+  Phone,
 } from 'lucide-react';
 
 export const ExpedienteUnicoPage: React.FC = () => {
@@ -91,154 +91,80 @@ export const ExpedienteUnicoPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header Institucional */}
-      <div className="bg-trujillo-navy rounded-xl p-6 sm:p-7 text-white shadow-sm border border-slate-200/80">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-trujillo-sky/20 border border-trujillo-sky/30 text-xs font-semibold text-sky-200 mb-2">
-              <FolderOpen className="w-3.5 h-3.5" />
-              <span>Gestión de Convivencia Escolar • Expediente Integral</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Expediente Único del Estudiante
-            </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              Consolidado histórico de convivencia, antecedentes disciplinarios, actas de descargos y planes de intervención pedagógica.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2 rounded-lg bg-white/10 border border-white/15 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-300">Año Lectivo</span>
-              <span className="text-lg font-bold text-trujillo-sky">{new Date().getFullYear()}</span>
-            </div>
-            <div className="px-4 py-2 rounded-lg bg-white/10 border border-white/15 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-300">Total Alumnos</span>
-              <span className="text-lg font-bold text-white">{totalElementos}</span>
-            </div>
+    <div className="space-y-4 pb-8">
+      {/* Barra de Título Compacta */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-200 gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-slate-700" />
+            Expediente Único del Estudiante
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Consolidado histórico de convivencia, antecedentes disciplinarios y debido proceso (Ley 1620).
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Año Lectivo {new Date().getFullYear()}</span>
           </div>
         </div>
       </div>
 
-      {/* Tarjetas de Información Rápida */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-          <div className="w-11 h-11 rounded-lg bg-trujillo-ice text-trujillo-navy border border-sky-200 flex items-center justify-center shrink-0">
-            <Users className="w-5 h-5" />
+      {/* Tarjetas Métricas KPI Compactas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-600" />
+              Población Activa
+            </span>
+            <Users className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[11px] font-semibold uppercase text-slate-500 tracking-wider">Población Activa</span>
-            <p className="text-xl font-bold text-slate-900">{totalElementos} Estudiantes</p>
-            <span className="text-xs text-slate-500">Registrados en matrículas {new Date().getFullYear()}</span>
+          <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
+            {totalElementos}
           </div>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            Alumnos matriculados en vigencia escolar
+          </p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-          <div className="w-11 h-11 rounded-lg bg-trujillo-ice text-trujillo-navy border border-sky-200 flex items-center justify-center shrink-0">
-            <GraduationCap className="w-5 h-5" />
+        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-600" />
+              Cobertura Curricular
+            </span>
+            <GraduationCap className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[11px] font-semibold uppercase text-slate-500 tracking-wider">Cobertura Curricular</span>
-            <p className="text-xl font-bold text-slate-900">Grados 6° a 11°</p>
-            <span className="text-xs text-slate-500">Educación Básica y Media</span>
+          <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
+            Grados 6° a 11°
           </div>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            Educación Básica Secundaria y Media
+          </p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-          <div className="w-11 h-11 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
+        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              Garantía Legal
+            </span>
+            <FileText className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[11px] font-semibold uppercase text-slate-500 tracking-wider">Debido Proceso</span>
-            <p className="text-xl font-bold text-slate-900">Ley 1620 / 2013</p>
-            <span className="text-xs text-slate-500">Historial escolar fidedigno y protegido</span>
+          <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
+            Ley 1620 / 2013
           </div>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            Debido proceso y reserva legal de la información
+          </p>
         </div>
-      </div>
-
-      {/* Barra de Búsqueda y Filtros */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-4">
-        <form onSubmit={handleBuscar} className="flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Buscar por documento, nombre o apellido del estudiante..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-trujillo-navy focus:border-trujillo-navy"
-            />
-            {busqueda && (
-              <button
-                type="button"
-                onClick={() => setBusqueda('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={filtroGrado}
-              onChange={(e) => {
-                setFiltroGrado(e.target.value);
-                setPaginaActual(0);
-              }}
-              className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy focus:border-trujillo-navy"
-            >
-              <option value="">Todos los Grados</option>
-              <option value="6">Grado 6°</option>
-              <option value="7">Grado 7°</option>
-              <option value="8">Grado 8°</option>
-              <option value="9">Grado 9°</option>
-              <option value="10">Grado 10°</option>
-              <option value="11">Grado 11°</option>
-            </select>
-
-            <select
-              value={filtroGrupo}
-              onChange={(e) => {
-                setFiltroGrupo(e.target.value);
-                setPaginaActual(0);
-              }}
-              className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy focus:border-trujillo-navy"
-            >
-              <option value="">Todos los Grupos</option>
-              <option value="1">Grupo 1 (01)</option>
-              <option value="2">Grupo 2 (02)</option>
-              <option value="3">Grupo 3 (03)</option>
-              <option value="4">Grupo 4 (04)</option>
-              <option value="5">Grupo 5 (05)</option>
-            </select>
-
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-sm font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-sm"
-            >
-              <Search className="w-4 h-4" />
-              <span>Filtrar</span>
-            </button>
-
-            {(busquedaAplicada || filtroGrado || filtroGrupo) && (
-              <button
-                type="button"
-                onClick={handleLimpiarFiltros}
-                className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium flex items-center gap-1.5 transition-all"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Limpiar</span>
-              </button>
-            )}
-          </div>
-        </form>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center justify-between">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
             <X className="w-4 h-4" />
@@ -246,71 +172,162 @@ export const ExpedienteUnicoPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tabla de Estudiantes */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {cargando ? (
-          <div className="p-16 flex flex-col items-center justify-center text-slate-400 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-trujillo-sky" />
-            <p className="text-xs font-semibold uppercase tracking-wider">Cargando directorio de estudiantes...</p>
-          </div>
-        ) : estudiantes.length === 0 ? (
-          <div className="p-16 text-center text-slate-400 space-y-2">
-            <Users className="w-12 h-12 mx-auto text-slate-300" />
-            <p className="text-sm font-bold text-slate-700">No se encontraron estudiantes</p>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Intenta modificar los filtros de búsqueda o verifica que la matrícula anual esté importada.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-slate-100/75 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+      {/* Contenedor de Tabla con Toolbar Integrado */}
+      <div className="bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden">
+        {/* Toolbar de búsqueda y filtros */}
+        <div className="p-2.5 border-b border-slate-200 bg-slate-50/60">
+          <form onSubmit={handleBuscar} className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+              <div className="relative flex-1 min-w-[200px] max-w-md">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar por documento, nombre o apellido..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="w-full h-9 pl-8 pr-7 text-xs border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+                />
+                {busqueda && (
+                  <button
+                    type="button"
+                    onClick={() => setBusqueda('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <select
+                value={filtroGrado}
+                onChange={(e) => {
+                  setFiltroGrado(e.target.value);
+                  setPaginaActual(0);
+                }}
+                className="h-9 px-2.5 text-xs border border-slate-300 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
+              >
+                <option value="">Todos los Grados</option>
+                <option value="6">Grado 6°</option>
+                <option value="7">Grado 7°</option>
+                <option value="8">Grado 8°</option>
+                <option value="9">Grado 9°</option>
+                <option value="10">Grado 10°</option>
+                <option value="11">Grado 11°</option>
+              </select>
+
+              <select
+                value={filtroGrupo}
+                onChange={(e) => {
+                  setFiltroGrupo(e.target.value);
+                  setPaginaActual(0);
+                }}
+                className="h-9 px-2.5 text-xs border border-slate-300 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
+              >
+                <option value="">Todos los Grupos</option>
+                <option value="1">Grupo 1</option>
+                <option value="2">Grupo 2</option>
+                <option value="3">Grupo 3</option>
+                <option value="4">Grupo 4</option>
+                <option value="5">Grupo 5</option>
+              </select>
+
+              <button
+                type="submit"
+                className="h-9 px-3 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-xs"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Filtrar</span>
+              </button>
+
+              {(busquedaAplicada || filtroGrado || filtroGrupo) && (
+                <button
+                  type="button"
+                  onClick={handleLimpiarFiltros}
+                  className="h-9 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium rounded-md flex items-center gap-1 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Limpiar</span>
+                </button>
+              )}
+            </div>
+
+            <div className="text-xs text-slate-500 font-medium ml-auto">
+              Total: <strong className="text-slate-700">{totalElementos}</strong> estudiantes
+            </div>
+          </form>
+        </div>
+
+        {/* Tabla Estructurada */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+              <tr>
+                <th className="py-2.5 px-3">Documento</th>
+                <th className="py-2.5 px-3">Nombres y Apellidos</th>
+                <th className="py-2.5 px-3 text-center">Grado-Grupo Actual</th>
+                <th className="py-2.5 px-3 text-center">Historial de Incidentes</th>
+                <th className="py-2.5 px-3 text-center">Estado Matrícula</th>
+                <th className="py-2.5 px-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {cargando ? (
                 <tr>
-                  <th className="py-2.5 px-3.5">Documento</th>
-                  <th className="py-2.5 px-3.5">Estudiante</th>
-                  <th className="py-2.5 px-3.5 text-center">Grado / Grupo</th>
-                  <th className="py-2.5 px-3.5">Acudiente</th>
-                  <th className="py-2.5 px-3.5">Contacto</th>
-                  <th className="py-2.5 px-3.5 text-center">Estado</th>
-                  <th className="py-2.5 px-3.5 text-right">Acción</th>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
+                    <p className="text-xs font-medium text-slate-600">Cargando directorio de estudiantes...</p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {estudiantes.map((est) => (
-                  <tr key={est.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
-                    <td className="py-2.5 px-3.5 font-mono text-xs font-semibold text-slate-700">
+              ) : estudiantes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+                    <p className="text-sm font-medium text-slate-700">No se encontraron registros</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Ajusta los filtros de búsqueda o verifica que la matrícula anual esté importada.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                estudiantes.map((est) => (
+                  <tr key={est.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 font-mono text-xs font-medium text-slate-700">
                       {est.documento}
                     </td>
-                    <td className="py-2.5 px-3.5">
-                      <div className="font-semibold text-slate-800">
+                    <td className="py-2.5 px-3">
+                      <div className="font-semibold text-slate-900">
                         {est.apellidos}, {est.nombres}
                       </div>
-                      <div className="text-[11px] text-slate-400">ID #{est.id}</div>
+                      {est.nombreAcudiente && (
+                        <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                          <span>Acudiente: {est.nombreAcudiente}</span>
+                          {est.telefonoAcudiente && (
+                            <span className="flex items-center gap-0.5 font-mono text-slate-500">
+                              <Phone className="w-2.5 h-2.5" />
+                              {est.telefonoAcudiente}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </td>
-                    <td className="py-2.5 px-3.5 text-center">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-trujillo-ice border border-sky-200 text-trujillo-navy font-semibold text-xs">
+                    <td className="py-2.5 px-3 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold text-[11px]">
                         {est.grado}° - {est.grupo}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3.5 text-xs text-slate-600">
-                      <div className="font-medium text-slate-700">{est.nombreAcudiente || 'Sin registro'}</div>
+                    <td className="py-2.5 px-3 text-center">
+                      <button
+                        onClick={() => setExpedienteEstudianteId(est.id)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+                        title="Ver resumen en expediente"
+                      >
+                        <FolderOpen className="w-3 h-3 text-slate-500" />
+                        <span>Consultar ficha</span>
+                      </button>
                     </td>
-                    <td className="py-2.5 px-3.5 text-xs">
-                      {est.telefonoAcudiente ? (
-                        <a
-                          href={`tel:${est.telefonoAcudiente}`}
-                          className="inline-flex items-center gap-1.5 text-slate-700 hover:text-trujillo-navy font-medium font-mono"
-                        >
-                          <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{est.telefonoAcudiente}</span>
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 font-mono text-xs">Sin teléfono</span>
-                      )}
-                    </td>
-                    <td className="py-2.5 px-3.5 text-center">
+                    <td className="py-2.5 px-3 text-center">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${
                           est.estadoMatricula === 'ACTIVO'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : est.estadoMatricula === 'GRADUADO'
@@ -321,29 +338,32 @@ export const ExpedienteUnicoPage: React.FC = () => {
                         {est.estadoMatricula}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3.5 text-right">
+                    <td className="py-2.5 px-3 text-right">
                       <button
                         onClick={() => setExpedienteEstudianteId(est.id)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-xs font-semibold transition-all duration-150 active:scale-95 border border-sky-200"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-300 transition-colors shadow-2xs"
                         title="Ver expediente e historial integral"
                       >
-                        <FolderOpen className="w-3.5 h-3.5" />
-                        <span>Abrir Expediente</span>
+                        <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Ver Expediente</span>
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Paginación */}
-        {!cargando && totalPaginas > 1 && (
-          <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 font-medium">
+        {!cargando && totalElementos > 0 && (
+          <div className="px-3 py-2 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
             <div>
-              Mostrando página <strong className="text-slate-800">{paginaActual + 1}</strong> de{' '}
-              <strong className="text-slate-800">{totalPaginas}</strong> ({totalElementos} estudiantes en total)
+              Mostrando <strong className="text-slate-700">{paginaActual * tamanoPagina + 1}</strong> a{' '}
+              <strong className="text-slate-700">
+                {Math.min((paginaActual + 1) * tamanoPagina, totalElementos)}
+              </strong>{' '}
+              de <strong className="text-slate-700">{totalElementos}</strong> estudiantes
             </div>
 
             <div className="flex items-center gap-2">
@@ -353,7 +373,7 @@ export const ExpedienteUnicoPage: React.FC = () => {
                   setTamanoPagina(Number(e.target.value));
                   setPaginaActual(0);
                 }}
-                className="px-2 py-1 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700"
+                className="h-7 px-1.5 rounded border border-slate-300 bg-white text-xs text-slate-700"
               >
                 <option value={10}>10 / pág</option>
                 <option value={15}>15 / pág</option>
@@ -365,37 +385,37 @@ export const ExpedienteUnicoPage: React.FC = () => {
                 <button
                   onClick={() => setPaginaActual(0)}
                   disabled={paginaActual === 0}
-                  className="p-1 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none text-slate-700"
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:pointer-events-none text-slate-600"
                   title="Primera página"
                 >
-                  <ChevronsLeft className="w-4 h-4" />
+                  <ChevronsLeft className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setPaginaActual((p) => Math.max(0, p - 1))}
                   disabled={paginaActual === 0}
-                  className="p-1 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none text-slate-700"
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:pointer-events-none text-slate-600"
                   title="Página anterior"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
-                <span className="px-2 font-mono font-bold text-slate-800">
-                  {paginaActual + 1} / {totalPaginas}
+                <span className="px-2 text-xs font-semibold text-slate-700">
+                  {paginaActual + 1} / {totalPaginas || 1}
                 </span>
                 <button
                   onClick={() => setPaginaActual((p) => Math.min(totalPaginas - 1, p + 1))}
                   disabled={paginaActual >= totalPaginas - 1}
-                  className="p-1 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none text-slate-700"
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:pointer-events-none text-slate-600"
                   title="Página siguiente"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setPaginaActual(totalPaginas - 1)}
                   disabled={paginaActual >= totalPaginas - 1}
-                  className="p-1 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none text-slate-700"
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:pointer-events-none text-slate-600"
                   title="Última página"
                 >
-                  <ChevronsRight className="w-4 h-4" />
+                  <ChevronsRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
