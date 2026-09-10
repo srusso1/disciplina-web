@@ -119,7 +119,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/api/v1/auth/**", "/error").permitAll()
                         
                         // Defensa en profundidad a nivel de rutas directivas y auditoria forense
-                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**", "/auditoria/**", "/api/v1/auditoria/**", "/reportes/pdf/consolidado-anual", "/api/v1/reportes/pdf/consolidado-anual").hasAuthority("ROLE_RECTOR")
+                        .requestMatchers("/rectoria/**", "/api/v1/rectoria/**", "/auditoria/**", "/api/v1/auditoria/**", "/configuracion/**", "/api/v1/configuracion/**", "/reportes/pdf/consolidado-anual", "/api/v1/reportes/pdf/consolidado-anual").hasAuthority("ROLE_RECTOR")
                         .requestMatchers("/orientador/**", "/api/v1/orientador/**").hasAuthority("ROLE_ORIENTADOR")
                         
                         // Rutas compartidas de incidentes, catalogos, matriculas, planes, reportes de actas e IA

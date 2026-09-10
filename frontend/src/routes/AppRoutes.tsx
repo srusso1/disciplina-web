@@ -17,6 +17,7 @@ const CargaMatriculasPage = React.lazy(() => import('../features/matriculas/page
 const AuditoriaForensePage = React.lazy(() => import('../features/rectoria/pages/AuditoriaForensePage').then(m => ({ default: m.AuditoriaForensePage })));
 const RectorReportesPage = React.lazy(() => import('../features/rectoria/pages/RectorReportesPage').then(m => ({ default: m.RectorReportesPage })));
 const FaltasGravesPage = React.lazy(() => import('../features/rectoria/pages/FaltasGravesPage').then(m => ({ default: m.FaltasGravesPage })));
+const ConfiguracionPage = React.lazy(() => import('../features/rectoria/pages/ConfiguracionPage').then(m => ({ default: m.ConfiguracionPage })));
 
 export const AppRoutes: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
@@ -68,6 +69,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="faltas-graves" element={<FaltasGravesPage />} />
           <Route path="auditoria" element={<AuditoriaForensePage />} />
           <Route path="reportes" element={<RectorReportesPage />} />
+          <Route path="configuracion" element={<ConfiguracionPage />} />
         </Route>
 
         {/* Redireccion de Raiz y 404 */}

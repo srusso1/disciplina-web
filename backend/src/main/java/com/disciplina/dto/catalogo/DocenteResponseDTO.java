@@ -16,4 +16,5 @@ public class DocenteResponseDTO {
     private String apellidos;
     private String nombreCompleto;
     private String areaDesempeno;
+    private Boolean activo;
 }
