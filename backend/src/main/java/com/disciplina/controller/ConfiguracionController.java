@@ -6,16 +6,21 @@ import com.disciplina.dto.catalogo.LugarResponseDTO;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
 import com.disciplina.dto.configuracion.CatalogoFaltaRequestDTO;
 import com.disciplina.dto.configuracion.DocenteRequestDTO;
+import com.disciplina.dto.configuracion.ImportacionDocentesResumenDTO;
 import com.disciplina.dto.configuracion.LugarRequestDTO;
 import com.disciplina.dto.configuracion.UsuarioAdminResponseDTO;
 import com.disciplina.dto.configuracion.UsuarioRequestDTO;
 import com.disciplina.service.ConfiguracionService;
+import com.disciplina.service.ImportadorDocentesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping({"/configuracion", "/api/v1/configuracion"})
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class ConfiguracionController {
 
     private final ConfiguracionService configuracionService;
+    private final ImportadorDocentesService importadorDocentesService;
 
     // -------------------------------------------------------------------------
     // Catalogo de Faltas
@@ -86,6 +92,39 @@ public class ConfiguracionController {
     public ResponseEntity<DocenteResponseDTO> toggleActivoDocente(
             @PathVariable("id") Integer id) {
         return ResponseEntity.ok(configuracionService.toggleActivoDocente(id));
+    }
+
+    @GetMapping(value = "/docentes/plantilla-ejemplo", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    public ResponseEntity<byte[]> descargarPlantillaDocentes() {
+        byte[] excel = importadorDocentesService.generarPlantillaEjemplo();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"plantilla_docentes_oficial.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
+    }
+
+    @PostMapping(value = "/docentes/importar-masivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImportacionDocentesResumenDTO> importarDocentesMasivo(
+            @RequestParam("file") MultipartFile file) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(ImportacionDocentesResumenDTO.builder().build());
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || (!filename.toLowerCase().endsWith(".xlsx") && !filename.toLowerCase().endsWith(".xls"))) {
+            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+        }
+
+        try {
+            return ResponseEntity.ok(importadorDocentesService.importarPlanilla(file.getInputStream()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ImportacionDocentesResumenDTO.builder()
+                            .errores(java.util.Collections.singletonList(
+                                    new com.disciplina.dto.matricula.ErrorFilaDTO(0, "ARCHIVO", "Error de lectura: " + e.getMessage())))
+                            .build());
+        }
     }
 
     // -------------------------------------------------------------------------

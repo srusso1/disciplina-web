@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Loader2,
   Pencil,
@@ -7,6 +7,12 @@ import {
   X,
   Plus,
   Search,
+  Download,
+  UploadCloud,
+  FileSpreadsheet,
+  CheckCircle2,
+  AlertTriangle,
+  FileCheck,
 } from 'lucide-react';
 import { configuracionApi } from '../api/configuracionApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
@@ -15,6 +21,7 @@ import type {
   CatalogoFaltaRequest,
   DocenteItem,
   DocenteRequest,
+  ImportacionDocentesResumen,
   LugarItem,
   LugarRequest,
   UsuarioItem,
@@ -349,6 +356,16 @@ const TabDocentes: React.FC = () => {
   const [paginaMeta, setPaginaMeta] = useState({ totalElementos: 0, totalPaginas: 0, primera: true, ultima: true });
   const [search, setSearch] = useState('');
 
+  // Importación Masiva Excel
+  const [showImportPanel, setShowImportPanel] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [descargandoPlantilla, setDescargandoPlantilla] = useState(false);
+  const [resumenImportacion, setResumenImportacion] = useState<ImportacionDocentesResumen | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<DocenteItem | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -421,10 +438,93 @@ const TabDocentes: React.FC = () => {
     }
   };
 
+  const handleDescargarPlantilla = async () => {
+    try {
+      setDescargandoPlantilla(true);
+      setImportError(null);
+      const blob = await configuracionApi.descargarPlantillaDocentes();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `plantilla_docentes_${new Date().getFullYear()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Error al descargar plantilla:', err);
+      setImportError('No fue posible descargar la plantilla oficial. Intente nuevamente.');
+    } finally {
+      setDescargandoPlantilla(false);
+    }
+  };
+
+  const validarYEstablecerArchivo = (selectedFile: File) => {
+    setImportError(null);
+    const validExtensions = ['.xlsx', '.xls'];
+    const name = selectedFile.name.toLowerCase();
+    const isValid = validExtensions.some(ext => name.endsWith(ext));
+
+    if (!isValid) {
+      setImportError('Formato no soportado. Por favor seleccione una hoja de cálculo Excel (.xlsx o .xls).');
+      return;
+    }
+
+    setImportFile(selectedFile);
+    setResumenImportacion(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      validarYEstablecerArchivo(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      validarYEstablecerArchivo(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!importFile) return;
+    setIsUploading(true);
+    setImportError(null);
+    try {
+      const res = await configuracionApi.importarDocentesMasivo(importFile);
+      setResumenImportacion(res);
+      setPagina(0);
+      fetch(0, search);
+    } catch (err) {
+      setImportError(extraerMensajeError(err));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const formatearTamano = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  };
+
   return (
     <div className="space-y-4">
       {error && <ErrorBanner message={error} />}
-      <div className="flex items-center gap-3">
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <form onSubmit={handleSearch} className="flex-1 flex gap-2">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -437,10 +537,254 @@ const TabDocentes: React.FC = () => {
           </div>
           <button type="submit" className={btnSecondary}>Buscar</button>
         </form>
-        <button onClick={openCreate} className={`${btnPrimary} flex items-center gap-2`}>
-          <Plus className="w-4 h-4" /> Nuevo
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowImportPanel(p => !p)}
+            className={`flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md border transition-colors cursor-pointer ${
+              showImportPanel
+                ? 'bg-blue-50 border-blue-300 text-blue-700'
+                : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>{showImportPanel ? 'Cerrar Importador' : 'Carga Masiva Excel'}</span>
+          </button>
+          <button onClick={openCreate} className={`${btnPrimary} flex items-center gap-2`}>
+            <Plus className="w-4 h-4" /> Nuevo Docente
+          </button>
+        </div>
       </div>
+
+      {showImportPanel && (
+        <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Importación Masiva de Docentes</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Cargue la nómina institucional desde una hoja de cálculo Excel (.xlsx o .xls).
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDescargarPlantilla}
+              disabled={descargandoPlantilla}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer shrink-0"
+              title="Descargar archivo Excel con la estructura requerida"
+            >
+              {descargandoPlantilla ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              <span>{descargandoPlantilla ? 'Generando...' : 'Descargar Plantilla Oficial (.xlsx)'}</span>
+            </button>
+          </div>
+
+          {/* Guía Visual de Columnas Oficiales */}
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <span className="font-semibold text-slate-700">Columnas reconocidas por el motor de importación:</span>
+              <span className="text-[11px] text-slate-500">Compatible con listados oficiales de secretaría y nómina</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+                CEDULA / DOCUMENTO
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+                1NOMBRE / NOMBRES
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+                1APELLIDO / APELLIDOS
+              </span>
+
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+                2NOMBRE
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+                2APELLIDO
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300" title="Si no está presente o está vacía, se asigna 'PENDIENTE POR REGISTRO'">
+                AREA (defecto: PENDIENTE POR REGISTRO)
+              </span>
+              <span className="px-2 py-0.5 rounded-bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+                CORREO
+              </span>
+            </div>
+          </div>
+
+          {/* Drag and Drop Container */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => !importFile && fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer ${
+              isDragging
+                ? 'border-blue-500 bg-blue-50/60'
+                : importFile
+                ? 'border-emerald-300 bg-emerald-50/30'
+                : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50/60'
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            {!importFile ? (
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <p className="text-sm font-semibold text-slate-800">
+                  Arrastre su planilla Excel aquí o haga clic para seleccionarla
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Formatos soportados: Microsoft Excel (.xlsx, .xls) hasta 25 MB
+                </p>
+                <button
+                  type="button"
+                  className="mt-3 px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+                >
+                  Seleccionar Archivo
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-white rounded-lg border border-emerald-200 max-w-md mx-auto">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
+                    <FileSpreadsheet className="w-5 h-5" />
+                  </div>
+                  <div className="text-left overflow-hidden">
+                    <p className="text-xs font-bold text-slate-800 truncate">{importFile.name}</p>
+                    <p className="text-[11px] text-slate-500">{formatearTamano(importFile.size)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImportFile(null);
+                      setResumenImportacion(null);
+                    }}
+                    className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    title="Quitar archivo"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {importError && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-800 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>{importError}</span>
+            </div>
+          )}
+
+          {/* Botón de Iniciar Carga */}
+          {importFile && !resumenImportacion && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleUpload}
+                disabled={isUploading}
+                className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Procesando e Importando Docentes...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileCheck className="w-4 h-4 text-white" />
+                    <span>Iniciar Importación de Docentes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Resumen de Importación */}
+          {resumenImportacion && (
+            <div className="space-y-3 pt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Filas Leídas</span>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{resumenImportacion.totalFilas}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{resumenImportacion.tiempoMs} ms</p>
+                </div>
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 border-l-4 border-l-emerald-500">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Docentes Creados</span>
+                  <p className="text-xl font-bold text-emerald-900 mt-1">{resumenImportacion.docentesCreados}</p>
+                  <p className="text-[10px] text-emerald-600 mt-0.5">Nuevos registros</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 border-l-4 border-l-blue-500">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800">Actualizados</span>
+                  <p className="text-xl font-bold text-blue-900 mt-1">{resumenImportacion.docentesActualizados}</p>
+                  <p className="text-[10px] text-blue-600 mt-0.5">Por cédula existente</p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 border-l-4 border-l-amber-500">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">Inconsistencias</span>
+                  <p className="text-xl font-bold text-amber-900 mt-1">{resumenImportacion.advertencias.length + resumenImportacion.errores.length}</p>
+                  <p className="text-[10px] text-amber-600 mt-0.5">Observaciones</p>
+                </div>
+              </div>
+
+              {resumenImportacion.errores.length > 0 && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs space-y-1">
+                  <p className="font-bold text-red-800 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                    Filas con errores ({resumenImportacion.errores.length}):
+                  </p>
+                  <ul className="list-disc list-inside text-red-700 space-y-0.5">
+                    {resumenImportacion.errores.slice(0, 5).map((e, idx) => (
+                      <li key={idx}>Fila {e.fila} [{e.campo}]: {e.mensaje}</li>
+                    ))}
+                    {resumenImportacion.errores.length > 5 && (
+                      <li className="italic">... y {resumenImportacion.errores.length - 5} más</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {resumenImportacion.advertencias.length > 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs space-y-1">
+                  <p className="font-bold text-amber-800 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                    Advertencias ({resumenImportacion.advertencias.length}):
+                  </p>
+                  <ul className="list-disc list-inside text-amber-700 space-y-0.5">
+                    {resumenImportacion.advertencias.slice(0, 5).map((a, idx) => (
+                      <li key={idx}>Fila {a.fila}: {a.motivo} — {a.accionTomada}</li>
+                    ))}
+                    {resumenImportacion.advertencias.length > 5 && (
+                      <li className="italic">... y {resumenImportacion.advertencias.length - 5} más</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {resumenImportacion.docentesCreados > 0 && resumenImportacion.errores.length === 0 && (
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Importación completada con éxito. El listado inferior ha sido actualizado.</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">

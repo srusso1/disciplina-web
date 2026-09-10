@@ -79,3 +79,26 @@ export interface UsuarioRequest {
   rol: string;
   activo?: boolean;
 }
+
+export interface AdvertenciaFila {
+  fila: number;
+  codigo?: string;
+  estudiante?: string;
+  motivo: string;
+  accionTomada: string;
+}
+
+export interface ErrorFila {
+  fila: number;
+  campo: string;
+  mensaje: string;
+}
+
+export interface ImportacionDocentesResumen {
+  totalFilas: number;
+  docentesCreados: number;
+  docentesActualizados: number;
+  advertencias: AdvertenciaFila[];
+  errores: ErrorFila[];
+  tiempoMs: number;
+}

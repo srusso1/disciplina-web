@@ -4,6 +4,7 @@ import {
   CatalogoFaltaRequest,
   DocenteItem,
   DocenteRequest,
+  ImportacionDocentesResumen,
   LugarItem,
   LugarRequest,
   PaginaRespuesta,
@@ -51,6 +52,28 @@ export const configuracionApi = {
 
   toggleActivoDocente: async (id: number): Promise<DocenteItem> => {
     const response = await apiClient.patch<DocenteItem>(`/configuracion/docentes/${id}/toggle-activo`);
+    return response.data;
+  },
+
+  descargarPlantillaDocentes: async (): Promise<Blob> => {
+    const response = await apiClient.get('/configuracion/docentes/plantilla-ejemplo', {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  importarDocentesMasivo: async (file: File): Promise<ImportacionDocentesResumen> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<ImportacionDocentesResumen>(
+      '/configuracion/docentes/importar-masivo',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
     return response.data;
   },
 

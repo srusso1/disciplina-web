@@ -17,6 +17,9 @@ import com.disciplina.dto.configuracion.LugarRequestDTO;
 import com.disciplina.dto.configuracion.UsuarioRequestDTO;
 import com.disciplina.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,9 +27,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -166,5 +175,96 @@ class ConfiguracionControllerTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombres", is("Docente Modificado")));
+    }
+
+    @Test
+    @DisplayName("ROLE_RECTOR descarga plantilla oficial de docentes exitosamente (200 OK)")
+    void descargarPlantillaDocentesExitoso() throws Exception {
+        mockMvc.perform(get("/api/v1/configuracion/docentes/plantilla-ejemplo")
+                        .header("Authorization", tokenRector))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", containsString("spreadsheetml")))
+                .andExpect(header().string("Content-Disposition", containsString("plantilla_docentes_oficial.xlsx")));
+    }
+
+    @Test
+    @DisplayName("ROLE_RECTOR importa masivamente docentes desde Excel y asigna área por defecto")
+    void importarMasivoDocentesExitoso() throws Exception {
+        docenteRepository.findByDocumento("99887766").ifPresent(docenteRepository::delete);
+        docenteRepository.findByDocumento("88776655").ifPresent(docenteRepository::delete);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("DOCENTES");
+            Row r0 = sheet.createRow(0);
+            r0.createCell(0).setCellValue("CEDULA");
+            r0.createCell(1).setCellValue("1NOMBRE");
+            r0.createCell(2).setCellValue("2NOMBRE");
+            r0.createCell(3).setCellValue("1APELLIDO");
+            r0.createCell(4).setCellValue("2APELLIDO");
+            r0.createCell(5).setCellValue("CORREO");
+
+            Row r1 = sheet.createRow(1);
+            r1.createCell(0).setCellValue("99887766");
+            r1.createCell(1).setCellValue("MARIO");
+            r1.createCell(2).setCellValue("ALBERTO");
+            r1.createCell(3).setCellValue("YEPES");
+            r1.createCell(4).setCellValue("DIAZ");
+            r1.createCell(5).setCellValue("mario.yepes@disciplina.edu.co");
+
+            Row r2 = sheet.createRow(2);
+            r2.createCell(0).setCellValue("88776655");
+            r2.createCell(1).setCellValue("IVAN");
+            r2.createCell(3).setCellValue("CORDOBA");
+
+            workbook.write(out);
+        }
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "docentes_test.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                out.toByteArray()
+        );
+
+        mockMvc.perform(multipart("/api/v1/configuracion/docentes/importar-masivo")
+                        .file(file)
+                        .header("Authorization", tokenRector))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalFilas", is(2)))
+                .andExpect(jsonPath("$.docentesCreados", is(2)))
+                .andExpect(jsonPath("$.errores", hasSize(0)));
+
+        Docente d1 = docenteRepository.findByDocumento("99887766").orElseThrow();
+        assertThat(d1.getNombres()).isEqualTo("MARIO ALBERTO");
+        assertThat(d1.getApellidos()).isEqualTo("YEPES DIAZ");
+        assertThat(d1.getAreaDesempeno()).isEqualTo("PENDIENTE POR REGISTRO");
+    }
+
+    @Test
+    @DisplayName("ROLE_RECTOR importa el archivo real de docentes si existe en Desktop")
+    void importarArchivoRealDocentesSiExiste() {
+        File desktopFile = new File("C:/Users/SEBAS/Desktop/listado de docentes 2026.xlsx");
+        if (!desktopFile.exists()) {
+            return;
+        }
+
+        try (FileInputStream fis = new FileInputStream(desktopFile)) {
+            MockMultipartFile file = new MockMultipartFile(
+                    "file",
+                    "listado de docentes 2026.xlsx",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fis.readAllBytes()
+            );
+
+            mockMvc.perform(multipart("/api/v1/configuracion/docentes/importar-masivo")
+                            .file(file)
+                            .header("Authorization", tokenRector))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalFilas", is(64)))
+                    .andExpect(jsonPath("$.errores", hasSize(0)));
+        } catch (Exception ignored) {
+            // Ignorar si el archivo está bloqueado por Excel en el equipo del usuario
+        }
     }
 }
