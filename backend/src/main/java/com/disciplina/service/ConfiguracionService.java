@@ -2,12 +2,10 @@ package com.disciplina.service;
 
 import com.disciplina.domain.model.CatalogoFalta;
 import com.disciplina.domain.model.Docente;
-import com.disciplina.domain.model.Incidente;
 import com.disciplina.domain.model.Lugar;
 import com.disciplina.domain.model.Usuario;
 import com.disciplina.domain.repository.CatalogoFaltaRepository;
 import com.disciplina.domain.repository.DocenteRepository;
-import com.disciplina.domain.repository.IncidenteRepository;
 import com.disciplina.domain.repository.LugarRepository;
 import com.disciplina.domain.repository.UsuarioRepository;
 import com.disciplina.dto.catalogo.CatalogoFaltaResponseDTO;
@@ -16,7 +14,6 @@ import com.disciplina.dto.catalogo.LugarResponseDTO;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
 import com.disciplina.dto.configuracion.CatalogoFaltaRequestDTO;
 import com.disciplina.dto.configuracion.DocenteRequestDTO;
-import com.disciplina.dto.configuracion.IncidenteAdminResponseDTO;
 import com.disciplina.dto.configuracion.LugarRequestDTO;
 import com.disciplina.dto.configuracion.UsuarioAdminResponseDTO;
 import com.disciplina.dto.configuracion.UsuarioRequestDTO;
@@ -38,7 +35,6 @@ public class ConfiguracionService {
     private final CatalogoFaltaRepository catalogoFaltaRepository;
     private final DocenteRepository docenteRepository;
     private final LugarRepository lugarRepository;
-    private final IncidenteRepository incidenteRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -166,41 +162,6 @@ public class ConfiguracionService {
                 .nombreCompleto(d.getNombreCompleto())
                 .areaDesempeno(d.getAreaDesempeno())
                 .activo(d.getActivo())
-                .build();
-    }
-
-    // -------------------------------------------------------------------------
-    // Incidentes
-    // -------------------------------------------------------------------------
-
-    @Transactional(readOnly = true)
-    public PaginaRespuestaDTO<IncidenteAdminResponseDTO> listarIncidentes(int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size,
-                Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<IncidenteAdminResponseDTO> result = incidenteRepository.findAll(pageable)
-                .map(this::toIncidenteAdminResponse);
-        return PaginaRespuestaDTO.de(result);
-    }
-
-    @Transactional
-    public void eliminarIncidente(Integer id) {
-        if (!incidenteRepository.existsById(id)) {
-            throw new EntityNotFoundException("Incidente no encontrado con id: " + id);
-        }
-        incidenteRepository.deleteById(id);
-    }
-
-    private IncidenteAdminResponseDTO toIncidenteAdminResponse(Incidente i) {
-        return IncidenteAdminResponseDTO.builder()
-                .id(i.getId())
-                .fechaIncidente(i.getFechaIncidente())
-                .horaIncidente(i.getHoraIncidente())
-                .docenteReportaNombre(i.getDocenteReporta() != null
-                        ? i.getDocenteReporta().getNombreCompleto() : null)
-                .lugarNombre(i.getLugar() != null ? i.getLugar().getNombre() : null)
-                .estadoProceso(i.getEstadoProceso() != null ? i.getEstadoProceso().name() : null)
-                .involucradosCount(i.getInvolucrados() != null ? i.getInvolucrados().size() : 0)
-                .createdAt(i.getCreatedAt())
                 .build();
     }
 

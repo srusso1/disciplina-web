@@ -4,7 +4,6 @@ import {
   Pencil,
   Eye,
   EyeOff,
-  Trash2,
   X,
   Plus,
   Search,
@@ -16,7 +15,6 @@ import type {
   CatalogoFaltaRequest,
   DocenteItem,
   DocenteRequest,
-  IncidenteAdminItem,
   LugarItem,
   LugarRequest,
   UsuarioItem,
@@ -25,7 +23,7 @@ import type {
 
 const PAGE_SIZE = 15;
 
-type TabId = 'faltas' | 'docentes' | 'incidentes' | 'lugares' | 'usuarios';
+type TabId = 'faltas' | 'docentes' | 'lugares' | 'usuarios';
 
 // ---------------------------------------------------------------------------
 // Shared UI helpers
@@ -52,9 +50,6 @@ const btnPrimary =
 
 const btnSecondary =
   'border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium px-4 py-2 rounded-md transition-colors';
-
-const btnDanger =
-  'bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-md transition-colors';
 
 const btnIcon =
   'p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors';
@@ -525,101 +520,6 @@ const TabDocentes: React.FC = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Tab: Incidentes
-// ---------------------------------------------------------------------------
-
-const TabIncidentes: React.FC = () => {
-  const [items, setItems] = useState<IncidenteAdminItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pagina, setPagina] = useState(0);
-  const [paginaMeta, setPaginaMeta] = useState({ totalElementos: 0, totalPaginas: 0, primera: true, ultima: true });
-
-  const fetch = useCallback(async (page: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await configuracionApi.listarIncidentes({ page, size: PAGE_SIZE });
-      setItems(data.contenido);
-      setPaginaMeta({ totalElementos: data.totalElementos, totalPaginas: data.totalPaginas, primera: data.primera, ultima: data.ultima });
-    } catch (err) {
-      setError(extraerMensajeError(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetch(pagina); }, [fetch, pagina]);
-
-  const handleDelete = async (item: IncidenteAdminItem) => {
-    if (!window.confirm(`¿Eliminar incidente #${item.id}? Esta acción no se puede deshacer.`)) return;
-    try {
-      await configuracionApi.eliminarIncidente(item.id);
-      fetch(pagina);
-    } catch (err) {
-      setError(extraerMensajeError(err));
-    }
-  };
-
-  const formatDate = (iso: string) => {
-    try { return new Date(iso).toLocaleDateString('es-CO'); } catch { return iso; }
-  };
-
-  return (
-    <div className="space-y-4">
-      {error && <ErrorBanner message={error} />}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              {['ID', 'Fecha', 'Docente', 'Lugar', 'Estado', 'Involucrados', 'Registrado', 'Acciones'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {loading ? (
-              <tr><td colSpan={8} className="px-4 py-8 text-center">
-                <Loader2 className="w-5 h-5 animate-spin mx-auto text-slate-400" />
-              </td></tr>
-            ) : items.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-400 text-sm">Sin registros</td></tr>
-            ) : items.map(item => (
-              <tr key={item.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs">#{item.id}</td>
-                <td className="px-4 py-3">{formatDate(item.fechaIncidente)}</td>
-                <td className="px-4 py-3">{item.docenteReportaNombre}</td>
-                <td className="px-4 py-3">{item.lugarNombre}</td>
-                <td className="px-4 py-3">
-                  <span className="bg-slate-100 text-slate-600 rounded-full px-2 py-0.5 text-xs">{item.estadoProceso}</span>
-                </td>
-                <td className="px-4 py-3 text-center">{item.involucradosCount}</td>
-                <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(item.createdAt)}</td>
-                <td className="px-4 py-3">
-                  <button onClick={() => handleDelete(item)} className={btnDanger} title="Eliminar">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <Pagination
-          pagina={pagina}
-          totalElementos={paginaMeta.totalElementos}
-          totalPaginas={paginaMeta.totalPaginas}
-          primera={paginaMeta.primera}
-          ultima={paginaMeta.ultima}
-          onPrev={() => setPagina(p => Math.max(0, p - 1))}
-          onNext={() => setPagina(p => p + 1)}
-          pageSize={PAGE_SIZE}
-        />
-      </div>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
 // Tab: Lugares
 // ---------------------------------------------------------------------------
 
@@ -989,7 +889,6 @@ const TabUsuarios: React.FC = () => {
 const TABS: { id: TabId; label: string }[] = [
   { id: 'faltas', label: 'Catálogo de Faltas' },
   { id: 'docentes', label: 'Docentes' },
-  { id: 'incidentes', label: 'Incidentes' },
   { id: 'lugares', label: 'Lugares' },
   { id: 'usuarios', label: 'Usuarios' },
 ];
@@ -1030,7 +929,6 @@ export const ConfiguracionPage: React.FC = () => {
       <div>
         {activeTab === 'faltas' && <TabFaltas />}
         {activeTab === 'docentes' && <TabDocentes />}
-        {activeTab === 'incidentes' && <TabIncidentes />}
         {activeTab === 'lugares' && <TabLugares />}
         {activeTab === 'usuarios' && <TabUsuarios />}
       </div>

@@ -6,7 +6,6 @@ import com.disciplina.dto.catalogo.LugarResponseDTO;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
 import com.disciplina.dto.configuracion.CatalogoFaltaRequestDTO;
 import com.disciplina.dto.configuracion.DocenteRequestDTO;
-import com.disciplina.dto.configuracion.IncidenteAdminResponseDTO;
 import com.disciplina.dto.configuracion.LugarRequestDTO;
 import com.disciplina.dto.configuracion.UsuarioAdminResponseDTO;
 import com.disciplina.dto.configuracion.UsuarioRequestDTO;
@@ -87,23 +86,6 @@ public class ConfiguracionController {
     public ResponseEntity<DocenteResponseDTO> toggleActivoDocente(
             @PathVariable("id") Integer id) {
         return ResponseEntity.ok(configuracionService.toggleActivoDocente(id));
-    }
-
-    // -------------------------------------------------------------------------
-    // Incidentes
-    // -------------------------------------------------------------------------
-
-    @GetMapping("/incidentes")
-    public ResponseEntity<PaginaRespuestaDTO<IncidenteAdminResponseDTO>> listarIncidentes(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size) {
-        return ResponseEntity.ok(configuracionService.listarIncidentes(page, size));
-    }
-
-    @DeleteMapping("/incidentes/{id}")
-    public ResponseEntity<Void> eliminarIncidente(@PathVariable("id") Integer id) {
-        configuracionService.eliminarIncidente(id);
-        return ResponseEntity.noContent().build();
     }
 
     // -------------------------------------------------------------------------

@@ -1,10 +1,9 @@
-﻿import { apiClient } from '../../../core/api/apiClient';
+import { apiClient } from '../../../core/api/apiClient';
 import {
   CatalogoFaltaItem,
   CatalogoFaltaRequest,
   DocenteItem,
   DocenteRequest,
-  IncidenteAdminItem,
   LugarItem,
   LugarRequest,
   PaginaRespuesta,
@@ -53,16 +52,6 @@ export const configuracionApi = {
   toggleActivoDocente: async (id: number): Promise<DocenteItem> => {
     const response = await apiClient.patch<DocenteItem>(`/configuracion/docentes/${id}/toggle-activo`);
     return response.data;
-  },
-
-  // Incidentes
-  listarIncidentes: async (params?: { page?: number; size?: number }): Promise<PaginaRespuesta<IncidenteAdminItem>> => {
-    const response = await apiClient.get<PaginaRespuesta<IncidenteAdminItem>>('/configuracion/incidentes', { params });
-    return response.data;
-  },
-
-  eliminarIncidente: async (id: number): Promise<void> => {
-    await apiClient.delete(`/configuracion/incidentes/${id}`);
   },
 
   // Lugares

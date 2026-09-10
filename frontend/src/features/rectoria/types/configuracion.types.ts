@@ -1,4 +1,4 @@
-﻿export interface PaginaRespuesta<T> {
+export interface PaginaRespuesta<T> {
   contenido: T[];
   pagina: number;
   tamanoPagina: number;
@@ -35,16 +35,6 @@ export interface LugarItem {
   activo: boolean;
 }
 
-export interface IncidenteAdminItem {
-  id: number;
-  fechaIncidente: string;
-  horaIncidente?: string;
-  docenteReportaNombre: string;
-  lugarNombre: string;
-  estadoProceso: string;
-  involucradosCount: number;
-  createdAt: string;
-}
 
 export interface UsuarioItem {
   id: number;
