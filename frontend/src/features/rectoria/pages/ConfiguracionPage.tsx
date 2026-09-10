@@ -801,7 +801,7 @@ const TabDocentes: React.FC = () => {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto text-slate-400" />
               </td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400 text-sm">Sin registros</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400 text-sm">{search ? `No se encontraron docentes para "${search}".` : 'No hay docentes registrados en la nómina institucional.'}</td></tr>
             ) : items.map(item => (
               <tr key={item.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3 font-mono text-xs">{item.documento}</td>
@@ -981,7 +981,7 @@ const TabLugares: React.FC = () => {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto text-slate-400" />
               </td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400 text-sm">Sin registros</td></tr>
+              <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400 text-sm">{search ? `No se encontraron lugares para "${search}".` : 'No hay lugares registrados en el catálogo institucional.'}</td></tr>
             ) : items.map(item => (
               <tr key={item.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3 font-medium">{item.nombre}</td>

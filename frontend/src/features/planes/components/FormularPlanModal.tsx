@@ -15,7 +15,9 @@ import {
   Loader2,
   Sparkles,
   ShieldCheck,
-  X
+  X,
+  Users,
+  AlertTriangle
 } from 'lucide-react';
 
 interface FormularPlanModalProps {
@@ -48,6 +50,22 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
   const modalNuevoScrollRef = useRef<HTMLDivElement>(null);
 
   useLockBodyScroll(isOpen);
+
+  const [totalEstudiantesSistema, setTotalEstudiantesSistema] = useState<number | null>(null);
+
+  // Comprobar si el sistema tiene estudiantes al abrir
+  useEffect(() => {
+    if (isOpen) {
+      matriculasApi
+        .listarEstudiantes({ size: 1 })
+        .then((res) => {
+          setTotalEstudiantesSistema(res.totalElementos);
+        })
+        .catch(() => {
+          setTotalEstudiantesSistema(null);
+        });
+    }
+  }, [isOpen]);
 
   // Soporte para cerrar con tecla Escape
   useEffect(() => {
@@ -226,7 +244,19 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
         <form noValidate onSubmit={handleCrearNuevoPlan} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div ref={modalNuevoScrollRef} className="p-6 space-y-4 flex-1 overflow-y-auto min-h-0 modal-scroll-body">
             {/* Selector de Estudiante */}
-            <div>
+            <div className="space-y-2">
+              {totalEstudiantesSistema === 0 && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-amber-900">No hay estudiantes matriculados en el sistema</p>
+                    <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+                      Actualmente no existen alumnos registrados en el censo escolar. Para formular planes de intervención, primero deben importarse las matrículas escolares desde el módulo de Rectoría.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Buscar Estudiante Matriculado *
               </label>
@@ -253,7 +283,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                   <input
                     id="input-busqueda-estudiante-plan"
                     type="text"
-                    placeholder="Escribe documento o nombre del alumno..."
+                    placeholder="Escribe documento o nombre del alumno (mínimo 2 letras)..."
                     value={busquedaEstudianteTexto}
                     onChange={(e) => setBusquedaEstudianteTexto(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
@@ -262,8 +292,17 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                     <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-slate-400" />
                   )}
 
-                  {estudiantesBusqueda.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-40 overflow-y-auto divide-y divide-slate-100">
+                  {/* Dropdown de Búsqueda en Curso */}
+                  {buscandoEstudiante && debouncedBusquedaEstudiante.trim().length >= 2 && (
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2 animate-in fade-in duration-100">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                      <span>Buscando en el censo escolar...</span>
+                    </div>
+                  )}
+
+                  {/* Dropdown de Resultados encontrados */}
+                  {!buscandoEstudiante && estudiantesBusqueda.length > 0 && (
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
                       {estudiantesBusqueda.map((est) => (
                         <div
                           key={est.id}
@@ -278,6 +317,20 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                           <span className="text-slate-400 ml-2 font-mono">({est.documento}) - {est.grado}° {est.grupo}</span>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Dropdown de Sin Resultados */}
+                  {!buscandoEstudiante && debouncedBusquedaEstudiante.trim().length >= 2 && estudiantesBusqueda.length === 0 && (
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-4 text-center animate-in fade-in duration-100">
+                      <Users className="w-6 h-6 mx-auto text-slate-300 mb-1.5 stroke-[1.5]" />
+                      <p className="text-xs font-semibold text-slate-700">No se encontraron estudiantes</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        No hay coincidencias para &quot;{debouncedBusquedaEstudiante}&quot;.
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Verifique el número de documento o apellidos, o confirme que la matrícula esté importada en el sistema.
+                      </p>
                     </div>
                   )}
                 </div>

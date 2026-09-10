@@ -116,7 +116,7 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
                 setDocenteReportaId(val);
                 if (onLimpiarAlertaDocente) onLimpiarAlertaDocente();
               }}
-              disabled={cargandoCatalogos}
+              disabled={cargandoCatalogos || docentes.length === 0}
               className={`w-full px-3.5 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition font-medium text-slate-800 ${
                 tieneAlertaDocente
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
@@ -124,13 +124,25 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
               }`}
               required
             >
-              <option value="">Seleccione docente informante...</option>
+              <option value="">
+                {cargandoCatalogos
+                  ? 'Cargando nómina docente...'
+                  : docentes.length === 0
+                  ? 'No hay docentes registrados en el sistema'
+                  : 'Seleccione docente informante...'}
+              </option>
               {docentes.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.nombreCompleto} — {d.areaDesempeno}
                 </option>
               ))}
             </select>
+            {!cargandoCatalogos && docentes.length === 0 && (
+              <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 font-medium">
+                <AlertTriangle size={13} className="text-amber-600 shrink-0" />
+                <span>Nómina vacía: Debe registrar los docentes en Rectoría &gt; Configuración.</span>
+              </p>
+            )}
           </div>
 
           {/* Lugar */}
@@ -180,7 +192,7 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
                 setLugarId(val);
                 if (onLimpiarAlertaLugar) onLimpiarAlertaLugar();
               }}
-              disabled={cargandoCatalogos}
+              disabled={cargandoCatalogos || lugares.length === 0}
               className={`w-full px-3.5 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition font-medium text-slate-800 ${
                 tieneAlertaLugar
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
@@ -188,13 +200,25 @@ export const ContextoHechosSection: React.FC<ContextoHechosSectionProps> = ({
               }`}
               required
             >
-              <option value="">Seleccione lugar institucional...</option>
+              <option value="">
+                {cargandoCatalogos
+                  ? 'Cargando lugares...'
+                  : lugares.length === 0
+                  ? 'No hay lugares registrados en el sistema'
+                  : 'Seleccione lugar institucional...'}
+              </option>
               {lugares.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.nombre} {l.descripcion ? `(${l.descripcion})` : ''}
                 </option>
               ))}
             </select>
+            {!cargandoCatalogos && lugares.length === 0 && (
+              <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 font-medium">
+                <AlertTriangle size={13} className="text-amber-600 shrink-0" />
+                <span>Catálogo vacío: Debe registrar los espacios en Rectoría &gt; Configuración.</span>
+              </p>
+            )}
           </div>
 
           {/* Fecha */}
