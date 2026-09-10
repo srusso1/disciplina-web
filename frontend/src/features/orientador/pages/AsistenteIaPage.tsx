@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { incidentesApi } from '../../incidentes/api/incidentesApi';
 import { planesApi } from '../../planes/api/planesApi';
 import { matriculasApi } from '../../matriculas/api/matriculasApi';
-import { NarrativaProcesada } from '../../incidentes/types/incidente.types';
 import { PropuestaIaResponse, CrearPlanIntervencionRequest } from '../../planes/types/planes.types';
 import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
 import { extraerMensajeError } from '../../../core/api/apiClient';
 import { useDebounce } from '../../../core/hooks/useDebounce';
 import {
-  FileText,
   Layers,
   Loader2,
   CheckCircle2,
   Copy,
   Check,
-  ArrowRight,
   ShieldCheck,
   X,
   HeartHandshake,
@@ -25,23 +21,12 @@ import {
   Scale,
   ExternalLink,
   BrainCircuit,
-  Wand2,
 } from 'lucide-react';
-
-type TabAsistente = 'narrativa' | 'plan';
 
 export const AsistenteIaPage: React.FC = () => {
   const navigate = useNavigate();
-  const [tabActiva, setTabActiva] = useState<TabAsistente>('narrativa');
 
-  // Tab 1: Narrativa PLN (CU-05)
-  const [narrativaInput, setNarrativaInput] = useState<string>('');
-  const [procesandoNarrativa, setProcesandoNarrativa] = useState<boolean>(false);
-  const [resultadoNarrativa, setResultadoNarrativa] = useState<NarrativaProcesada | null>(null);
-  const [errorNarrativa, setErrorNarrativa] = useState<string | null>(null);
-  const [textoCopiado, setTextoCopiado] = useState<boolean>(false);
-
-  // Tab 2: Plan de Intervención (CU-06)
+  // Formulador de Intervenciones (CU-06)
   const [busquedaEstudiante, setBusquedaEstudiante] = useState<string>('');
   const debouncedBusquedaEstudiante = useDebounce(busquedaEstudiante, 350);
   const [estudiantesResultados, setEstudiantesResultados] = useState<EstudianteMatricula[]>([]);
@@ -102,46 +87,6 @@ ${resultadoPlan.recomendacionesIa}`;
     navigator.clipboard.writeText(textoCompleto);
     setCampoCopiado('todo');
     setTimeout(() => setCampoCopiado(null), 2500);
-  };
-
-  // Ejemplos de prueba para narrativa
-  const ejemplosNarrativa = [
-    {
-      titulo: 'Altercado físico en descanso',
-      texto: 'Durante el segundo descanso a eso de las 10:15 am en el patio central, el profesor Juan Martínez observó que los estudiantes Carlos Pérez y Andrés Gómez comenzaron a discutir acaloradamente por un balón y luego Carlos le propinó un golpe en el rostro a Andrés, dejándole un hematoma visible.',
-    },
-    {
-      titulo: 'Irrespeto verbal a docente',
-      texto: 'En la tercera hora de clase en el aula 601, la docente María González reportó que el alumno Felipe Morales se negó a guardar su celular, comenzó a responder con groserías e insultos a la profesora y abandonó el salón sin autorización previa.',
-    },
-  ];
-
-  // Estandarizar narrativa con Gemini
-  const handleProcesarNarrativa = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!narrativaInput.trim()) return;
-
-    setProcesandoNarrativa(true);
-    setErrorNarrativa(null);
-    setResultadoNarrativa(null);
-    try {
-      const res = await incidentesApi.procesarNarrativa({ relato: narrativaInput.trim() });
-      setResultadoNarrativa(res);
-    } catch (err) {
-      console.error('Error al procesar narrativa:', err);
-      setErrorNarrativa(
-        extraerMensajeError(err, 'No fue posible contactar el servicio de IA de Gemini. Verifique su conexión o intente nuevamente.')
-      );
-    } finally {
-      setProcesandoNarrativa(false);
-    }
-  };
-
-  const handleCopiarHechos = () => {
-    if (!resultadoNarrativa?.hechosEstandarizados) return;
-    navigator.clipboard.writeText(resultadoNarrativa.hechosEstandarizados);
-    setTextoCopiado(true);
-    setTimeout(() => setTextoCopiado(false), 2500);
   };
 
   // Búsqueda reactiva debounced para evitar saturación de red y race conditions
@@ -249,10 +194,10 @@ ${resultadoPlan.recomendacionesIa}`;
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Asistente de Redacción y Clasificación
+            Formulador de Intervenciones Pedagógicas
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Estandarización de hechos y extracción de entidades conforme al Manual de Convivencia.
+            Propuestas de planes formativos y acuerdos restaurativos asistidos por IA conforme a la Ley 1620.
           </p>
         </div>
         <div className="flex items-center gap-2 bg-slate-100 text-slate-700 border border-slate-200 text-xs px-2.5 py-1 rounded-md shrink-0">
@@ -261,233 +206,8 @@ ${resultadoPlan.recomendacionesIa}`;
         </div>
       </div>
 
-      {/* Tabs Selector */}
-      <div className="flex items-center gap-3 border-b border-slate-200">
-        <button
-          onClick={() => setTabActiva('narrativa')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all duration-150 ${
-            tabActiva === 'narrativa'
-              ? 'border-trujillo-sky text-trujillo-navy bg-trujillo-sky/5 rounded-t-xl'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Estandarizador de Narrativas (PLN)</span>
-        </button>
-
-        <button
-          onClick={() => setTabActiva('plan')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all duration-150 ${
-            tabActiva === 'plan'
-              ? 'border-trujillo-sky text-trujillo-navy bg-trujillo-sky/5 rounded-t-xl'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          <span>Formulador de Intervenciones (IA)</span>
-        </button>
-      </div>
-
-      {/* TAB 1: Estandarizador de Narrativas (CU-05) */}
-      {tabActiva === 'narrativa' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* Columna Izquierda: Entrada */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-trujillo-sky" />
-                <span>Relato Informal o Narrativa Libre</span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Pega la versión suministrada por el docente, acudiente o informante. Gemini extraerá las entidades, lugar, hora y tipología conforme a la Ley 1620.
-              </p>
-            </div>
-
-            {/* Chips de Ejemplos */}
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ejemplos Rápidos:</span>
-              <div className="flex flex-wrap gap-2">
-                {ejemplosNarrativa.map((ej, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setNarrativaInput(ej.texto)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all"
-                  >
-                    {ej.titulo}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleProcesarNarrativa} className="space-y-3">
-              <textarea
-                rows={7}
-                placeholder="Escribe aquí el relato libre de los hechos (ej: En el patio a las 10:15 el alumno Carlos de 8-1 golpeó a Andrés en el rostro...)"
-                value={narrativaInput}
-                onChange={(e) => setNarrativaInput(e.target.value)}
-                className="w-full p-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 focus:border-trujillo-sky font-sans"
-                required
-              />
-
-              <div className="flex items-center justify-between pt-1">
-                <button
-                  type="button"
-                  onClick={() => setNarrativaInput('')}
-                  disabled={!narrativaInput}
-                  className="text-xs font-semibold text-slate-400 hover:text-slate-600 disabled:opacity-30"
-                >
-                  Limpiar Texto
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={procesandoNarrativa || !narrativaInput.trim()}
-                  className="px-4 py-2 rounded-md bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-medium flex items-center gap-2 disabled:opacity-50 transition-all shadow-sm"
-                >
-                  {procesandoNarrativa ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Wand2 size={16} />
-                  )}
-                  <span>{procesandoNarrativa ? 'Analizando...' : 'Estandarizar Hechos'}</span>
-                </button>
-              </div>
-            </form>
-
-            {errorNarrativa && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center justify-between">
-                <span>{errorNarrativa}</span>
-                <button onClick={() => setErrorNarrativa(null)} className="text-red-500 hover:text-red-700">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Columna Derecha: Resultado Estructurado */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                <BrainCircuit className="w-4 h-4 text-slate-500" />
-                <span>Extracción Estructurada</span>
-              </h2>
-              {resultadoNarrativa && (
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold uppercase tracking-wide">
-                  Procesado
-                </span>
-              )}
-            </div>
-
-            {!resultadoNarrativa ? (
-              <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
-                <div className="bg-slate-50 px-3 py-2 border-b border-slate-200">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Vista previa — campos que se extraerán
-                  </span>
-                </div>
-                <table className="w-full">
-                  <tbody className="divide-y divide-slate-100">
-                    {[
-                      { label: 'Redacción fáctica formal', value: 'Se completará automáticamente…' },
-                      { label: 'Clasificación Ley 1620', value: 'TIPO_I / TIPO_II / TIPO_III' },
-                      { label: 'Lugar detectado', value: 'Aula / Patio / Pasillo…' },
-                      { label: 'Estudiante(s) identificados', value: 'Nombre — Rol: Agresor / Víctima' },
-                      { label: 'Procedimiento sugerido', value: 'Ruta convivencial aplicable' },
-                    ].map((row) => (
-                      <tr key={row.label} className="bg-white">
-                        <td className="px-3 py-2.5 text-slate-600 font-medium w-2/5 border-r border-slate-100 align-top">
-                          {row.label}
-                        </td>
-                        <td className="px-3 py-2.5 text-slate-300 italic">{row.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="space-y-4 text-xs">
-                {/* Hechos Estandarizados */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-extrabold uppercase tracking-wider text-slate-500 text-[10px]">
-                      Redacción Fáctica Formal (Debido Proceso):
-                    </span>
-                    <button
-                      onClick={handleCopiarHechos}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-trujillo-navy hover:text-trujillo-sky"
-                    >
-                      {textoCopiado ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{textoCopiado ? 'Copiado' : 'Copiar'}</span>
-                    </button>
-                  </div>
-                  <p className="text-slate-800 font-medium leading-relaxed">
-                    {resultadoNarrativa.hechosEstandarizados}
-                  </p>
-                </div>
-
-                {/* Clasificación sugerida */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-700">Clasificación Ley 1620</span>
-                    <span className="text-sm font-black text-amber-900">{resultadoNarrativa.clasificacionLeySugerida || 'TIPO_I'}</span>
-                  </div>
-
-                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-blue-700">Lugar Detectado</span>
-                    <span className="text-sm font-black text-blue-900">{resultadoNarrativa.lugarNombre || 'Patio Central'}</span>
-                  </div>
-                </div>
-
-                {/* Involucrados Identificados */}
-                {resultadoNarrativa.estudiantes && resultadoNarrativa.estudiantes.length > 0 && (
-                  <div>
-                    <span className="block font-extrabold uppercase tracking-wider text-slate-500 text-[10px] mb-2">
-                      Estudiantes Identificados en el Texto ({resultadoNarrativa.estudiantes.length}):
-                    </span>
-                    <div className="space-y-1.5">
-                      {resultadoNarrativa.estudiantes.map((est, i) => (
-                        <div key={i} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                          <div>
-                            <span className="font-bold text-slate-800">{est.nombreCompleto || est.nombreMencionado || 'Estudiante'}</span>
-                            {est.documento && <span className="text-slate-400 font-mono ml-2">({est.documento})</span>}
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-trujillo-sky/10 border border-trujillo-sky/30 text-trujillo-navy font-bold text-[10px] uppercase">
-                            {est.rolSugerido}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Acciones de continuidad */}
-                <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    ¿Deseas formalizar este hecho en la bitácora escolar?
-                  </span>
-                  <button
-                    onClick={() =>
-                      navigate('/orientador/incidentes', {
-                        state: { prefill: resultadoNarrativa, autoOpenModal: true },
-                      })
-                    }
-                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
-                    title="Abre el modal de registro con todos estos campos pre-diligenciados"
-                  >
-                    <span>Transferir a Registro de Incidente Oficial</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: Formulador de Intervenciones (CU-06) */}
-      {tabActiva === 'plan' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Formulador de Intervenciones (CU-06) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Columna Izquierda: Selección de Alumno y Parámetros */}
           <div className={`${resultadoPlan ? 'lg:col-span-4' : 'lg:col-span-5'} space-y-4`}>
             {/* Tarjeta de Búsqueda y Selección */}
@@ -937,7 +657,6 @@ ${resultadoPlan.recomendacionesIa}`;
             )}
           </div>
         </div>
-      )}
     </div>
   );
 };
