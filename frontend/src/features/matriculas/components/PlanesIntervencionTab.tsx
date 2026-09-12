@@ -10,7 +10,8 @@ import { extraerMensajeError } from '../../../core/api/apiClient';
 import {
   HeartHandshake,
   Plus,
-  Sparkles,
+  BrainCircuit,
+  Info,
   Calendar,
   Clock,
   User,
@@ -55,6 +56,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
   const [incidenteSeleccionado, setIncidenteSeleccionado] = useState<string>('');
   const [diagnostico, setDiagnostico] = useState<string>('');
   const [recomendacionesIa, setRecomendacionesIa] = useState<string>('');
+  const [mostrarRecomendacionesIa, setMostrarRecomendacionesIa] = useState<boolean>(true);
   const [accionesAcordadas, setAccionesAcordadas] = useState<string>('');
   const [compromisoPadres, setCompromisoPadres] = useState<string>('');
   const [fechaProximoSeguimiento, setFechaProximoSeguimiento] = useState<string>('');
@@ -303,14 +305,22 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
       {mostrarFormNuevo && (
         <form
           onSubmit={handleGuardarPlan}
-          className="bg-white border-2 border-trujillo-navy/20 rounded-2xl p-5 shadow-sm space-y-4 animate-in fade-in duration-200"
+          className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5 animate-in fade-in duration-200"
         >
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <FileEdit className="w-4 h-4 text-trujillo-navy" />
-              <h4 className="text-sm font-bold text-slate-800">
-                Formular Plan de Intervención Pedagógica: {estudianteNombre}
-              </h4>
+          {/* Encabezado del Formulario Documental */}
+          <div className="flex items-center justify-between pb-3.5 border-b border-slate-200">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100 shrink-0">
+                <FileEdit className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 tracking-tight leading-none">
+                  Formular Plan de Intervención Pedagógica
+                </h4>
+                <p className="text-xs text-slate-500 mt-1 leading-none">
+                  Estudiante: <span className="font-semibold text-slate-700">{estudianteNombre}</span>
+                </p>
+              </div>
             </div>
             <button
               type="button"
@@ -318,27 +328,31 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                 setMostrarFormNuevo(false);
                 setAdvertenciaIa(null);
               }}
-              className="text-xs text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
+              className="text-xs text-slate-400 hover:text-slate-700 font-medium cursor-pointer transition-colors"
             >
               Cancelar
             </button>
           </div>
 
-          {/* Selector de Incidente e Invocación IA */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="md:col-span-2">
+          {/* Barra Superior de Control y Asistente (Selector + Botón) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <div className="md:col-span-2 space-y-1">
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Incidente Convivencial Asociado <span className="text-rose-500">*</span>:
+                Incidente Convivencial Asociado <span className="text-red-500 font-bold">*</span>:
               </label>
               <select
                 value={incidenteSeleccionado}
                 onChange={(e) => setIncidenteSeleccionado(e.target.value)}
-                className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
+                className="w-full h-10 text-xs rounded-md border border-slate-300 px-3 py-2 bg-white shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-800 focus:border-blue-800 transition truncate"
+                title={
+                  incidentes.find((i) => String(i.incidenteId) === incidenteSeleccionado)?.descripcion ||
+                  'Seleccione el incidente de origen'
+                }
                 required
               >
                 <option value="">-- Seleccione el incidente de origen ({incidentes.length} disponibles) --</option>
                 {incidentes.map((inc) => (
-                  <option key={inc.incidenteId} value={inc.incidenteId}>
+                  <option key={inc.incidenteId} value={inc.incidenteId} title={inc.descripcion}>
                     Caso #{inc.incidenteId} {inc.faltaCodigo ? `[Falta ${inc.faltaCodigo}]` : ''} -{' '}
                     {inc.descripcion?.substring(0, 60)}...
                   </option>
@@ -346,22 +360,22 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
               </select>
             </div>
 
-            <div className="flex items-end">
+            <div>
               <button
                 type="button"
                 onClick={handleGenerarIa}
                 disabled={generandoIa || !incidenteSeleccionado}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="w-full h-10 px-3.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:text-blue-900 rounded-md shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 title={!incidenteSeleccionado ? 'Seleccione primero un incidente para orientar la IA' : 'Genera propuesta pedagógica estructurada analizando el caso'}
               >
                 {generandoIa ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
                     <span>Analizando caso con IA...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 text-trujillo-sky" />
+                    <BrainCircuit className="w-4 h-4 text-blue-900 shrink-0" />
                     <span>Sugerir con Asistente IA</span>
                   </>
                 )}
@@ -369,77 +383,116 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
             </div>
           </div>
 
-          {/* Banner de Gobierno Human-in-the-Loop si se utilizó IA */}
+          {/* Tarjeta Informativa de Propuesta IA (Banner de Contexto) */}
           {advertenciaIa && (
-            <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs flex items-start gap-2.5">
-              <Sparkles className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+            <div className="bg-sky-50/70 border border-sky-200/80 rounded-lg p-3 flex items-start gap-2.5 mb-4 animate-in fade-in duration-150">
+              <Info className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <p className="font-bold">Propuesta preliminar asistida por IA:</p>
-                <p className="text-[11px] text-purple-800 leading-relaxed">
-                  {advertenciaIa} Valide, personalice y ajuste los compromisos antes de formalizar el plan.
+                <h5 className="text-xs font-bold text-sky-900 uppercase tracking-wide">
+                  Propuesta de Acuerdo Pedagógico (Asistida por IA)
+                </h5>
+                <p className="text-xs text-sky-800 leading-relaxed">
+                  Contenido sugerido con base en los antecedentes del estudiante. Valide, edite y ajuste las cláusulas restaurativas antes de formalizar.
                 </p>
+                {advertenciaIa !== 'Propuesta estructurada por IA según antecedentes.' && (
+                  <p className="text-[11px] text-sky-700 font-medium pt-0.5">
+                    {advertenciaIa}
+                  </p>
+                )}
               </div>
             </div>
           )}
 
-          {/* Campos del Plan */}
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Diagnóstico Situacional / Causas Raíz: <span className="text-rose-500">*</span>
-              </label>
+          {/* Bloques de Redacción y Textareas Documentales */}
+          <div className="space-y-4">
+            {/* Cláusula 1: Diagnóstico Situacional */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label htmlFor="textarea-diagnostico-intervencion" className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 mb-1.5">
+                  <span>Diagnóstico Situacional / Causas Raíz</span>
+                  <span className="text-red-500 font-bold">*</span>
+                </label>
+                <span className="text-[11px] font-normal text-slate-400">Contexto formativo y detonantes</span>
+              </div>
               <textarea
+                id="textarea-diagnostico-intervencion"
                 value={diagnostico}
                 onChange={(e) => setDiagnostico(e.target.value)}
-                rows={2}
+                rows={4}
                 placeholder="Describa el contexto psicoformativo, dinámicas grupales o detonantes de la conducta observada..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition resize-none"
+                className="w-full min-h-[110px] p-3 text-xs text-slate-800 leading-relaxed font-normal bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-md transition-colors resize-y"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Acciones Formativas y Tareas Restaurativas Acordadas: <span className="text-rose-500">*</span>
-              </label>
+            {/* Cláusula 2: Acciones Formativas */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label htmlFor="textarea-acciones-intervencion" className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 mb-1.5">
+                  <span>Acciones Formativas y Tareas Restaurativas Acordadas</span>
+                  <span className="text-red-500 font-bold">*</span>
+                </label>
+                <span className="text-[11px] font-normal text-slate-400">Medidas pedagógicas y compromisos</span>
+              </div>
               <textarea
+                id="textarea-acciones-intervencion"
                 value={accionesAcordadas}
                 onChange={(e) => setAccionesAcordadas(e.target.value)}
-                rows={2}
+                rows={4}
                 placeholder="Medidas pedagógicas, talleres de autorregulación, acuerdos de aula, mediación escolar..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition resize-none"
+                className="w-full min-h-[110px] p-3 text-xs text-slate-800 leading-relaxed font-normal bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-md transition-colors resize-y"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Compromiso de Acudientes / Entorno Familiar:
-              </label>
+            {/* Cláusula 3: Compromiso de Acudientes */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label htmlFor="textarea-compromiso-intervencion" className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 mb-1.5">
+                  <span>Compromiso de Acudientes / Entorno Familiar</span>
+                </label>
+                <span className="text-[11px] font-normal text-slate-400">Acompañamiento y corresponsabilidad</span>
+              </div>
               <textarea
+                id="textarea-compromiso-intervencion"
                 value={compromisoPadres}
                 onChange={(e) => setCompromisoPadres(e.target.value)}
-                rows={2}
+                rows={4}
                 placeholder="Acompañamiento en casa, asistencia a citaciones, pautas de crianza positiva..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition resize-none"
+                className="w-full min-h-[110px] p-3 text-xs text-slate-800 leading-relaxed font-normal bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-md transition-colors resize-y"
               />
             </div>
 
+            {/* Acordeón / Bloque de Recomendaciones Orientadoras de la IA */}
             {recomendacionesIa && (
-              <div>
-                <label className="block text-xs font-semibold text-purple-800 mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Recomendaciones Orientadoras de la IA:</span>
-                </label>
-                <textarea
-                  value={recomendacionesIa}
-                  onChange={(e) => setRecomendacionesIa(e.target.value)}
-                  rows={2}
-                  className="w-full text-xs rounded-xl border border-purple-200 p-2.5 bg-purple-50/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 transition resize-none"
-                />
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2">
+                <div
+                  onClick={() => setMostrarRecomendacionesIa((prev) => !prev)}
+                  className="text-xs font-semibold text-slate-700 flex items-center justify-between cursor-pointer select-none"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <BrainCircuit className="w-4 h-4 text-slate-500" />
+                    <span>Recomendaciones Orientadoras de la IA</span>
+                  </div>
+                  {mostrarRecomendacionesIa ? (
+                    <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                </div>
+                {mostrarRecomendacionesIa && (
+                  <textarea
+                    value={recomendacionesIa}
+                    onChange={(e) => setRecomendacionesIa(e.target.value)}
+                    rows={3}
+                    placeholder="Orientaciones y sugerencias pedagógicas para la labor del orientador..."
+                    className="w-full text-xs text-slate-600 leading-normal italic bg-white border border-slate-200 rounded-md p-3 focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 transition resize-y"
+                  />
+                )}
               </div>
             )}
 
+            {/* Metadatos de Seguimiento */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -449,18 +502,18 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                   type="date"
                   value={fechaProximoSeguimiento}
                   onChange={(e) => setFechaProximoSeguimiento(e.target.value)}
-                  className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
+                  className="w-full h-10 text-xs rounded-md border border-slate-300 px-3 py-2 bg-white shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-800 focus:border-blue-800 transition"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Estado Inicial:
+                  Estado Inicial del Plan:
                 </label>
                 <select
                   value={estadoNuevoPlan}
                   onChange={(e) => setEstadoNuevoPlan(e.target.value as EstadoPlanIntervencion)}
-                  className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
+                  className="w-full h-10 text-xs rounded-md border border-slate-300 px-3 py-2 bg-white shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-800 focus:border-blue-800 transition"
                 >
                   <option value="EN_SEGUIMIENTO">En Seguimiento</option>
                   <option value="BORRADOR">Borrador</option>
@@ -470,18 +523,18 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
           </div>
 
           {/* Botón de Enviar */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setMostrarFormNuevo(false)}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
+              className="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={guardandoPlan}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
               {guardandoPlan ? (
                 <>
@@ -608,12 +661,12 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                     )}
 
                     {plan.recomendacionesIa && (
-                      <div className="p-3 bg-purple-50/40 rounded-xl border border-purple-200/50 space-y-1">
-                        <span className="text-purple-800 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-purple-600" />
-                          <span>Recomendaciones Pedagógicas Sugeridas:</span>
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <span className="text-slate-600 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                          <BrainCircuit className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Recomendaciones Pedagógicas Sugeridas (IA):</span>
                         </span>
-                        <p className="text-purple-950 leading-relaxed">
+                        <p className="text-slate-700 leading-relaxed italic text-xs">
                           {plan.recomendacionesIa}
                         </p>
                       </div>
