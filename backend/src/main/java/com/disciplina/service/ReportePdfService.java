@@ -427,7 +427,7 @@ public class ReportePdfService {
         agregarCampo(table, "Lugar:", l != null ? l.getNombre() : "No especificado");
 
         agregarCampo(table, "Docente Reportante:", d != null ? (d.getNombres() + " " + d.getApellidos()) : "No especificado");
-        agregarCampo(table, "Área Docente:", d != null && d.getAreaDesempeno() != null ? d.getAreaDesempeno() : "Docente de Aula");
+        agregarCampo(table, "Área Docente:", d != null && d.getAreaDesempenoNombre() != null ? d.getAreaDesempenoNombre() : "Docente de Aula");
         agregarCampo(table, "Registrado Por:", u != null ? (u.getNombres() + " " + u.getApellidos()) : "Orientación");
         agregarCampo(table, "Estado Procesal:", formatearEstado(i.getEstadoProceso()));
 

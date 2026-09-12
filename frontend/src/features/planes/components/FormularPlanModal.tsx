@@ -283,19 +283,25 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
       aria-modal="true"
     >
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-200/80 overflow-hidden min-h-0 animate-in zoom-in-95 duration-150">
-        <div className="px-6 py-4 bg-trujillo-navy text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-trujillo-sky/20 text-trujillo-sky flex items-center justify-center">
-              <Plus className="w-5 h-5" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
+              <Plus className="w-5 h-5 stroke-[1.75]" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold">Formular Plan de Intervención Pedagógica</h3>
-              <p className="text-xs text-slate-400">Diseño formativo conforme al manual de convivencia y Ley 1620</p>
+              <h2 className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                Formular Plan de Intervención Pedagógica
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Diseño formativo conforme al manual de convivencia y Ley 1620
+              </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={handleCerrar}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+            className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Cerrar ventana"
           >
             <X className="w-5 h-5" />
           </button>
@@ -306,11 +312,13 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
             {/* Selector de Estudiante */}
             <div className="space-y-2">
               {totalEstudiantesSistema === 0 && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="bg-amber-50/80 border border-amber-200/90 rounded-lg p-3.5 flex gap-3">
+                  <AlertTriangle className="text-amber-700 w-5 h-5 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold text-amber-900">No hay estudiantes matriculados en el sistema</p>
-                    <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+                    <h4 className="text-xs font-semibold text-amber-900 uppercase tracking-wide">
+                      No hay estudiantes matriculados en el sistema
+                    </h4>
+                    <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
                       Actualmente no existen alumnos registrados en el censo escolar. Para formular planes de intervención, primero deben importarse las matrículas escolares desde el módulo de Rectoría.
                     </p>
                   </div>
@@ -346,7 +354,10 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                     placeholder="Escribe documento o nombre del alumno (mínimo 2 letras)..."
                     value={busquedaEstudianteTexto}
                     onChange={(e) => setBusquedaEstudianteTexto(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30"
+                    autoComplete="off"
+                    spellCheck={false}
+                    name="student-search-query-no-autofill"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                   />
                   {buscandoEstudiante && (
                     <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-slate-400" />
@@ -407,17 +418,16 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
 
             {/* Bloqueo si el estudiante no tiene incidentes registrados */}
             {estudianteSeleccionado && !cargandoExpediente && incidentesEstudiante.length === 0 && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2 animate-in fade-in duration-150">
-                <div className="flex items-center gap-2 font-bold text-xs text-amber-800">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Estudiante sin incidentes disciplinarios registrados</span>
+              <div className="bg-amber-50/80 border border-amber-200/90 rounded-lg p-3.5 flex gap-3 animate-in fade-in duration-150">
+                <AlertTriangle className="text-amber-700 w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-semibold text-amber-900 uppercase tracking-wide">
+                    Estudiante sin incidentes disciplinarios registrados
+                  </h4>
+                  <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
+                    De acuerdo con el Manual de Convivencia y la Ley 1620, los planes de intervención formativa requieren un incidente convivencial previo reportado en el sistema. Este alumno no registra faltas ni antecedentes en su expediente, por lo cual no es procedente formular una intervención disciplinaria.
+                  </p>
                 </div>
-                <p className="text-[11px] text-amber-700 leading-relaxed">
-                  De acuerdo con el Manual de Convivencia y la Ley 1620, los planes de intervención formativa requieren un incidente convivencial previo reportado en el sistema.
-                </p>
-                <p className="text-[11px] text-amber-800 font-semibold">
-                  Este alumno no registra faltas ni antecedentes en su expediente, por lo cual no es procedente formular una intervención disciplinaria.
-                </p>
               </div>
             )}
 

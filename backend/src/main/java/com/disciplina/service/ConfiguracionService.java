@@ -17,6 +17,9 @@ import com.disciplina.dto.configuracion.DocenteRequestDTO;
 import com.disciplina.dto.configuracion.LugarRequestDTO;
 import com.disciplina.dto.configuracion.UsuarioAdminResponseDTO;
 import com.disciplina.dto.configuracion.UsuarioRequestDTO;
+import com.disciplina.domain.model.AreaDesempeno;
+import com.disciplina.domain.repository.AreaDesempenoRepository;
+import com.disciplina.dto.configuracion.AreaDesempenoResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +39,7 @@ public class ConfiguracionService {
     private final DocenteRepository docenteRepository;
     private final LugarRepository lugarRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AreaDesempenoRepository areaDesempenoRepository;
     private final PasswordEncoder passwordEncoder;
 
     // -------------------------------------------------------------------------
@@ -121,11 +125,18 @@ public class ConfiguracionService {
 
     @Transactional
     public DocenteResponseDTO crearDocente(DocenteRequestDTO req) {
+        AreaDesempeno area = null;
+        if (req.getAreaDesempenoId() != null) {
+            area = areaDesempenoRepository.findById(req.getAreaDesempenoId()).orElse(null);
+        } else if (StringUtils.hasText(req.getAreaDesempeno())) {
+            area = areaDesempenoRepository.findByNombreIgnoreCase(req.getAreaDesempeno().trim()).orElse(null);
+        }
+
         Docente docente = Docente.builder()
                 .documento(req.getDocumento().trim())
                 .nombres(req.getNombres().trim())
                 .apellidos(req.getApellidos().trim())
-                .areaDesempeno(req.getAreaDesempeno())
+                .areaDesempeno(area)
                 .activo(req.getActivo() != null ? req.getActivo() : true)
                 .build();
         return toDocenteResponse(docenteRepository.save(docente));
@@ -138,7 +149,19 @@ public class ConfiguracionService {
         docente.setDocumento(req.getDocumento().trim());
         docente.setNombres(req.getNombres().trim());
         docente.setApellidos(req.getApellidos().trim());
-        docente.setAreaDesempeno(req.getAreaDesempeno());
+
+        if (req.getAreaDesempenoId() != null) {
+            AreaDesempeno area = areaDesempenoRepository.findById(req.getAreaDesempenoId()).orElse(null);
+            docente.setAreaDesempeno(area);
+        } else if (req.getAreaDesempeno() != null) {
+            if (StringUtils.hasText(req.getAreaDesempeno())) {
+                AreaDesempeno area = areaDesempenoRepository.findByNombreIgnoreCase(req.getAreaDesempeno().trim()).orElse(null);
+                docente.setAreaDesempeno(area);
+            } else {
+                docente.setAreaDesempeno(null);
+            }
+        }
+
         if (req.getActivo() != null) {
             docente.setActivo(req.getActivo());
         }
@@ -154,13 +177,23 @@ public class ConfiguracionService {
     }
 
     private DocenteResponseDTO toDocenteResponse(Docente d) {
+        AreaDesempeno a = d.getAreaDesempeno();
+        AreaDesempenoResponseDTO areaDto = (a != null) ? AreaDesempenoResponseDTO.builder()
+                .id(a.getId())
+                .nombre(a.getNombre())
+                .descripcion(a.getDescripcion())
+                .activo(a.getActivo())
+                .build() : null;
+
         return DocenteResponseDTO.builder()
                 .id(d.getId())
                 .documento(d.getDocumento())
                 .nombres(d.getNombres())
                 .apellidos(d.getApellidos())
                 .nombreCompleto(d.getNombreCompleto())
-                .areaDesempeno(d.getAreaDesempeno())
+                .areaDesempenoId(a != null ? a.getId() : null)
+                .areaDesempeno(a != null ? a.getNombre() : null)
+                .areaDesempenoDetalle(areaDto)
                 .activo(d.getActivo())
                 .build();
     }

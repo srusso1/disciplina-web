@@ -93,7 +93,6 @@ class ReporteControllerTest {
                         .documento("DOC_REP_" + System.nanoTime())
                         .nombres("Docente")
                         .apellidos("Reporte")
-                        .areaDesempeno("Ciencias")
                         .activo(true)
                         .build()));
 

@@ -186,16 +186,16 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
         <div className="relative">
           {/* Alerta contextual cuando la IA sugirió un nombre no matriculado */}
           {searchTerm && !data.estudianteId && (
-            <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-              <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="font-bold text-amber-900 flex items-center gap-1.5">
+            <div className="mb-2 bg-amber-50/80 border border-amber-200/90 rounded-lg p-3.5 flex gap-3 animate-in fade-in duration-150">
+              <AlertTriangle className="text-amber-700 w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
                   <span>Estudiante pendiente de vincular:</span>
-                  <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">
+                  <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-amber-800 normal-case font-normal">
                     "{searchTerm}"
                   </span>
-                </p>
-                <p className="text-[11px] text-amber-700 leading-relaxed">
+                </h4>
+                <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
                   La IA identificó este nombre en el relato, pero <strong>no coincide con ningún estudiante matriculado</strong> en el sistema institucional. Debe seleccionar a un alumno del censo para poder guardar el caso, o quitarlo si no es un estudiante del plantel.
                 </p>
               </div>
@@ -215,11 +215,14 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                 setSearchTerm(e.target.value);
                 onChange({ busquedaEstudiante: e.target.value });
               }}
+              autoComplete="off"
+              spellCheck={false}
+              name="student-search-query-no-autofill"
               placeholder="Escriba apellido, nombre o documento (ej: Gomez, 1066...)"
               className={`w-full pl-9 pr-9 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition placeholder:text-slate-400 ${
                 searchTerm && !data.estudianteId
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
-                  : 'border-slate-300 focus:ring-trujillo-navy/20 focus:border-trujillo-navy'
+                  : 'border-slate-300 focus:ring-blue-500/30 focus:border-blue-500'
               }`}
             />
             {buscando && (

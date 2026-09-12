@@ -156,80 +156,64 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera del Modal */}
-        <div className="bg-trujillo-navy text-white p-5 sm:p-6 shrink-0 relative border-b border-trujillo-dark">
-          <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100 shrink-0">
+              <GraduationCap className="w-5 h-5 stroke-[1.75]" />
+            </div>
             {cargando ? (
-              <div className="flex items-center gap-3 py-2">
-                <Loader2 className="w-6 h-6 animate-spin text-trujillo-sky" />
-                <span className="text-sm font-medium text-slate-300">
-                  Consultando expediente del estudiante...
-                </span>
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                <span className="text-xs text-slate-500 font-medium">Consultando expediente...</span>
               </div>
             ) : expediente ? (
-              <div className="flex items-start gap-4 min-w-0">
-                {/* Avatar con iniciales */}
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-trujillo-sky shadow-inner shrink-0 font-extrabold text-lg sm:text-xl tracking-wider">
-                  {(expediente.nombres?.[0] || 'E').toUpperCase()}
-                  {(expediente.apellidos?.[0] || '').toUpperCase()}
-                </div>
-
-                {/* Información de Identidad */}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="px-2.5 py-0.5 rounded bg-trujillo-sky/20 text-sky-200 border border-sky-400/30 text-[10px] font-bold tracking-wider uppercase">
-                      Expediente Único Escolar
-                    </span>
-                    {expediente.matriculaActual ? (
-                      <span className="px-2 py-0.5 rounded-md bg-white/15 text-white text-xs font-semibold">
-                        Grado {expediente.matriculaActual.grado}° - Grupo{' '}
-                        {expediente.matriculaActual.grupo} ({expediente.matriculaActual.anioLectivo})
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-200 text-xs font-medium">
-                        Sin matrícula vigente
-                      </span>
-                    )}
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                        expediente.activo
-                          ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-200 border border-rose-500/30'
-                      }`}
-                    >
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>{expediente.activo ? 'Matriculado' : 'Inactivo'}</span>
-                    </span>
-                  </div>
-
-                  <h2
-                    id="modal-expediente-title"
-                    className="text-lg sm:text-xl font-black text-white tracking-tight truncate"
-                    title={expediente.nombreCompleto}
-                  >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 id="modal-expediente-title" className="text-base font-bold text-slate-900 tracking-tight leading-none truncate">
                     {expediente.nombreCompleto}
                   </h2>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    Documento de Identidad:{' '}
-                    <span className="font-mono font-bold text-sky-200">{expediente.documento}</span>
-                  </p>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                    Doc: {expediente.documento}
+                  </span>
+                  {expediente.matriculaActual ? (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                      Grado {expediente.matriculaActual.grado}°-{expediente.matriculaActual.grupo} ({expediente.matriculaActual.anioLectivo})
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                      Sin matrícula vigente
+                    </span>
+                  )}
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                    expediente.activo
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  }`}>
+                    {expediente.activo ? 'Matriculado' : 'Inactivo'}
+                  </span>
                 </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Expediente Único de Convivencia y Garantía del Debido Proceso (Ley 1620)
+                </p>
               </div>
             ) : (
-              <h2 id="modal-expediente-title" className="text-lg font-bold">
-                Expediente del Estudiante
-              </h2>
+              <div>
+                <h2 id="modal-expediente-title" className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                  Expediente del Estudiante
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Consulta del historial escolar</p>
+              </div>
             )}
-
-            {/* Botón Cerrar */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition active:scale-[0.97] cursor-pointer shrink-0"
-              aria-label="Cerrar expediente"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+            aria-label="Cerrar expediente"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Barra de Pestañas (Sin scroll horizontal invasivo, jitter-free) */}

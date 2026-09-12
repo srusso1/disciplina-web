@@ -18,12 +18,16 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import com.disciplina.domain.model.AreaDesempeno;
+import com.disciplina.domain.repository.AreaDesempenoRepository;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ImportadorDocentesService {
 
     private final DocenteRepository docenteRepository;
+    private final AreaDesempenoRepository areaDesempenoRepository;
 
     private static final String DEFAULT_AREA = "PENDIENTE POR REGISTRO";
 
@@ -125,14 +129,28 @@ public class ImportadorDocentesService {
                     }
                 }
 
+                AreaDesempeno areaEntity = null;
+                if (!area.isEmpty()) {
+                    final String nombreArea = area.trim();
+                    areaEntity = areaDesempenoRepository.findByNombreIgnoreCase(nombreArea).orElseGet(() ->
+                            areaDesempenoRepository.save(AreaDesempeno.builder()
+                                    .nombre(nombreArea)
+                                    .descripcion("Área académica registrada en importación")
+                                    .activo(true)
+                                    .build())
+                    );
+                }
+
                 // Upsert en base de datos
                 Optional<Docente> existenteOpt = docenteRepository.findByDocumento(documento);
                 if (existenteOpt.isPresent()) {
                     Docente docente = existenteOpt.get();
                     docente.setNombres(nombres);
                     docente.setApellidos(apellidos);
-                    if (!DEFAULT_AREA.equals(area) || docente.getAreaDesempeno() == null || docente.getAreaDesempeno().isBlank()) {
-                        docente.setAreaDesempeno(area);
+                    if (areaEntity != null || docente.getAreaDesempeno() == null) {
+                        if (areaEntity != null) {
+                            docente.setAreaDesempeno(areaEntity);
+                        }
                     }
                     docente.setActivo(true);
                     docenteRepository.save(docente);
@@ -142,7 +160,7 @@ public class ImportadorDocentesService {
                             .documento(documento)
                             .nombres(nombres)
                             .apellidos(apellidos)
-                            .areaDesempeno(area)
+                            .areaDesempeno(areaEntity)
                             .activo(true)
                             .build();
                     docenteRepository.save(nuevo);

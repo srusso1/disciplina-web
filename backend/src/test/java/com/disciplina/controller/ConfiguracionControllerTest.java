@@ -238,7 +238,7 @@ class ConfiguracionControllerTest {
         Docente d1 = docenteRepository.findByDocumento("99887766").orElseThrow();
         assertThat(d1.getNombres()).isEqualTo("MARIO ALBERTO");
         assertThat(d1.getApellidos()).isEqualTo("YEPES DIAZ");
-        assertThat(d1.getAreaDesempeno()).isEqualTo("PENDIENTE POR REGISTRO");
+        assertThat(d1.getAreaDesempenoNombre()).isEqualTo("PENDIENTE POR REGISTRO");
     }
 
     @Test

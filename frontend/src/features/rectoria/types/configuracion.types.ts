@@ -18,13 +18,29 @@ export interface CatalogoFaltaItem {
   activo: boolean;
 }
 
+export interface AreaDesempenoItem {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
+  createdAt?: string;
+}
+
+export interface AreaDesempenoRequest {
+  nombre: string;
+  descripcion?: string;
+  activo?: boolean;
+}
+
 export interface DocenteItem {
   id: number;
   documento: string;
   nombres: string;
   apellidos: string;
   nombreCompleto: string;
+  areaDesempenoId?: number;
   areaDesempeno?: string;
+  areaDesempenoDetalle?: AreaDesempenoItem;
   activo: boolean;
 }
 
@@ -60,6 +76,7 @@ export interface DocenteRequest {
   documento: string;
   nombres: string;
   apellidos: string;
+  areaDesempenoId?: number;
   areaDesempeno?: string;
   activo?: boolean;
 }

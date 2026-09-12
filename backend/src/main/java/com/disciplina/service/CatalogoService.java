@@ -31,7 +31,9 @@ public class CatalogoService {
                         .nombres(d.getNombres())
                         .apellidos(d.getApellidos())
                         .nombreCompleto(d.getNombreCompleto())
-                        .areaDesempeno(d.getAreaDesempeno())
+                        .areaDesempenoId(d.getAreaDesempeno() != null ? d.getAreaDesempeno().getId() : null)
+                        .areaDesempeno(d.getAreaDesempenoNombre())
+                        .activo(d.getActivo())
                         .build())
                 .collect(Collectors.toList());
     }

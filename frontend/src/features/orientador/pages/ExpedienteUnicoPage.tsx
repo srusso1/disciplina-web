@@ -265,7 +265,6 @@ export const ExpedienteUnicoPage: React.FC = () => {
                 <th className="py-2.5 px-3">Documento</th>
                 <th className="py-2.5 px-3">Nombres y Apellidos</th>
                 <th className="py-2.5 px-3 text-center">Grado-Grupo Actual</th>
-                <th className="py-2.5 px-3 text-center">Historial de Incidentes</th>
                 <th className="py-2.5 px-3 text-center">Estado Matrícula</th>
                 <th className="py-2.5 px-3 text-right">Acciones</th>
               </tr>
@@ -273,14 +272,14 @@ export const ExpedienteUnicoPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {cargando ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                  <td colSpan={5} className="py-12 text-center text-slate-500">
                     <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
                     <p className="text-xs font-medium text-slate-600">Cargando directorio de estudiantes...</p>
                   </td>
                 </tr>
               ) : estudiantes.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                  <td colSpan={5} className="py-12 text-center text-slate-500">
                     <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
                     <p className="text-sm font-medium text-slate-700">No se encontraron registros</p>
                     <p className="text-xs text-slate-400 mt-0.5">
@@ -316,16 +315,6 @@ export const ExpedienteUnicoPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-center">
-                      <button
-                        onClick={() => setExpedienteEstudianteId(est.id)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
-                        title="Ver resumen en expediente"
-                      >
-                        <FolderOpen className="w-3 h-3 text-slate-500" />
-                        <span>Consultar ficha</span>
-                      </button>
-                    </td>
-                    <td className="py-2.5 px-3 text-center">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${
                           est.estadoMatricula === 'ACTIVO'
@@ -340,11 +329,12 @@ export const ExpedienteUnicoPage: React.FC = () => {
                     </td>
                     <td className="py-2.5 px-3 text-right">
                       <button
+                        type="button"
                         onClick={() => setExpedienteEstudianteId(est.id)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-300 transition-colors shadow-2xs"
+                        className="h-8 px-2.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-blue-900 rounded-md shadow-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                         title="Ver expediente e historial integral"
                       >
-                        <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                        <FileText size={15} className="text-slate-500" />
                         <span>Ver Expediente</span>
                       </button>
                     </td>

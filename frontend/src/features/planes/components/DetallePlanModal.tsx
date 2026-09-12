@@ -103,19 +103,30 @@ export const DetallePlanModal: React.FC<DetallePlanModalProps> = ({
     >
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-200/80 overflow-hidden min-h-0 animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 bg-trujillo-navy text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-trujillo-sky/20 text-trujillo-sky flex items-center justify-center">
-              <FileEdit className="w-5 h-5" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
+              <FileEdit className="w-5 h-5 stroke-[1.75]" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold">Plan #{planActual.id} • {planActual.estudianteNombre}</h3>
-              <p className="text-xs text-slate-400">Doc: {planActual.estudianteDocumento} | Estado: {planActual.estado}</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                  Plan #{planActual.id} • {planActual.estudianteNombre}
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                  {planActual.estado}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Doc: {planActual.estudianteDocumento} • Seguimiento formativo institucional
+              </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Cerrar ventana"
           >
             <X className="w-5 h-5" />
           </button>

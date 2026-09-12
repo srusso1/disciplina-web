@@ -25,8 +25,9 @@ public class Docente {
     @Column(nullable = false, length = 100)
     private String apellidos;
 
-    @Column(name = "area_desempeno", length = 100)
-    private String areaDesempeno;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "area_desempeno_id")
+    private AreaDesempeno areaDesempeno;
 
     @Builder.Default
     @Column(nullable = false)
@@ -34,5 +35,9 @@ public class Docente {
 
     public String getNombreCompleto() {
         return (nombres + " " + apellidos).trim();
+    }
+
+    public String getAreaDesempenoNombre() {
+        return areaDesempeno != null ? areaDesempeno.getNombre() : null;
     }
 }

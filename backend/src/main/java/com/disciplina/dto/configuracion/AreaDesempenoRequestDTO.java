@@ -11,24 +11,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocenteRequestDTO {
+public class AreaDesempenoRequestDTO {
 
-    @NotBlank
-    @Size(min = 5, max = 25)
-    private String documento;
+    @NotBlank(message = "El nombre del área de desempeño es obligatorio")
+    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
+    private String nombre;
 
-    @NotBlank
-    @Size(max = 100)
-    private String nombres;
-
-    @NotBlank
-    @Size(max = 100)
-    private String apellidos;
-
-    private Integer areaDesempenoId;
-
-    @Size(max = 100)
-    private String areaDesempeno;
+    @Size(max = 255, message = "La descripción no puede exceder 255 caracteres")
+    private String descripcion;
 
     @Builder.Default
     private Boolean activo = true;
