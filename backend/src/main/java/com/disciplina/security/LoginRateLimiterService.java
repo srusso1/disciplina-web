@@ -1,11 +1,13 @@
 package com.disciplina.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -13,18 +15,21 @@ public class LoginRateLimiterService {
 
     private final int maxAttempts;
     private final long blockDurationMinutes;
-    private final ConcurrentHashMap<String, AttemptData> attemptsCache = new ConcurrentHashMap<>();
+    private final Cache<String, AttemptData> attemptsCache;
 
     public LoginRateLimiterService(
             @Value("${app.security.login.max-attempts:5}") int maxAttempts,
             @Value("${app.security.login.block-duration-minutes:15}") long blockDurationMinutes) {
         this.maxAttempts = maxAttempts > 0 ? maxAttempts : 5;
         this.blockDurationMinutes = blockDurationMinutes > 0 ? blockDurationMinutes : 15;
+        this.attemptsCache = Caffeine.newBuilder()
+                .expireAfterWrite(Duration.ofMinutes(this.blockDurationMinutes))
+                .maximumSize(2000)
+                .build();
     }
 
     public boolean isBlocked(String key) {
-        limpiarExpirados();
-        AttemptData data = attemptsCache.get(key);
+        AttemptData data = attemptsCache.getIfPresent(key);
         if (data == null) {
             return false;
         }
@@ -34,7 +39,7 @@ public class LoginRateLimiterService {
             if (diffSeconds < blockSeconds) {
                 return true;
             } else {
-                attemptsCache.remove(key);
+                attemptsCache.invalidate(key);
                 return false;
             }
         }
@@ -42,24 +47,23 @@ public class LoginRateLimiterService {
     }
 
     public void registrarIntentoFallido(String key) {
-        limpiarExpirados();
-        attemptsCache.compute(key, (k, v) -> {
+        attemptsCache.asMap().compute(key, (k, v) -> {
             if (v == null) {
                 return new AttemptData(1, Instant.now());
             }
             return new AttemptData(v.attempts + 1, Instant.now());
         });
-        AttemptData current = attemptsCache.get(key);
+        AttemptData current = attemptsCache.getIfPresent(key);
         log.warn("Intento fallido registrado para clave [{}]. Total intentos: {} de {}",
                 key, current != null ? current.attempts : 1, maxAttempts);
     }
 
     public void registrarLoginExitoso(String key) {
-        attemptsCache.remove(key);
+        attemptsCache.invalidate(key);
     }
 
     public long getSegundosRestantesBloqueo(String key) {
-        AttemptData data = attemptsCache.get(key);
+        AttemptData data = attemptsCache.getIfPresent(key);
         if (data == null) {
             return 0;
         }
@@ -69,16 +73,7 @@ public class LoginRateLimiterService {
     }
 
     public void resetParaPruebas() {
-        attemptsCache.clear();
-    }
-
-    private void limpiarExpirados() {
-        if (attemptsCache.size() > 500) {
-            Instant ahora = Instant.now();
-            long blockSeconds = blockDurationMinutes * 60;
-            attemptsCache.entrySet().removeIf(entry ->
-                    (ahora.getEpochSecond() - entry.getValue().lastAttempt.getEpochSecond()) > blockSeconds);
-        }
+        attemptsCache.invalidateAll();
     }
 
     private record AttemptData(int attempts, Instant lastAttempt) {}

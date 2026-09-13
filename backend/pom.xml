@@ -109,6 +109,12 @@
             <version>2.0.3</version>
         </dependency>
 
+        <!-- Caffeine Cache for Robust Bounded Rate Limiting -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
