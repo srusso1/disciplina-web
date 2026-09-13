@@ -8,9 +8,12 @@ import com.disciplina.dto.auth.LoginRequest;
 import com.disciplina.security.JwtTokenProvider;
 import com.disciplina.security.LoginRateLimiterService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Duration;
 
 @Slf4j
 @RestController
@@ -33,7 +38,9 @@ public class AuthController {
     private final LoginRateLimiterService loginRateLimiterService;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest loginRequest,
+                                            HttpServletRequest request,
+                                            HttpServletResponse httpResponse) {
         String normalizedUsername = loginRequest.getUsername().trim();
         String clientIp = obtenerIpCliente(request);
         String rateLimitKey = clientIp + "_" + normalizedUsername.toLowerCase();
@@ -81,8 +88,30 @@ public class AuthController {
                 .expiresIn(jwtTokenProvider.getExpirationMs())
                 .build();
 
+        ResponseCookie cookie = ResponseCookie.from("disciplina_token", jwt)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofMillis(jwtTokenProvider.getExpirationMs()))
+                .build();
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         log.info("Inicio de sesion exitoso para usuario: {} con rol: {}", usuario.getUsername(), usuario.getRol());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse httpResponse) {
+        ResponseCookie cookie = ResponseCookie.from("disciplina_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.noContent().build();
     }
 
     private String obtenerIpCliente(HttpServletRequest request) {

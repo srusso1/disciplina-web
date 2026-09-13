@@ -6,12 +6,13 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 15000,
+  withCredentials: true,
 });
 
-// Interceptor de Peticiones: inyecta Bearer token JWT si existe
+// Interceptor de Peticiones: inyecta Bearer token JWT si existe (prioriza sessionStorage para mitigar XSS en reposo)
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('disciplina_token');
+    const token = sessionStorage.getItem('disciplina_token') || localStorage.getItem('disciplina_token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,13 +21,15 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor de Respuestas: detecta 401 y purga la sesion
+// Interceptor de Respuestas: detecta 401 y purga la sesion en todos los almacenamientos
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response && error.response.status === 401) {
       const isAuthEndpoint = error.config?.url?.includes('/auth/login');
       if (!isAuthEndpoint) {
+        sessionStorage.removeItem('disciplina_token');
+        sessionStorage.removeItem('disciplina_user');
         localStorage.removeItem('disciplina_token');
         localStorage.removeItem('disciplina_user');
         window.dispatchEvent(new Event('auth:unauthorized'));
