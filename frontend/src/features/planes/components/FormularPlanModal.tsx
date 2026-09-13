@@ -5,6 +5,7 @@ import { EstudianteMatricula, IncidenteHistorialEstudiante } from '../../matricu
 import { useDebounce } from '../../../core/hooks/useDebounce';
 import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 import { notify } from '../../../core/utils/notify';
+import { extraerMensajeError } from '../../../core/api/apiClient';
 import { useFormularPlan } from '../hooks/useFormularPlan';
 import { FormularioPlanIntervencion } from './FormularioPlanIntervencion';
 import {
@@ -99,6 +100,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
       } catch (err) {
         if (activo) {
           console.error('Error buscando estudiante:', err);
+          notify.error('Error en búsqueda', extraerMensajeError(err, 'No fue posible buscar estudiantes en el censo.'));
         }
       } finally {
         if (activo) {

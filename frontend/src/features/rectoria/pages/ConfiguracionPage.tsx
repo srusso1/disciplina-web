@@ -22,6 +22,7 @@ import {
 import { configuracionApi } from '../api/configuracionApi';
 import { areasDesempenoApi } from '../api/areasDesempenoApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { notify } from '../../../core/utils/notify';
 import type {
   CatalogoFaltaItem,
   CatalogoFaltaRequest,
@@ -460,6 +461,7 @@ const TabDocentes: React.FC = () => {
       setAreasActivas(data);
     } catch (err) {
       console.error('Error al cargar áreas de desempeño activas:', err);
+      notify.error('Error de configuración', extraerMensajeError(err, 'No fue posible cargar las áreas de desempeño activas.'));
     }
   }, []);
 
@@ -554,7 +556,9 @@ const TabDocentes: React.FC = () => {
       document.body.removeChild(a);
     } catch (err) {
       console.error('Error al descargar plantilla:', err);
-      setImportError('No fue posible descargar la plantilla oficial. Intente nuevamente.');
+      const msg = extraerMensajeError(err, 'No fue posible descargar la plantilla oficial. Intente nuevamente.');
+      setImportError(msg);
+      notify.error('Descarga fallida', msg);
     } finally {
       setDescargandoPlantilla(false);
     }

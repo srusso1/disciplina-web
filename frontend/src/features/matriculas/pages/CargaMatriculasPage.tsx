@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { EditarEstudianteModal } from '../components/EditarEstudianteModal';
 import { ExpedienteEstudianteModal } from '../components/ExpedienteEstudianteModal';
+import { notify } from '../../../core/utils/notify';
+import { extraerMensajeError } from '../../../core/api/apiClient';
 
 export const CargaMatriculasPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -48,7 +50,9 @@ export const CargaMatriculasPage: React.FC = () => {
       document.body.removeChild(a);
     } catch (err) {
       console.error('Error al descargar plantilla:', err);
-      setErrorMessage('No fue posible descargar la plantilla oficial. Intente nuevamente.');
+      const msg = extraerMensajeError(err, 'No fue posible descargar la plantilla oficial. Intente nuevamente.');
+      setErrorMessage(msg);
+      notify.error('Descarga fallida', msg);
     } finally {
       setDescargandoPlantilla(false);
     }
@@ -113,6 +117,7 @@ export const CargaMatriculasPage: React.FC = () => {
       } catch (err) {
         if (!cancelado) {
           console.error('Error cargando estudiantes', err);
+          notify.error('Error de consulta', extraerMensajeError(err, 'No fue posible cargar el censo de estudiantes matriculados.'));
         }
       } finally {
         if (!cancelado) {
