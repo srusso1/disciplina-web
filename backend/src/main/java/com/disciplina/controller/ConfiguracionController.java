@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping({"/configuracion", "/api/v1/configuracion"})
+@RequestMapping("/api/v1/configuracion")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('RECTOR')")
 public class ConfiguracionController {

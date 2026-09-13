@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/rectoria", "/api/v1/rectoria"})
+@RequestMapping("/api/v1/rectoria")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('RECTOR')")
 public class RectoriaController {

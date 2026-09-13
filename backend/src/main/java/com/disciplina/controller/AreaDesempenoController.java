@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/areas-desempeno", "/api/v1/areas-desempeno"})
+@RequestMapping("/api/v1/areas-desempeno")
 @RequiredArgsConstructor
 public class AreaDesempenoController {
 

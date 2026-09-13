@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping({"/matriculas", "/api/v1/matriculas"})
+@RequestMapping("/api/v1/matriculas")
 @RequiredArgsConstructor
 public class MatriculaController {
 

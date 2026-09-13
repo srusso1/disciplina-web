@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/auditoria", "/api/v1/auditoria"})
+@RequestMapping("/api/v1/auditoria")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('RECTOR')")
 public class AuditoriaController {
