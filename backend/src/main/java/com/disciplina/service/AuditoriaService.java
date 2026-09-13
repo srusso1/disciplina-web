@@ -194,12 +194,7 @@ public class AuditoriaService {
         try {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs != null) {
-                HttpServletRequest request = attrs.getRequest();
-                String xForwardedFor = request.getHeader("X-Forwarded-For");
-                if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-                    return xForwardedFor.split(",")[0].trim();
-                }
-                return request.getRemoteAddr();
+                return com.disciplina.common.util.ClienteIpUtil.obtenerIpCliente(attrs.getRequest());
             }
         } catch (Exception ignored) {
         }

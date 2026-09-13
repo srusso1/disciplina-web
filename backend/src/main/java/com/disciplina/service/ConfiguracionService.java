@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ConfiguracionService {
@@ -41,6 +43,7 @@ public class ConfiguracionService {
     private final UsuarioRepository usuarioRepository;
     private final AreaDesempenoRepository areaDesempenoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditoriaService auditoriaService;
 
     // -------------------------------------------------------------------------
     // CatalogoFaltas
@@ -65,13 +68,36 @@ public class ConfiguracionService {
                 .procedimientoSugerido(req.getProcedimientoSugerido())
                 .activo(req.getActivo() != null ? req.getActivo() : true)
                 .build();
-        return toCatalogoFaltaResponse(catalogoFaltaRepository.save(falta));
+        CatalogoFalta guardada = catalogoFaltaRepository.save(falta);
+
+        auditoriaService.registrarAuditoria(
+                "CREAR_FALTA",
+                "CatalogoFalta",
+                guardada.getId(),
+                null,
+                Map.of(
+                        "codigo", guardada.getCodigo(),
+                        "clasificacionLey", guardada.getClasificacionLey() != null ? guardada.getClasificacionLey().name() : "N/A",
+                        "gravedad", guardada.getGravedadInstitucional() != null ? guardada.getGravedadInstitucional().name() : "N/A",
+                        "activo", guardada.getActivo()
+                ),
+                null);
+
+        return toCatalogoFaltaResponse(guardada);
     }
 
     @Transactional
     public CatalogoFaltaResponseDTO actualizarCatalogoFalta(Integer id, CatalogoFaltaRequestDTO req) {
         CatalogoFalta falta = catalogoFaltaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("CatalogoFalta no encontrada con id: " + id));
+
+        Map<String, Object> antes = Map.of(
+                "codigo", falta.getCodigo(),
+                "clasificacionLey", falta.getClasificacionLey() != null ? falta.getClasificacionLey().name() : "N/A",
+                "gravedad", falta.getGravedadInstitucional() != null ? falta.getGravedadInstitucional().name() : "N/A",
+                "activo", falta.getActivo() != null ? falta.getActivo() : true
+        );
+
         falta.setCodigo(req.getCodigo().trim().toUpperCase());
         falta.setClasificacionLey(req.getClasificacionLey());
         falta.setGravedadInstitucional(req.getGravedadInstitucional());
@@ -80,15 +106,41 @@ public class ConfiguracionService {
         if (req.getActivo() != null) {
             falta.setActivo(req.getActivo());
         }
-        return toCatalogoFaltaResponse(catalogoFaltaRepository.save(falta));
+        CatalogoFalta guardada = catalogoFaltaRepository.save(falta);
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR_FALTA",
+                "CatalogoFalta",
+                guardada.getId(),
+                antes,
+                Map.of(
+                        "codigo", guardada.getCodigo(),
+                        "clasificacionLey", guardada.getClasificacionLey() != null ? guardada.getClasificacionLey().name() : "N/A",
+                        "gravedad", guardada.getGravedadInstitucional() != null ? guardada.getGravedadInstitucional().name() : "N/A",
+                        "activo", guardada.getActivo() != null ? guardada.getActivo() : true
+                ),
+                null);
+
+        return toCatalogoFaltaResponse(guardada);
     }
 
     @Transactional
     public CatalogoFaltaResponseDTO toggleActivoCatalogoFalta(Integer id) {
         CatalogoFalta falta = catalogoFaltaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("CatalogoFalta no encontrada con id: " + id));
-        falta.setActivo(!Boolean.TRUE.equals(falta.getActivo()));
-        return toCatalogoFaltaResponse(catalogoFaltaRepository.save(falta));
+        boolean previo = Boolean.TRUE.equals(falta.getActivo());
+        falta.setActivo(!previo);
+        CatalogoFalta guardada = catalogoFaltaRepository.save(falta);
+
+        auditoriaService.registrarAuditoria(
+                "TOGGLE_ACTIVO_FALTA",
+                "CatalogoFalta",
+                guardada.getId(),
+                Map.of("activo", previo),
+                Map.of("activo", guardada.getActivo()),
+                null);
+
+        return toCatalogoFaltaResponse(guardada);
     }
 
     private CatalogoFaltaResponseDTO toCatalogoFaltaResponse(CatalogoFalta f) {
@@ -139,13 +191,36 @@ public class ConfiguracionService {
                 .areaDesempeno(area)
                 .activo(req.getActivo() != null ? req.getActivo() : true)
                 .build();
-        return toDocenteResponse(docenteRepository.save(docente));
+        Docente guardado = docenteRepository.save(docente);
+
+        auditoriaService.registrarAuditoria(
+                "CREAR_DOCENTE",
+                "Docente",
+                guardado.getId(),
+                null,
+                Map.of(
+                        "documento", guardado.getDocumento(),
+                        "nombreCompleto", guardado.getNombreCompleto(),
+                        "area", area != null ? area.getNombre() : "SIN_AREA",
+                        "activo", guardado.getActivo()
+                ),
+                null);
+
+        return toDocenteResponse(guardado);
     }
 
     @Transactional
     public DocenteResponseDTO actualizarDocente(Integer id, DocenteRequestDTO req) {
         Docente docente = docenteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con id: " + id));
+
+        Map<String, Object> antes = Map.of(
+                "documento", docente.getDocumento(),
+                "nombres", docente.getNombres(),
+                "apellidos", docente.getApellidos(),
+                "activo", docente.getActivo() != null ? docente.getActivo() : true
+        );
+
         docente.setDocumento(req.getDocumento().trim());
         docente.setNombres(req.getNombres().trim());
         docente.setApellidos(req.getApellidos().trim());
@@ -165,15 +240,40 @@ public class ConfiguracionService {
         if (req.getActivo() != null) {
             docente.setActivo(req.getActivo());
         }
-        return toDocenteResponse(docenteRepository.save(docente));
+        Docente guardado = docenteRepository.save(docente);
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR_DOCENTE",
+                "Docente",
+                guardado.getId(),
+                antes,
+                Map.of(
+                        "documento", guardado.getDocumento(),
+                        "nombreCompleto", guardado.getNombreCompleto(),
+                        "activo", guardado.getActivo() != null ? guardado.getActivo() : true
+                ),
+                null);
+
+        return toDocenteResponse(guardado);
     }
 
     @Transactional
     public DocenteResponseDTO toggleActivoDocente(Integer id) {
         Docente docente = docenteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con id: " + id));
-        docente.setActivo(!Boolean.TRUE.equals(docente.getActivo()));
-        return toDocenteResponse(docenteRepository.save(docente));
+        boolean previo = Boolean.TRUE.equals(docente.getActivo());
+        docente.setActivo(!previo);
+        Docente guardado = docenteRepository.save(docente);
+
+        auditoriaService.registrarAuditoria(
+                "TOGGLE_ACTIVO_DOCENTE",
+                "Docente",
+                guardado.getId(),
+                Map.of("documento", guardado.getDocumento(), "activo", previo),
+                Map.of("documento", guardado.getDocumento(), "activo", guardado.getActivo()),
+                null);
+
+        return toDocenteResponse(guardado);
     }
 
     private DocenteResponseDTO toDocenteResponse(Docente d) {
@@ -223,27 +323,73 @@ public class ConfiguracionService {
                 .descripcion(req.getDescripcion())
                 .activo(req.getActivo() != null ? req.getActivo() : true)
                 .build();
-        return toLugarResponse(lugarRepository.save(lugar));
+        Lugar guardado = lugarRepository.save(lugar);
+
+        auditoriaService.registrarAuditoria(
+                "CREAR_LUGAR",
+                "Lugar",
+                guardado.getId(),
+                null,
+                Map.of(
+                        "nombre", guardado.getNombre(),
+                        "descripcion", guardado.getDescripcion() != null ? guardado.getDescripcion() : "",
+                        "activo", guardado.getActivo()
+                ),
+                null);
+
+        return toLugarResponse(guardado);
     }
 
     @Transactional
     public LugarResponseDTO actualizarLugar(Integer id, LugarRequestDTO req) {
         Lugar lugar = lugarRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lugar no encontrado con id: " + id));
+
+        Map<String, Object> antes = Map.of(
+                "nombre", lugar.getNombre(),
+                "descripcion", lugar.getDescripcion() != null ? lugar.getDescripcion() : "",
+                "activo", lugar.getActivo() != null ? lugar.getActivo() : true
+        );
+
         lugar.setNombre(req.getNombre().trim());
         lugar.setDescripcion(req.getDescripcion());
         if (req.getActivo() != null) {
             lugar.setActivo(req.getActivo());
         }
-        return toLugarResponse(lugarRepository.save(lugar));
+        Lugar guardado = lugarRepository.save(lugar);
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR_LUGAR",
+                "Lugar",
+                guardado.getId(),
+                antes,
+                Map.of(
+                        "nombre", guardado.getNombre(),
+                        "descripcion", guardado.getDescripcion() != null ? guardado.getDescripcion() : "",
+                        "activo", guardado.getActivo() != null ? guardado.getActivo() : true
+                ),
+                null);
+
+        return toLugarResponse(guardado);
     }
 
     @Transactional
     public LugarResponseDTO toggleActivoLugar(Integer id) {
         Lugar lugar = lugarRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lugar no encontrado con id: " + id));
-        lugar.setActivo(!Boolean.TRUE.equals(lugar.getActivo()));
-        return toLugarResponse(lugarRepository.save(lugar));
+        boolean previo = Boolean.TRUE.equals(lugar.getActivo());
+        lugar.setActivo(!previo);
+        Lugar guardado = lugarRepository.save(lugar);
+
+        auditoriaService.registrarAuditoria(
+                "TOGGLE_ACTIVO_LUGAR",
+                "Lugar",
+                guardado.getId(),
+                Map.of("nombre", guardado.getNombre(), "activo", previo),
+                Map.of("nombre", guardado.getNombre(), "activo", guardado.getActivo()),
+                null);
+
+        return toLugarResponse(guardado);
     }
 
     private LugarResponseDTO toLugarResponse(Lugar l) {
@@ -272,7 +418,7 @@ public class ConfiguracionService {
     public UsuarioAdminResponseDTO crearUsuario(UsuarioRequestDTO req) {
         // La contraseña es obligatoria al crear
         if (!StringUtils.hasText(req.getPassword())) {
-            throw new IllegalArgumentException("La contrase\u00f1a es obligatoria al crear un usuario.");
+            throw new IllegalArgumentException("La contraseña es obligatoria al crear un usuario.");
         }
         Usuario usuario = Usuario.builder()
                 .username(req.getUsername().trim())
@@ -283,17 +429,56 @@ public class ConfiguracionService {
                 .rol(req.getRol())
                 .activo(req.getActivo() != null ? req.getActivo() : true)
                 .build();
-        return toUsuarioAdminResponse(usuarioRepository.save(usuario));
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAuditoria(
+                "CREAR_USUARIO",
+                "Usuario",
+                guardado.getId(),
+                null,
+                Map.of(
+                        "username", guardado.getUsername(),
+                        "nombres", guardado.getNombres(),
+                        "apellidos", guardado.getApellidos(),
+                        "email", guardado.getEmail(),
+                        "rol", guardado.getRol() != null ? guardado.getRol().name() : "N/A",
+                        "activo", guardado.getActivo()
+                ),
+                null);
+
+        return toUsuarioAdminResponse(guardado);
     }
 
     @Transactional
     public UsuarioAdminResponseDTO actualizarUsuario(Integer id, UsuarioRequestDTO req) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
+
+        // Salvaguarda: Impedir que el usuario autenticado se auto-desactive o se auto-degrade de rol
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (usuario.getUsername().equalsIgnoreCase(currentUsername)) {
+            if (req.getActivo() != null && !req.getActivo()) {
+                throw new IllegalStateException("No puede desactivar su propia cuenta activa.");
+            }
+            if (req.getRol() != null && req.getRol() != usuario.getRol()) {
+                throw new IllegalStateException("No puede modificar su propio rol institucional.");
+            }
+        }
+
+        Map<String, Object> antes = Map.of(
+                "username", usuario.getUsername(),
+                "nombres", usuario.getNombres(),
+                "apellidos", usuario.getApellidos(),
+                "email", usuario.getEmail(),
+                "rol", usuario.getRol() != null ? usuario.getRol().name() : "N/A",
+                "activo", usuario.getActivo() != null ? usuario.getActivo() : true
+        );
+
         usuario.setUsername(req.getUsername().trim());
-        // Si viene contrase\u00f1a no vac\u00eda se re-hashea; de lo contrario se conserva la existente
+        boolean passwordCambiada = false;
         if (StringUtils.hasText(req.getPassword())) {
             usuario.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+            passwordCambiada = true;
         }
         usuario.setNombres(req.getNombres().trim());
         usuario.setApellidos(req.getApellidos().trim());
@@ -302,7 +487,25 @@ public class ConfiguracionService {
         if (req.getActivo() != null) {
             usuario.setActivo(req.getActivo());
         }
-        return toUsuarioAdminResponse(usuarioRepository.save(usuario));
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAuditoria(
+                "ACTUALIZAR_USUARIO",
+                "Usuario",
+                guardado.getId(),
+                antes,
+                Map.of(
+                        "username", guardado.getUsername(),
+                        "nombres", guardado.getNombres(),
+                        "apellidos", guardado.getApellidos(),
+                        "email", guardado.getEmail(),
+                        "rol", guardado.getRol() != null ? guardado.getRol().name() : "N/A",
+                        "activo", guardado.getActivo() != null ? guardado.getActivo() : true,
+                        "passwordActualizada", passwordCambiada
+                ),
+                null);
+
+        return toUsuarioAdminResponse(guardado);
     }
 
     @Transactional
@@ -310,14 +513,25 @@ public class ConfiguracionService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
 
-        // Impedir que el rector activo se desactive a s\u00ed mismo
+        // Impedir que el rector activo se desactive a sí mismo
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (usuario.getUsername().equals(currentUsername) && Boolean.TRUE.equals(usuario.getActivo())) {
+        if (usuario.getUsername().equalsIgnoreCase(currentUsername) && Boolean.TRUE.equals(usuario.getActivo())) {
             throw new IllegalStateException("No puede desactivar su propia cuenta activa.");
         }
 
-        usuario.setActivo(!Boolean.TRUE.equals(usuario.getActivo()));
-        return toUsuarioAdminResponse(usuarioRepository.save(usuario));
+        boolean previo = Boolean.TRUE.equals(usuario.getActivo());
+        usuario.setActivo(!previo);
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAuditoria(
+                "TOGGLE_ACTIVO_USUARIO",
+                "Usuario",
+                guardado.getId(),
+                Map.of("username", guardado.getUsername(), "activo", previo),
+                Map.of("username", guardado.getUsername(), "activo", guardado.getActivo()),
+                null);
+
+        return toUsuarioAdminResponse(guardado);
     }
 
     private UsuarioAdminResponseDTO toUsuarioAdminResponse(Usuario u) {

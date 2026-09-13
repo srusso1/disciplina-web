@@ -96,11 +96,18 @@ public class PlanIntervencionService {
         }
 
         List<PlanIntervencion> planes = planIntervencionRepository.findByEstudianteIdConDetalles(estudianteId);
+        if (planes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> planIds = planes.stream().map(PlanIntervencion::getId).toList();
+        Map<Integer, List<SeguimientoCaso>> seguimientosPorPlan = seguimientoCasoRepository
+                .findByPlanIdInConUsuario(planIds)
+                .stream()
+                .collect(Collectors.groupingBy(s -> s.getPlan().getId()));
+
         return planes.stream()
-                .map(p -> {
-                    List<SeguimientoCaso> segs = seguimientoCasoRepository.findByPlanIdConUsuario(p.getId());
-                    return mapearADTO(p, segs);
-                })
+                .map(p -> mapearADTO(p, seguimientosPorPlan.getOrDefault(p.getId(), Collections.emptyList())))
                 .collect(Collectors.toList());
     }
 
@@ -116,12 +123,22 @@ public class PlanIntervencionService {
                 busqueda != null ? busqueda.trim() : null,
                 pageable);
 
-        List<PlanIntervencionResponseDTO> dtos = resultado.getContent().stream()
-                .map(p -> {
-                    List<SeguimientoCaso> segs = seguimientoCasoRepository.findByPlanIdConUsuario(p.getId());
-                    return mapearADTO(p, segs);
-                })
-                .collect(Collectors.toList());
+        List<PlanIntervencion> planes = resultado.getContent();
+        List<PlanIntervencionResponseDTO> dtos;
+
+        if (planes.isEmpty()) {
+            dtos = Collections.emptyList();
+        } else {
+            List<Integer> planIds = planes.stream().map(PlanIntervencion::getId).toList();
+            Map<Integer, List<SeguimientoCaso>> seguimientosPorPlan = seguimientoCasoRepository
+                    .findByPlanIdInConUsuario(planIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(s -> s.getPlan().getId()));
+
+            dtos = planes.stream()
+                    .map(p -> mapearADTO(p, seguimientosPorPlan.getOrDefault(p.getId(), Collections.emptyList())))
+                    .collect(Collectors.toList());
+        }
 
         return PaginaRespuestaDTO.<PlanIntervencionResponseDTO>builder()
                 .contenido(dtos)

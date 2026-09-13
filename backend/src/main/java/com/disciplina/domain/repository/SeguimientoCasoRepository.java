@@ -18,4 +18,12 @@ public interface SeguimientoCasoRepository extends JpaRepository<SeguimientoCaso
         ORDER BY s.fechaRegistro ASC
         """)
     List<SeguimientoCaso> findByPlanIdConUsuario(@Param("planId") Integer planId);
+
+    @Query("""
+        SELECT s FROM SeguimientoCaso s
+        JOIN FETCH s.usuario u
+        WHERE s.plan.id IN :planIds
+        ORDER BY s.fechaRegistro ASC
+        """)
+    List<SeguimientoCaso> findByPlanIdInConUsuario(@Param("planIds") List<Integer> planIds);
 }

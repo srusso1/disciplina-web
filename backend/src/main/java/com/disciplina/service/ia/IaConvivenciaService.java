@@ -327,7 +327,6 @@ public class IaConvivenciaService {
 
         // 4. Detectar Estudiantes del plantel que aparecen en el relato
         List<EstudianteIdentificadoIADTO> estudiantes = new ArrayList<>();
-        boolean primerEstudiante = true;
 
         for (MatriculaEstudiante m : matriculas) {
             Estudiante e = m.getEstudiante();
@@ -339,13 +338,12 @@ public class IaConvivenciaService {
                     (nombres.length() > 3 && relatoLower.contains(nombres) && apellidos.length() > 3 && relatoLower.contains(apellidos));
 
             if (coincide) {
-                RolEstudianteIncidente rol = primerEstudiante
-                        ? RolEstudianteIncidente.AGRESOR_PRINCIPAL
-                        : RolEstudianteIncidente.VICTIMA;
-
-                boolean esSujetoPasivo = (rol == RolEstudianteIncidente.VICTIMA || rol == RolEstudianteIncidente.TESTIGO);
-                Integer faltaIdHeuristica = esSujetoPasivo ? null : (faltaDetectada != null ? faltaDetectada.getId() : null);
-                String faltaCodHeuristica = esSujetoPasivo ? null : (faltaDetectada != null ? faltaDetectada.getCodigo() : null);
+                // Principio Constitucional de Debido Proceso y Presunción de Inocencia (Ley 1620 de 2013):
+                // En modo heurístico sin análisis semántico LLM, NUNCA se debe presumir culpabilidad de agresor.
+                // Se asigna PARTICIPE como rol neutro editable para que el Orientador determine roles tras escuchar descargos.
+                RolEstudianteIncidente rol = RolEstudianteIncidente.PARTICIPE;
+                Integer faltaIdHeuristica = faltaDetectada != null ? faltaDetectada.getId() : null;
+                String faltaCodHeuristica = faltaDetectada != null ? faltaDetectada.getCodigo() : null;
 
                 estudiantes.add(EstudianteIdentificadoIADTO.builder()
                         .nombreMencionado(e.getNombreCompleto())
@@ -357,12 +355,8 @@ public class IaConvivenciaService {
                         .rolSugerido(rol)
                         .catalogoFaltaId(faltaIdHeuristica)
                         .faltaCodigo(faltaCodHeuristica)
-                        .justificacionRol(esSujetoPasivo
-                                ? "Identificado como parte afectada / víctima (no incurre en falta disciplinaria)."
-                                : "Identificado por análisis de coincidencia nominal en el relato.")
+                        .justificacionRol("Identificado por coincidencia nominal en el relato. Rol preliminar asignado como PARTÍCIPE; defina el rol definitivo y falta tras verificar descargos (Ley 1620).")
                         .build());
-
-                primerEstudiante = false;
             }
         }
 
@@ -370,10 +364,10 @@ public class IaConvivenciaService {
         if (estudiantes.isEmpty()) {
             estudiantes.add(EstudianteIdentificadoIADTO.builder()
                     .nombreMencionado("Estudiante(s) por vincular")
-                    .rolSugerido(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                    .rolSugerido(RolEstudianteIncidente.PARTICIPE)
                     .catalogoFaltaId(faltaDetectada != null ? faltaDetectada.getId() : null)
                     .faltaCodigo(faltaDetectada != null ? faltaDetectada.getCodigo() : null)
-                    .justificacionRol("Por favor seleccione el estudiante involucrado desde el buscador.")
+                    .justificacionRol("Por favor busque y seleccione el estudiante involucrado desde el censo escolar.")
                     .build());
         }
 
@@ -387,7 +381,7 @@ public class IaConvivenciaService {
                 .fechaSugerida(LocalDate.now().toString())
                 .estudiantes(estudiantes)
                 .asistidoPorIa(false)
-                .mensajeAsistente("Asistente PLN operando en modo heurístico institucional (sin conexión externa a Gemini). Verifique y ajuste cada campo según el caso.")
+                .mensajeAsistente("Asistente PLN en modo heurístico institucional (sin inferencia remota de Gemini). Por garantía del debido proceso y presunción de inocencia, asigne y valide los roles definitivos manualmente.")
                 .build();
     }
 

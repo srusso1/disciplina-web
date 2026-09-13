@@ -40,7 +40,7 @@ public class ReporteController {
      * RF-08 / CU-11: Emite el informe ejecutivo consolidado de convivencia para el despacho de Rectoría.
      * Restringido exclusivamente al rol Rector.
      */
-    @GetMapping("/pdf/consolidado-rectoria")
+    @GetMapping({"/pdf/consolidado-rectoria", "/pdf/consolidado-anual"})
     @PreAuthorize("hasRole('RECTOR')")
     public ResponseEntity<byte[]> descargarConsolidadoRectoriaPdf() {
         byte[] pdfBytes = reportePdfService.generarConsolidadoRectoriaPdf();

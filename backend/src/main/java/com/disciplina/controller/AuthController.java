@@ -86,13 +86,6 @@ public class AuthController {
     }
 
     private String obtenerIpCliente(HttpServletRequest request) {
-        if (request == null) {
-            return "127.0.0.1";
-        }
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "127.0.0.1";
+        return com.disciplina.common.util.ClienteIpUtil.obtenerIpCliente(request);
     }
 }
