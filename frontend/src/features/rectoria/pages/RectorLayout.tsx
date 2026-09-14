@@ -9,10 +9,10 @@ import {
   FileSpreadsheet, 
   LogOut, 
   ScrollText,
-  Bell,
   HelpCircle,
   Settings,
 } from 'lucide-react';
+import { NotificacionesMenu } from '../../notificaciones/components/NotificacionesMenu';
 
 export const RectorLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -135,9 +135,7 @@ export const RectorLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="p-2 rounded-lg text-slate-500 hover:text-trujillo-navy hover:bg-slate-100 transition-all text-xs flex items-center gap-1.5" title="Notificaciones Institucionales">
-              <Bell className="w-4 h-4" />
-            </button>
+            <NotificacionesMenu />
             <button className="p-2 rounded-lg text-slate-500 hover:text-trujillo-navy hover:bg-slate-100 transition-all text-xs flex items-center gap-1.5" title="Marco Normativo Ley 1620">
               <HelpCircle className="w-4 h-4" />
             </button>

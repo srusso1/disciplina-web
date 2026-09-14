@@ -137,6 +137,7 @@ public class SecurityConfig {
                                 "/reportes/**", "/api/v1/reportes/**",
                                 "/ia/**", "/api/v1/ia/**",
                                 "/areas-desempeno/**", "/api/v1/areas-desempeno/**",
+                                "/notificaciones/**", "/api/v1/notificaciones/**",
                                 "/api/v1/**"
                         ).hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
                         

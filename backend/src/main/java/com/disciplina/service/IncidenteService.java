@@ -40,6 +40,7 @@ public class IncidenteService {
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
     private final CatalogoFaltaRepository catalogoFaltaRepository;
     private final AuditoriaService auditoriaService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public IncidenteResponseDTO registrarIncidente(RegistrarIncidenteDTO dto, String username) {
@@ -144,6 +145,25 @@ public class IncidenteService {
                 ),
                 username);
 
+        boolean contieneTipoIII = guardado.getInvolucrados().stream()
+                .anyMatch(ie -> ie.getCatalogoFalta() != null && ie.getCatalogoFalta().getClasificacionLey() == ClasificacionLey.TIPO_III);
+
+        List<com.disciplina.event.IncidenteRegistradoEvent.InvolucradoResumen> resumenes = guardado.getInvolucrados().stream()
+                .map(ie -> com.disciplina.event.IncidenteRegistradoEvent.InvolucradoResumen.builder()
+                        .estudianteId(ie.getEstudiante().getId())
+                        .estudianteNombre(ie.getEstudiante().getNombres() + " " + ie.getEstudiante().getApellidos())
+                        .rol(ie.getRolEstudiante())
+                        .clasificacionLey(ie.getCatalogoFalta() != null ? ie.getCatalogoFalta().getClasificacionLey() : null)
+                        .build()
+                ).toList();
+
+        eventPublisher.publishEvent(com.disciplina.event.IncidenteRegistradoEvent.builder()
+                .incidenteId(guardado.getId())
+                .fechaIncidente(guardado.getFechaIncidente())
+                .contieneTipoIII(contieneTipoIII)
+                .involucrados(resumenes)
+                .build());
+
         return mapearADTO(guardado, null);
     }
 
@@ -195,6 +215,12 @@ public class IncidenteService {
                 Map.of("estadoProceso", estadoAnterior != null ? estadoAnterior.name() : "N/A"),
                 Map.of("estadoProceso", dto.getEstadoProceso().name()),
                 null);
+
+        eventPublisher.publishEvent(com.disciplina.event.EstadoIncidenteCambiadoEvent.builder()
+                .incidenteId(incidente.getId())
+                .estadoAnterior(estadoAnterior)
+                .nuevoEstado(dto.getEstadoProceso())
+                .build());
 
         return obtenerIncidentePorId(incidente.getId());
     }

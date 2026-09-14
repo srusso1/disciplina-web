@@ -63,4 +63,15 @@ public interface IncidenteEstudianteRepository extends JpaRepository<IncidenteEs
         HAVING count(DISTINCT ie.incidente.id) > 1
         """)
     List<Integer> obtenerIdsEstudiantesReincidentes();
+
+    @Query("""
+        SELECT count(ie) FROM IncidenteEstudiante ie
+        WHERE ie.estudiante.id = :estudianteId
+          AND ie.rolEstudiante = :rolEstudiante
+          AND ie.incidente.fechaIncidente >= :fechaDesde
+        """)
+    long countByEstudianteIdAndRolEstudianteAndFechaIncidenteAfter(
+            @Param("estudianteId") Integer estudianteId,
+            @Param("rolEstudiante") com.disciplina.domain.enums.RolEstudianteIncidente rolEstudiante,
+            @Param("fechaDesde") java.time.LocalDate fechaDesde);
 }

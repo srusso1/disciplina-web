@@ -90,4 +90,14 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
         ORDER BY i.fechaIncidente ASC
         """)
     java.util.List<Object[]> obtenerFechasYHorasIncidentes();
+
+    @Query("""
+        SELECT DISTINCT i FROM Incidente i
+        LEFT JOIN i.involucrados inv
+        WHERE i.estadoProceso IN (com.disciplina.domain.enums.EstadoProceso.REPORTADO, com.disciplina.domain.enums.EstadoProceso.EN_INDAGACION)
+          AND i.fechaIncidente <= :fechaLimite
+          AND (inv.id IS NULL OR inv.descargoEstudiante IS NULL OR TRIM(inv.descargoEstudiante) = '')
+        ORDER BY i.fechaIncidente ASC
+        """)
+    java.util.List<Incidente> findIncidentesConTerminoVencido(@Param("fechaLimite") LocalDate fechaLimite);
 }

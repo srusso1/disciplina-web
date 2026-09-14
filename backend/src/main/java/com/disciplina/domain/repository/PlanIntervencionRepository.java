@@ -59,4 +59,14 @@ public interface PlanIntervencionRepository extends JpaRepository<PlanIntervenci
             @Param("estado") EstadoPlanIntervencion estado,
             @Param("busqueda") String busqueda,
             Pageable pageable);
+
+    @Query("""
+        SELECT p FROM PlanIntervencion p
+        JOIN FETCH p.estudiante e
+        JOIN FETCH p.orientador o
+        WHERE p.estado = com.disciplina.domain.enums.EstadoPlanIntervencion.EN_SEGUIMIENTO
+          AND p.fechaProximoSeguimiento <= :fecha
+        ORDER BY p.fechaProximoSeguimiento ASC
+        """)
+    java.util.List<PlanIntervencion> findPlanesParaSeguimiento(@Param("fecha") java.time.LocalDate fecha);
 }
