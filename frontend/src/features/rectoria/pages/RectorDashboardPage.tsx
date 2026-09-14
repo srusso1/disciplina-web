@@ -498,7 +498,7 @@ export const RectorDashboardPage: React.FC = () => {
                 <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div 
                     className="bg-blue-700 h-1.5 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min(100, f.porcentaje * 2)}%` }}
+                    style={{ width: `${Math.min(100, f.porcentaje)}%` }}
                   />
                 </div>
               </div>
