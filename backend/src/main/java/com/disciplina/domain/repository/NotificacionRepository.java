@@ -19,4 +19,26 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Long
     @Modifying
     @Query("UPDATE Notificacion n SET n.leida = true, n.fechaLectura = CURRENT_TIMESTAMP WHERE n.usuario.id = :usuarioId AND n.leida = false")
     void marcarTodasComoLeidas(@Param("usuarioId") Integer usuarioId);
+
+    @Query("""
+        SELECT count(n) > 0 FROM Notificacion n
+        WHERE n.usuario.id = :usuarioId
+          AND n.tipo = :tipo
+          AND n.leida = false
+          AND LOWER(n.mensaje) LIKE LOWER(CONCAT('%', :identificadorRecurso, '%'))
+        """)
+    boolean existeNotificacionNoLeidaActiva(
+            @Param("usuarioId") Integer usuarioId,
+            @Param("tipo") com.disciplina.domain.enums.TipoNotificacion tipo,
+            @Param("identificadorRecurso") String identificadorRecurso);
+
+    @Query("""
+        SELECT count(n) > 0 FROM Notificacion n
+        WHERE n.tipo = :tipo
+          AND n.leida = false
+          AND n.mensaje LIKE CONCAT('%', :identificadorRecurso, '%')
+        """)
+    boolean existeNotificacionPendienteGlobal(
+            @Param("tipo") com.disciplina.domain.enums.TipoNotificacion tipo,
+            @Param("identificadorRecurso") String identificadorRecurso);
 }

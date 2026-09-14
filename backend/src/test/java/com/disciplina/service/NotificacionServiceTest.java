@@ -103,13 +103,11 @@ class NotificacionServiceTest {
     }
 
     @Test
-    @DisplayName("Debe enviar notificaciones a todos los usuarios activos de un rol")
+    @DisplayName("Debe enviar notificaciones a todos los usuarios activos de un rol en lote sin N+1")
     void notificarPorRol_exito() {
         Usuario rector2 = Usuario.builder().id(2).username("rector2").rol(RolUsuario.ROLE_RECTOR).activo(true).build();
         when(usuarioRepository.findByRolAndActivoTrue(RolUsuario.ROLE_RECTOR)).thenReturn(List.of(usuario, rector2));
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.findById(2)).thenReturn(Optional.of(rector2));
-        when(notificacionRepository.save(any(Notificacion.class))).thenReturn(notificacion);
+        when(notificacionRepository.saveAll(anyList())).thenAnswer(i -> i.getArgument(0));
 
         notificacionService.notificarPorRol(
                 RolUsuario.ROLE_RECTOR,
@@ -117,10 +115,10 @@ class NotificacionServiceTest {
                 "Mensaje para directivos",
                 TipoNotificacion.TERMINO_LEGAL,
                 SeveridadNotificacion.ALTA,
-                "/rectoria/incidentes"
+                "/rectoria/faltas-graves"
         );
 
-        verify(notificacionRepository, times(2)).save(any(Notificacion.class));
+        verify(notificacionRepository, times(1)).saveAll(anyList());
     }
 
     @Test

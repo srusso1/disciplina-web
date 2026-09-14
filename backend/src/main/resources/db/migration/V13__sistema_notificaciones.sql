@@ -14,4 +14,5 @@ CREATE TABLE notificaciones (
 
 -- Índices de alto rendimiento para conteos de no leídas y paginación
 CREATE INDEX idx_notificaciones_usuario_leida ON notificaciones(usuario_id, leida, created_at DESC);
+CREATE INDEX idx_notificaciones_usuario_created_at ON notificaciones(usuario_id, created_at DESC);
 CREATE INDEX idx_notificaciones_created_at ON notificaciones(created_at DESC);

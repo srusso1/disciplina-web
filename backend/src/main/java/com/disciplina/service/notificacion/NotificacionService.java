@@ -65,10 +65,28 @@ public class NotificacionService {
             String rutaEnlace) {
 
         List<Usuario> usuarios = usuarioRepository.findByRolAndActivoTrue(rol);
-        for (Usuario u : usuarios) {
-            crearNotificacion(u.getId(), titulo, mensaje, tipo, severidad, rutaEnlace);
+        if (usuarios.isEmpty()) {
+            return;
         }
+
+        List<Notificacion> notificaciones = usuarios.stream()
+                .map(u -> Notificacion.builder()
+                        .usuario(u)
+                        .titulo(titulo != null ? titulo.trim() : "")
+                        .mensaje(mensaje != null ? mensaje.trim() : "")
+                        .tipo(tipo)
+                        .severidad(severidad != null ? severidad : SeveridadNotificacion.MEDIA)
+                        .rutaEnlace(rutaEnlace)
+                        .leida(false)
+                        .build())
+                .toList();
+
+        notificacionRepository.saveAll(notificaciones);
         log.info("Notificacion masiva enviada a {} usuarios con rol: {}", usuarios.size(), rol);
+    }
+
+    public boolean existeNotificacionNoLeida(Integer usuarioId, TipoNotificacion tipo, String identificadorRecurso) {
+        return notificacionRepository.existeNotificacionNoLeidaActiva(usuarioId, tipo, identificadorRecurso);
     }
 
     public List<NotificacionResponseDTO> obtenerUltimas(Integer usuarioId, int limite) {

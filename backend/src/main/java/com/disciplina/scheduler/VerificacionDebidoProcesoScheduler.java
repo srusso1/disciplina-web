@@ -6,6 +6,7 @@ import com.disciplina.domain.enums.TipoNotificacion;
 import com.disciplina.domain.model.Incidente;
 import com.disciplina.domain.model.PlanIntervencion;
 import com.disciplina.domain.repository.IncidenteRepository;
+import com.disciplina.domain.repository.NotificacionRepository;
 import com.disciplina.domain.repository.PlanIntervencionRepository;
 import com.disciplina.service.notificacion.NotificacionService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class VerificacionDebidoProcesoScheduler {
 
     private final IncidenteRepository incidenteRepository;
     private final PlanIntervencionRepository planIntervencionRepository;
+    private final NotificacionRepository notificacionRepository;
     private final NotificacionService notificacionService;
 
     @Scheduled(cron = "0 0 6 * * MON-FRI")
@@ -40,6 +42,13 @@ public class VerificacionDebidoProcesoScheduler {
         List<Incidente> incidentesVencidos = incidenteRepository.findIncidentesConTerminoVencido(fechaLimite);
 
         for (Incidente i : incidentesVencidos) {
+            String identificador = "#" + i.getId();
+            // Salvaguarda de idempotencia: evitar spam si ya existe alerta activa sin leer para este incidente
+            if (notificacionRepository.existeNotificacionPendienteGlobal(TipoNotificacion.TERMINO_LEGAL, identificador)) {
+                log.debug("Omitiendo notificacion duplicada para incidente {}", identificador);
+                continue;
+            }
+
             String titulo = "Alerta Término Legal Vencido";
             String mensaje = "Vencimiento de término: El incidente #" + i.getId()
                     + " supera 8 días en estado " + i.getEstadoProceso()
@@ -51,7 +60,7 @@ public class VerificacionDebidoProcesoScheduler {
                     mensaje,
                     TipoNotificacion.TERMINO_LEGAL,
                     SeveridadNotificacion.ALTA,
-                    "/rectoria/incidentes"
+                    "/rectoria/faltas-graves"
             );
 
             notificacionService.notificarPorRol(
@@ -65,7 +74,7 @@ public class VerificacionDebidoProcesoScheduler {
         }
 
         if (!incidentesVencidos.isEmpty()) {
-            log.warn("Se notificaron alertas de termino legal para {} incidentes en mora", incidentesVencidos.size());
+            log.warn("Se procesaron alertas de termino legal para {} incidentes en mora", incidentesVencidos.size());
         }
     }
 
@@ -75,6 +84,13 @@ public class VerificacionDebidoProcesoScheduler {
 
         for (PlanIntervencion plan : planesParaSeguimiento) {
             if (plan.getOrientador() != null) {
+                String identificador = "#" + plan.getId();
+                // Salvaguarda de idempotencia: evitar duplicar notificacion al orientador si ya la tiene sin leer
+                if (notificacionService.existeNotificacionNoLeida(plan.getOrientador().getId(), TipoNotificacion.SEGUIMIENTO, identificador)) {
+                    log.debug("Omitiendo notificacion de seguimiento duplicada para plan {}", identificador);
+                    continue;
+                }
+
                 String titulo = "Compromiso de Seguimiento Pedagógico";
                 String mensaje = "Seguimiento pedagógico programado: El plan #" + plan.getId()
                         + " del estudiante " + plan.getEstudiante().getNombres() + " " + plan.getEstudiante().getApellidos()
@@ -92,7 +108,7 @@ public class VerificacionDebidoProcesoScheduler {
         }
 
         if (!planesParaSeguimiento.isEmpty()) {
-            log.info("Se notificaron {} orientadores sobre seguimientos de planes programados", planesParaSeguimiento.size());
+            log.info("Se procesaron {} seguimientos de planes programados", planesParaSeguimiento.size());
         }
     }
 }

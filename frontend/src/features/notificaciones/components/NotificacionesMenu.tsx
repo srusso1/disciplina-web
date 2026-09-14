@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { notificacionesApi } from '../api/notificacionesApi';
 import { NotificacionItem, TipoNotificacion } from '../types/notificacion.types';
@@ -55,32 +56,49 @@ export const NotificacionesMenu: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Consulta 1: Conteo de no leídas (Smart Polling cada 30 segundos)
+  // Consulta 1: Conteo ligero de no leídas (Smart Polling cada 30 segundos en segundo plano)
   const { data: conteoData } = useQuery({
     queryKey: ['notificaciones', 'conteo'],
     queryFn: notificacionesApi.obtenerConteoNoLeidas,
     refetchInterval: 30000,
   });
 
-  // Consulta 2: Últimas notificaciones (Smart Polling cada 30 segundos o al abrir el menú)
+  // Consulta 2: Listado completo (Smart Polling activo ÚNICAMENTE cuando el menú está abierto)
   const { data: notificaciones = [], isLoading } = useQuery({
     queryKey: ['notificaciones', 'ultimas'],
     queryFn: () => notificacionesApi.obtenerUltimas(15),
-    refetchInterval: 30000,
+    enabled: open,
+    refetchInterval: open ? 30000 : false,
   });
 
-  // Mutación: Marcar una como leída
+  // Mutación optimista: Marcar una como leída
   const marcarLeidaMutation = useMutation({
     mutationFn: (id: number) => notificacionesApi.marcarLeida(id),
-    onSuccess: () => {
+    onMutate: async (id: number) => {
+      await queryClient.cancelQueries({ queryKey: ['notificaciones'] });
+      queryClient.setQueryData(['notificaciones', 'conteo'], (old: { noLeidas: number } | undefined) => ({
+        noLeidas: Math.max(0, (old?.noLeidas ?? 1) - 1),
+      }));
+      queryClient.setQueryData<NotificacionItem[]>(['notificaciones', 'ultimas'], (old = []) =>
+        old.map((n) => (n.id === id ? { ...n, leida: true } : n))
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notificaciones'] });
     },
   });
 
-  // Mutación: Marcar todas como leídas
+  // Mutación optimista: Marcar todas como leídas
   const marcarTodasLeidasMutation = useMutation({
     mutationFn: notificacionesApi.marcarTodasLeidas,
-    onSuccess: () => {
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['notificaciones'] });
+      queryClient.setQueryData(['notificaciones', 'conteo'], { noLeidas: 0 });
+      queryClient.setQueryData<NotificacionItem[]>(['notificaciones', 'ultimas'], (old = []) =>
+        old.map((n) => ({ ...n, leida: true }))
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notificaciones'] });
     },
   });
@@ -103,7 +121,7 @@ export const NotificacionesMenu: React.FC = () => {
         <button
           className="relative p-2 rounded-lg text-slate-500 hover:text-trujillo-navy hover:bg-slate-100 transition-all text-xs flex items-center justify-center cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20"
           title="Notificaciones Institucionales"
-          aria-label="Notificaciones"
+          aria-label="Notificaciones Institucionales"
         >
           <Bell className="w-4 h-4" />
           {noLeidas > 0 && (
@@ -149,7 +167,7 @@ export const NotificacionesMenu: React.FC = () => {
           )}
         </div>
 
-        {/* Lista de Notificaciones */}
+        {/* Lista de Notificaciones con accesibilidad por teclado (Radix MenuItem) */}
         <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
           {isLoading && notificaciones.length === 0 ? (
             <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
@@ -168,13 +186,13 @@ export const NotificacionesMenu: React.FC = () => {
             </div>
           ) : (
             notificaciones.map((item) => (
-              <div
+              <DropdownMenuItem
                 key={item.id}
-                onClick={() => handleItemClick(item)}
-                className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer text-left ${
+                onSelect={() => handleItemClick(item)}
+                className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer text-left focus:outline-none rounded-none ${
                   !item.leida
-                    ? 'bg-white hover:bg-blue-50/40 border-l-2 border-blue-600'
-                    : 'bg-slate-50/50 hover:bg-slate-100/70'
+                    ? 'bg-white focus:bg-blue-50/70 border-l-2 border-l-blue-600'
+                    : 'bg-slate-50/50 focus:bg-slate-100/70'
                 }`}
               >
                 <div className="shrink-0">
@@ -197,7 +215,7 @@ export const NotificacionesMenu: React.FC = () => {
                     {item.mensaje}
                   </p>
                 </div>
-              </div>
+              </DropdownMenuItem>
             ))
           )}
         </div>

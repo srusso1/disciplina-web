@@ -104,7 +104,7 @@ class NotificacionEventListenerTest {
                 contains("Ana Gomez"),
                 eq(TipoNotificacion.CRITICA),
                 eq(SeveridadNotificacion.ALTA),
-                eq("/rectoria/incidentes")
+                eq("/rectoria/faltas-graves")
         );
 
         verify(notificacionService).notificarPorRol(
