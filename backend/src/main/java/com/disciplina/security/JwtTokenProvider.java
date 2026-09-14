@@ -32,6 +32,13 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void initKey() {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalStateException(
+                "JWT Secret is not configured. Set the JWT_SECRET environment variable " +
+                "with a value of at least 256 bits (32 bytes / 64 hex chars / 44 Base64 chars). " +
+                "The application cannot start without a valid secret.");
+        }
+
         byte[] keyBytes;
         try {
             keyBytes = Decoders.BASE64.decode(jwtSecret);

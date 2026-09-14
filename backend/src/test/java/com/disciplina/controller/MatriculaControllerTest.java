@@ -484,7 +484,6 @@ class MatriculaControllerTest {
                 .documento("D_" + (System.currentTimeMillis() % 1000000000L))
                 .nombres("CARLOS")
                 .apellidos("DOCENTE")
-                .areaDesempeno("CIENCIAS")
                 .activo(true)
                 .build());
 

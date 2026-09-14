@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/planes-intervencion", "/api/v1/planes-intervencion"})
+@RequestMapping("/api/v1/planes-intervencion")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
 public class PlanIntervencionController {

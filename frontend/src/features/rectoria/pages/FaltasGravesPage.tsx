@@ -13,8 +13,8 @@ import {
   ChevronRight,
   Eye,
   AlertCircle,
-  CheckCircle2,
-  Scale,
+  FileText,
+  X,
 } from 'lucide-react';
 
 export const FaltasGravesPage: React.FC = () => {
@@ -106,122 +106,138 @@ export const FaltasGravesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera Principal */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-rose-200/80 shadow-2xs border-l-4 border-l-rose-600">
+    <div className="space-y-4 pb-8">
+      {/* Barra de Título Compacta */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-200 gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shadow-2xs">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                Faltas Tipo III & Activación de Ruta Integral (Ley 1620)
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Seguimiento directivo a presuntos delitos contra la libertad, integridad o formación sexual y agresiones graves.
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-red-600" />
+            Faltas Graves y Gravísimas (Tipo III)
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Supervisión directiva a presuntos delitos y activación de Ruta Integral externa (Ley 1620).
+          </p>
         </div>
 
-        <div className="px-3.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-800 self-start md:self-auto">
-          Casos Críticos Activos: <span className="text-rose-950 text-sm font-black">{totalElementos}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-red-50 text-red-700 border border-red-200 font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-600" />
+            Casos Críticos: {totalElementos}
+          </span>
         </div>
-      </div>
-
-      {/* Banner Legal Informativo - Ley 1620 */}
-      <div className="bg-trujillo-navy text-white p-4 rounded-xl border border-slate-800 shadow-sm space-y-1.5">
-        <div className="flex items-center gap-2 text-trujillo-sky text-xs font-semibold uppercase tracking-wider">
-          <Scale size={16} />
-          <span>Protocolo Obligatorio de Convivencia Escolar (Decreto 1965 / Ley 1620)</span>
-        </div>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          Ante la ocurrencia de una <strong>Falta Tipo III</strong>, el Presidente del Comité de Convivencia Escolar (Rector) debe:
-          (1) Remitir de manera inmediata el caso a la <strong>Policía de Infancia y Adolescencia</strong> o <strong>ICBF / Comisaría de Familia</strong>;
-          (2) Adoptar de inmediato medidas para proteger a la víctima y salvaguardar sus derechos;
-          (3) Citar de forma prioritaria a los representantes legales de las partes.
-        </p>
       </div>
 
       {/* Banner de Error */}
       {error && (
-        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-xs text-rose-800">
-          <AlertCircle size={16} className="text-rose-600 shrink-0" />
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs text-red-800">
+          <AlertCircle size={15} className="text-red-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Barra de Filtros */}
-      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <form onSubmit={handleBuscar} className="w-full sm:w-80 relative">
-          <Search size={16} className="text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar por implicado, radicado o hechos..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-800"
-          />
-        </form>
+      {/* Contenedor de Tabla con Toolbar Integrado */}
+      <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+        {/* Toolbar integrado */}
+        <div className="p-2.5 border-b border-slate-200 bg-slate-50/60">
+          <form onSubmit={handleBuscar} className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+              <div className="relative flex-1 min-w-[220px] max-w-md">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder="Buscar por implicado, radicado o hechos..."
+                  className="w-full h-9 pl-8 pr-7 text-xs border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-slate-800"
+                />
+                {busqueda && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBusqueda('');
+                      setPaginaActual(0);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select
-            value={filtroEstado}
-            onChange={(e) => {
-              setFiltroEstado(e.target.value as EstadoProceso | '');
-              setPaginaActual(0);
-            }}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-700 font-medium"
-          >
-            <option value="">-- Todos los Estados --</option>
-            <option value="REPORTADO">1. Reportado</option>
-            <option value="EN_INDAGACION">2. En Indagación</option>
-            <option value="CITACION_PADRES">3. Citación Acudientes</option>
-            <option value="EN_INTERVENCION">4. En Intervención</option>
-            <option value="CERRADO">5. Proceso Cerrado</option>
-          </select>
+              <select
+                value={filtroEstado}
+                onChange={(e) => {
+                  setFiltroEstado(e.target.value as EstadoProceso | '');
+                  setPaginaActual(0);
+                }}
+                className="h-9 px-2.5 text-xs border border-slate-300 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium"
+              >
+                <option value="">Todos los Estados</option>
+                <option value="REPORTADO">1. Reportado</option>
+                <option value="EN_INDAGACION">2. En Indagación</option>
+                <option value="CITACION_PADRES">3. Citación Acudientes</option>
+                <option value="EN_INTERVENCION">4. En Intervención</option>
+                <option value="CERRADO">5. Proceso Cerrado</option>
+              </select>
+
+              <button
+                type="submit"
+                className="h-9 px-3 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-xs"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Filtrar</span>
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-500 font-medium ml-auto">
+              Total: <strong className="text-slate-700">{totalElementos}</strong> expedientes
+            </div>
+          </form>
         </div>
-      </div>
 
-      {/* Tabla de Faltas Tipo III */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-        {cargando ? (
-          <div className="py-16 flex flex-col items-center justify-center text-slate-400">
-            <Loader2 size={24} className="animate-spin text-rose-600 mb-2" />
-            <p className="text-xs font-medium">Consultando expedientes de alta gravedad...</p>
-          </div>
-        ) : incidentes.length === 0 ? (
-          <div className="py-14 text-center text-slate-500 space-y-1.5">
-            <CheckCircle2 size={36} className="mx-auto text-emerald-500" />
-            <p className="text-sm font-semibold text-slate-800">Sin incidentes Tipo III reportados</p>
-            <p className="text-xs text-slate-400">No hay casos clasificados como presuntos delitos según los filtros actuales.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-100/75 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="py-2.5 px-3.5">Radicado</th>
-                  <th className="py-2.5 px-3.5">Fecha & Hora</th>
-                  <th className="py-2.5 px-3.5">Tipificación Ley 1620</th>
-                  <th className="py-2.5 px-3.5">Partes Involucradas</th>
-                  <th className="py-2.5 px-3.5">Estado del Trámite</th>
-                  <th className="py-2.5 px-3.5 text-right">Acciones Directivas</th>
+        {/* Tabla de Faltas Tipo III */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th className="py-2.5 px-3">Radicado</th>
+                <th className="py-2.5 px-3">Fecha & Hora</th>
+                <th className="py-2.5 px-3">Tipificación Ley 1620</th>
+                <th className="py-2.5 px-3">Partes Involucradas</th>
+                <th className="py-2.5 px-3">Estado del Trámite</th>
+                <th className="py-2.5 px-3 text-right">Acciones Directivas</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {cargando ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <Loader2 className="w-7 h-7 animate-spin mx-auto text-red-600 mb-2" />
+                    <p className="text-xs font-medium text-slate-600">Consultando expedientes de alta gravedad...</p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                {incidentes.map((inc) => (
-                  <tr key={inc.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
-                      <span className="font-mono font-bold text-trujillo-navy">
+              ) : incidentes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+                    <p className="text-sm font-medium text-slate-700">No se encontraron casos críticos</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      No hay incidentes Tipo III clasificados según los filtros seleccionados.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                incidentes.map((inc) => (
+                  <tr key={inc.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <span className="font-mono font-bold text-slate-900">
                         #{inc.id}
                       </span>
                     </td>
 
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
+                    <td className="py-2.5 px-3 whitespace-nowrap">
                       <div className="flex items-center gap-1.5 text-slate-800 font-medium">
-                        <Calendar size={14} className="text-rose-500 shrink-0" />
+                        <Calendar size={13} className="text-red-500 shrink-0" />
                         <span>{inc.fechaIncidente}</span>
                         {inc.horaIncidente && (
                           <span className="text-slate-400 text-[10px]">({inc.horaIncidente})</span>
@@ -229,10 +245,10 @@ export const FaltasGravesPage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-2.5 px-3.5 max-w-xs">
+                    <td className="py-2.5 px-3 max-w-xs">
                       {inc.involucrados.find((i) => i.falta) ? (
                         <div className="space-y-0.5">
-                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border bg-convivencia-tipo3-bg text-convivencia-tipo3-text border-convivencia-tipo3-border">
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border bg-rose-50 text-rose-700 border-rose-200">
                             {inc.involucrados.find((i) => i.falta)?.falta?.codigo} - Tipo III
                           </span>
                           <span className="text-[11px] text-slate-600 line-clamp-1 block">
@@ -244,7 +260,7 @@ export const FaltasGravesPage: React.FC = () => {
                       )}
                     </td>
 
-                    <td className="py-2.5 px-3.5">
+                    <td className="py-2.5 px-3">
                       <div className="space-y-1">
                         {inc.involucrados.map((inv) => (
                           <div key={inv.id} className="flex items-center gap-1.5">
@@ -270,9 +286,9 @@ export const FaltasGravesPage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
+                    <td className="py-2.5 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold border ${getBadgeEstado(
+                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${getBadgeEstado(
                           inc.estadoProceso
                         )}`}
                       >
@@ -280,14 +296,14 @@ export const FaltasGravesPage: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="py-2.5 px-3.5 text-right whitespace-nowrap space-x-1.5">
+                    <td className="py-2.5 px-3 text-right whitespace-nowrap space-x-1.5">
                       <button
                         type="button"
                         onClick={() => setIncidenteSeleccionadoId(inc.id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-300 transition-colors shadow-2xs cursor-pointer"
                         title="Abrir expediente completo"
                       >
-                        <Eye size={14} className="text-slate-500" />
+                        <Eye size={13} className="text-slate-500" />
                         <span>Expediente</span>
                       </button>
 
@@ -295,30 +311,30 @@ export const FaltasGravesPage: React.FC = () => {
                         type="button"
                         onClick={() => handleDescargarActa(inc.id)}
                         disabled={descargandoId === inc.id}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold border border-rose-200 transition active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-medium border border-rose-200 transition-colors cursor-pointer disabled:opacity-50"
                         title="Descargar Acta Formal de Descargos"
                       >
                         {descargandoId === inc.id ? (
-                          <Loader2 size={14} className="animate-spin text-rose-700" />
+                          <Loader2 size={13} className="animate-spin text-rose-700" />
                         ) : (
-                          <FileDown size={14} className="text-rose-600" />
+                          <FileDown size={13} className="text-rose-600" />
                         )}
                         <span>Acta PDF</span>
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Paginación */}
         {totalPaginas > 1 && (
-          <div className="px-5 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+          <div className="px-3 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
             <div>
-              Página <strong className="text-slate-800">{paginaActual + 1}</strong> de{' '}
-              <strong className="text-slate-800">{totalPaginas}</strong> ({totalElementos} expedientes Tipo III)
+              Página <strong className="text-slate-700">{paginaActual + 1}</strong> de{' '}
+              <strong className="text-slate-700">{totalPaginas}</strong> ({totalElementos} expedientes Tipo III)
             </div>
 
             <div className="flex items-center gap-1">
@@ -330,9 +346,9 @@ export const FaltasGravesPage: React.FC = () => {
                   setPaginaActual(nueva);
                   cargarFaltasTipoIII(nueva);
                 }}
-                className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
+                className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} />
               </button>
 
               <button
@@ -343,9 +359,9 @@ export const FaltasGravesPage: React.FC = () => {
                   setPaginaActual(nueva);
                   cargarFaltasTipoIII(nueva);
                 }}
-                className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
+                className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>

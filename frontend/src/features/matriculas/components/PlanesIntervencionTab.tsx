@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   PlanIntervencionResponse,
-  CrearPlanIntervencionRequest,
   RegistrarSeguimientoRequest,
   EstadoPlanIntervencion,
 } from '../../planes/types/planes.types';
 import { planesApi } from '../../planes/api/planesApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
+import { useFormularPlan } from '../../planes/hooks/useFormularPlan';
+import { FormularioPlanIntervencion } from '../../planes/components/FormularioPlanIntervencion';
 import {
   HeartHandshake,
   Plus,
-  Sparkles,
+  BrainCircuit,
   Calendar,
   Clock,
   User,
@@ -45,20 +46,13 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estado del formulario para crear nuevo plan
+  // Control para desplegar formulario de nuevo plan
   const [mostrarFormNuevo, setMostrarFormNuevo] = useState<boolean>(false);
-  const [guardandoPlan, setGuardandoPlan] = useState<boolean>(false);
-  const [generandoIa, setGenerandoIa] = useState<boolean>(false);
-  const [advertenciaIa, setAdvertenciaIa] = useState<string | null>(null);
 
-  // Campos del nuevo plan
-  const [incidenteSeleccionado, setIncidenteSeleccionado] = useState<string>('');
-  const [diagnostico, setDiagnostico] = useState<string>('');
-  const [recomendacionesIa, setRecomendacionesIa] = useState<string>('');
-  const [accionesAcordadas, setAccionesAcordadas] = useState<string>('');
-  const [compromisoPadres, setCompromisoPadres] = useState<string>('');
-  const [fechaProximoSeguimiento, setFechaProximoSeguimiento] = useState<string>('');
-  const [estadoNuevoPlan, setEstadoNuevoPlan] = useState<EstadoPlanIntervencion>('EN_SEGUIMIENTO');
+  // Hook desacoplado para gestión de formulación de planes e IA
+  const planForm = useFormularPlan({
+    estadoInicial: 'EN_SEGUIMIENTO',
+  });
 
   // Estado para registrar seguimiento de caso (CU-07)
   const [planIdSeguimiento, setPlanIdSeguimiento] = useState<number | null>(null);
@@ -95,77 +89,6 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
   useEffect(() => {
     cargarPlanes();
   }, [estudianteId]);
-
-  // CU-06: Generar propuesta asistida por IA (Gemini con fallback local)
-  const handleGenerarIa = async () => {
-    setGenerandoIa(true);
-    setAdvertenciaIa(null);
-    try {
-      const incId = incidenteSeleccionado ? parseInt(incidenteSeleccionado, 10) : undefined;
-      const propuesta = await planesApi.generarPropuestaIa(estudianteId, incId);
-
-      setDiagnostico(propuesta.diagnosticoSituacional || '');
-      setRecomendacionesIa(propuesta.recomendacionesIa || '');
-      setAccionesAcordadas(propuesta.accionesAcordadasSugeridas || '');
-      setCompromisoPadres(propuesta.compromisoPadresSugerido || '');
-
-      if (propuesta.semanasSeguimientoSugeridas) {
-        const fecha = new Date();
-        fecha.setDate(fecha.getDate() + propuesta.semanasSeguimientoSugeridas * 7);
-        setFechaProximoSeguimiento(fecha.toISOString().split('T')[0]);
-      }
-
-      setAdvertenciaIa(propuesta.advertenciaGobierno || 'Propuesta estructurada por IA según antecedentes.');
-    } catch (err) {
-      console.error('Error al invocar asistencia IA:', err);
-      mostrarAlerta(extraerMensajeError(err, 'No se pudo generar la propuesta asistida por IA.'));
-    } finally {
-      setGenerandoIa(false);
-    }
-  };
-
-  // RF-06: Guardar nuevo plan
-  const handleGuardarPlan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!diagnostico.trim() || !accionesAcordadas.trim()) {
-      mostrarAlerta('El diagnóstico situacional y las acciones formativas son obligatorias.');
-      return;
-    }
-
-    setGuardandoPlan(true);
-    try {
-      const payload: CrearPlanIntervencionRequest = {
-        estudianteId,
-        incidenteOrigenId: incidenteSeleccionado ? parseInt(incidenteSeleccionado, 10) : undefined,
-        diagnosticoSituacional: diagnostico.trim(),
-        recomendacionesIa: recomendacionesIa.trim() || undefined,
-        accionesAcordadas: accionesAcordadas.trim(),
-        compromisoPadres: compromisoPadres.trim() || undefined,
-        fechaProximoSeguimiento: fechaProximoSeguimiento || undefined,
-        estado: estadoNuevoPlan,
-      };
-
-      const creado = await planesApi.crearPlan(payload);
-      setPlanes((prev) => [creado, ...prev]);
-      setPlanExpandido(creado.id);
-      setMostrarFormNuevo(false);
-      mostrarAlerta('Plan de intervención registrado exitosamente.', 'exito');
-
-      // Limpiar formulario
-      setDiagnostico('');
-      setRecomendacionesIa('');
-      setAccionesAcordadas('');
-      setCompromisoPadres('');
-      setFechaProximoSeguimiento('');
-      setIncidenteSeleccionado('');
-      setAdvertenciaIa(null);
-    } catch (err) {
-      console.error('Error al guardar plan:', err);
-      mostrarAlerta(extraerMensajeError(err, 'Error al formular el plan de intervención.'));
-    } finally {
-      setGuardandoPlan(false);
-    }
-  };
 
   // CU-07: Registrar nota de seguimiento de caso
   const handleRegistrarSeguimiento = async (e: React.FormEvent) => {
@@ -233,16 +156,36 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
         </div>
 
         {!mostrarFormNuevo && (
-          <button
-            type="button"
-            onClick={() => setMostrarFormNuevo(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-semibold shadow-2xs transition active:scale-[0.98] cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Formular Nuevo Plan</span>
-          </button>
+          incidentes.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setMostrarFormNuevo(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-semibold shadow-2xs transition active:scale-[0.98] cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Formular Nuevo Plan</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 text-xs font-medium shrink-0 border border-slate-200">
+              <AlertCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span>Sin incidentes registrados</span>
+            </div>
+          )
         )}
       </div>
+
+      {/* Banner si el estudiante no tiene incidentes */}
+      {incidentes.length === 0 && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3 animate-in fade-in duration-150">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <p className="font-bold text-amber-900">Estudiante sin incidentes convivenciales registrados</p>
+            <p className="text-[11px] text-amber-700 leading-relaxed">
+              De acuerdo con el Manual de Convivencia y la Ley 1620, los planes de intervención pedagógica formativa requieren un incidente previo reportado en el sistema. Este alumno no registra faltas disciplinarias.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Banner de Notificación / Alerta Accesible */}
       {mensajeAlerta && (
@@ -271,190 +214,101 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
         </div>
       )}
 
-      {/* Formulario de Creación de Plan (RF-06 & CU-06) */}
+      {/* Formulario de Creación de Plan (Desacoplado) */}
       {mostrarFormNuevo && (
         <form
-          onSubmit={handleGuardarPlan}
-          className="bg-white border-2 border-trujillo-navy/20 rounded-2xl p-5 shadow-sm space-y-4 animate-in fade-in duration-200"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!planForm.incidenteSeleccionadoId) {
+              mostrarAlerta('Debe seleccionar el incidente de convivencia que origina el plan.');
+              return;
+            }
+            await planForm.guardarPlan(
+              estudianteId,
+              planForm.incidenteSeleccionadoId,
+              (nuevo) => {
+                setPlanes((prev) => [nuevo, ...prev]);
+                setPlanExpandido(nuevo.id);
+                setMostrarFormNuevo(false);
+                mostrarAlerta('Plan de intervención registrado exitosamente.', 'exito');
+              }
+            );
+          }}
+          className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5 animate-in fade-in duration-200"
         >
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <FileEdit className="w-4 h-4 text-trujillo-navy" />
-              <h4 className="text-sm font-bold text-slate-800">
-                Formular Plan de Intervención Pedagógica: {estudianteNombre}
-              </h4>
+          {/* Encabezado del Formulario Documental */}
+          <div className="flex items-center justify-between pb-3.5 border-b border-slate-200">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100 shrink-0">
+                <FileEdit className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 tracking-tight leading-none">
+                  Formular Plan de Intervención Pedagógica
+                </h4>
+                <p className="text-xs text-slate-500 mt-1 leading-none">
+                  Estudiante: <span className="font-semibold text-slate-700">{estudianteNombre}</span>
+                </p>
+              </div>
             </div>
             <button
               type="button"
               onClick={() => {
                 setMostrarFormNuevo(false);
-                setAdvertenciaIa(null);
+                planForm.resetFormulario();
               }}
-              className="text-xs text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
+              className="text-xs text-slate-400 hover:text-slate-700 font-medium cursor-pointer transition-colors"
             >
               Cancelar
             </button>
           </div>
 
-          {/* Selector de Incidente e Invocación IA */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Incidente Asociado de Origen (Opcional):
-              </label>
-              <select
-                value={incidenteSeleccionado}
-                onChange={(e) => setIncidenteSeleccionado(e.target.value)}
-                className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
-              >
-                <option value="">-- Sin incidente específico (Plan Preventivo / General) --</option>
-                {incidentes.map((inc) => (
-                  <option key={inc.incidenteId} value={inc.incidenteId}>
-                    Caso #{inc.incidenteId} {inc.faltaCodigo ? `[Falta ${inc.faltaCodigo}]` : ''} -{' '}
-                    {inc.descripcion?.substring(0, 60)}...
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={handleGenerarIa}
-                disabled={generandoIa}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
-                title="Genera propuesta pedagógica estructurada analizando el historial del estudiante"
-              >
-                {generandoIa ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Analizando caso con IA...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 text-trujillo-sky" />
-                    <span>Sugerir con Asistente IA</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Banner de Gobierno Human-in-the-Loop si se utilizó IA */}
-          {advertenciaIa && (
-            <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs flex items-start gap-2.5">
-              <Sparkles className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="font-bold">Propuesta preliminar asistida por IA:</p>
-                <p className="text-[11px] text-purple-800 leading-relaxed">
-                  {advertenciaIa} Valide, personalice y ajuste los compromisos antes de formalizar el plan.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Campos del Plan */}
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Diagnóstico Situacional / Causas Raíz: <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                value={diagnostico}
-                onChange={(e) => setDiagnostico(e.target.value)}
-                rows={2}
-                placeholder="Describa el contexto psicoformativo, dinámicas grupales o detonantes de la conducta observada..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition resize-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Acciones Formativas y Tareas Restaurativas Acordadas: <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                value={accionesAcordadas}
-                onChange={(e) => setAccionesAcordadas(e.target.value)}
-                rows={2}
-                placeholder="Medidas pedagógicas, talleres de autorregulación, acuerdos de aula, mediación escolar..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition resize-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Compromiso de Acudientes / Entorno Familiar:
-              </label>
-              <textarea
-                value={compromisoPadres}
-                onChange={(e) => setCompromisoPadres(e.target.value)}
-                rows={2}
-                placeholder="Acompañamiento en casa, asistencia a citaciones, pautas de crianza positiva..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition resize-none"
-              />
-            </div>
-
-            {recomendacionesIa && (
-              <div>
-                <label className="block text-xs font-semibold text-purple-800 mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Recomendaciones Orientadoras de la IA:</span>
-                </label>
-                <textarea
-                  value={recomendacionesIa}
-                  onChange={(e) => setRecomendacionesIa(e.target.value)}
-                  rows={2}
-                  className="w-full text-xs rounded-xl border border-purple-200 p-2.5 bg-purple-50/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 transition resize-none"
-                />
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Fecha Próximo Seguimiento:
-                </label>
-                <input
-                  type="date"
-                  value={fechaProximoSeguimiento}
-                  onChange={(e) => setFechaProximoSeguimiento(e.target.value)}
-                  className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Estado Inicial:
-                </label>
-                <select
-                  value={estadoNuevoPlan}
-                  onChange={(e) => setEstadoNuevoPlan(e.target.value as EstadoPlanIntervencion)}
-                  className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
-                >
-                  <option value="EN_SEGUIMIENTO">En Seguimiento</option>
-                  <option value="BORRADOR">Borrador</option>
-                </select>
-              </div>
-            </div>
-          </div>
+          <FormularioPlanIntervencion
+            incidentes={incidentes}
+            incidenteSeleccionadoId={planForm.incidenteSeleccionadoId}
+            onSeleccionarIncidente={planForm.setIncidenteSeleccionadoId}
+            diagnostico={planForm.diagnostico}
+            onCambiarDiagnostico={planForm.setDiagnostico}
+            accionesAcordadas={planForm.accionesAcordadas}
+            onCambiarAccionesAcordadas={planForm.setAccionesAcordadas}
+            compromisoPadres={planForm.compromisoPadres}
+            onCambiarCompromisoPadres={planForm.setCompromisoPadres}
+            recomendacionesIa={planForm.recomendacionesIa}
+            onCambiarRecomendacionesIa={planForm.setRecomendacionesIa}
+            fechaProximoSeguimiento={planForm.fechaProximoSeguimiento}
+            onCambiarFechaProximoSeguimiento={planForm.setFechaProximoSeguimiento}
+            estado={planForm.estado}
+            onCambiarEstado={planForm.setEstado}
+            mostrarSelectorEstado={true}
+            generandoIa={planForm.generandoIa}
+            advertenciaIa={planForm.advertenciaIa}
+            onGenerarIa={() => {
+              if (planForm.incidenteSeleccionadoId) {
+                planForm.generarPropuestaIa(estudianteId, planForm.incidenteSeleccionadoId);
+              } else {
+                mostrarAlerta('Debe seleccionar el incidente de origen para generar la propuesta con IA.');
+              }
+            }}
+          />
 
           {/* Botón de Enviar */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
             <button
               type="button"
-              onClick={() => setMostrarFormNuevo(false)}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
+              onClick={() => {
+                setMostrarFormNuevo(false);
+                planForm.resetFormulario();
+              }}
+              className="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={guardandoPlan}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+              disabled={planForm.guardando}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
-              {guardandoPlan ? (
+              {planForm.guardando ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Guardando...</span>
@@ -579,12 +433,12 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                     )}
 
                     {plan.recomendacionesIa && (
-                      <div className="p-3 bg-purple-50/40 rounded-xl border border-purple-200/50 space-y-1">
-                        <span className="text-purple-800 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-purple-600" />
-                          <span>Recomendaciones Pedagógicas Sugeridas:</span>
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <span className="text-slate-600 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                          <BrainCircuit className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Recomendaciones Pedagógicas Sugeridas (IA):</span>
                         </span>
-                        <p className="text-purple-950 leading-relaxed">
+                        <p className="text-slate-700 leading-relaxed italic text-xs">
                           {plan.recomendacionesIa}
                         </p>
                       </div>

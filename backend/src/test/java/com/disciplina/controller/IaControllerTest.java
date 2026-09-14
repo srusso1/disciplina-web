@@ -48,13 +48,25 @@ class IaControllerTest {
     @Autowired
     private MatriculaEstudianteRepository matriculaEstudianteRepository;
 
+    @Autowired
+    private IncidenteRepository incidenteRepository;
+
+    @Autowired
+    private IncidenteEstudianteRepository incidenteEstudianteRepository;
+
+    @Autowired
+    private DocenteRepository docenteRepository;
+
+    @Autowired
+    private LugarRepository lugarRepository;
 
     private String tokenRector;
     private Estudiante estudiantePrueba;
+    private Incidente incidentePrueba;
 
     @BeforeEach
     void setUp() {
-        usuarioRepository.findByUsername("rector_ia_test").orElseGet(() ->
+        Usuario rector = usuarioRepository.findByUsername("rector_ia_test").orElseGet(() ->
                 usuarioRepository.save(Usuario.builder()
                         .username("rector_ia_test")
                         .passwordHash(passwordEncoder.encode("Password123!"))
@@ -83,6 +95,38 @@ class IaControllerTest {
                     .build());
             return e;
         });
+
+        Docente docente = docenteRepository.findAll().stream().findFirst().orElseGet(() ->
+                docenteRepository.save(Docente.builder()
+                        .documento("DOC_IA_" + System.nanoTime())
+                        .nombres("Docente")
+                        .apellidos("IA")
+                        .activo(true)
+                        .build()));
+
+        Lugar lugar = lugarRepository.findAll().stream().findFirst().orElseGet(() ->
+                lugarRepository.save(Lugar.builder()
+                        .nombre("Patio Principal IA")
+                        .activo(true)
+                        .build()));
+
+        incidentePrueba = incidenteRepository.save(Incidente.builder()
+                .fechaIncidente(LocalDate.now())
+                .lugar(lugar)
+                .docenteReporta(docente)
+                .usuarioRegistro(rector)
+                .descripcionHechos("El estudiante presentó alteración del orden.")
+                .estadoProceso(com.disciplina.domain.enums.EstadoProceso.REPORTADO)
+                .build());
+
+        incidenteEstudianteRepository.save(IncidenteEstudiante.builder()
+                .incidente(incidentePrueba)
+                .estudiante(estudiantePrueba)
+                .rolEstudiante(com.disciplina.domain.enums.RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                .anioLectivo(LocalDate.now().getYear())
+                .gradoMomento("9")
+                .grupoMomento("A")
+                .build());
     }
 
     @Test
@@ -152,10 +196,11 @@ class IaControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/ia/generar-intervencion con estudiante existente debe retornar propuesta formativa")
+    @DisplayName("POST /api/v1/ia/generar-intervencion con estudiante e incidente existente debe retornar propuesta formativa")
     void generarPropuestaIntervencion_conEstudianteValido_debeRetornar200() throws Exception {
         GenerarPropuestaIntervencionDTO request = GenerarPropuestaIntervencionDTO.builder()
                 .estudianteId(estudiantePrueba.getId())
+                .incidenteOrigenId(incidentePrueba.getId())
                 .build();
 
         mockMvc.perform(post("/api/v1/ia/generar-intervencion")
@@ -171,10 +216,25 @@ class IaControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/v1/ia/generar-intervencion sin incidenteOrigenId debe retornar 400 Bad Request")
+    void generarPropuestaIntervencion_sinIncidente_debeRetornar400() throws Exception {
+        GenerarPropuestaIntervencionDTO request = GenerarPropuestaIntervencionDTO.builder()
+                .estudianteId(estudiantePrueba.getId())
+                .build();
+
+        mockMvc.perform(post("/api/v1/ia/generar-intervencion")
+                        .header("Authorization", "Bearer " + tokenRector)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("POST /api/v1/ia/generar-intervencion con estudiante inexistente debe retornar 404")
     void generarPropuestaIntervencion_conEstudianteInexistente_debeRetornar404() throws Exception {
         GenerarPropuestaIntervencionDTO request = GenerarPropuestaIntervencionDTO.builder()
                 .estudianteId(999999)
+                .incidenteOrigenId(incidentePrueba.getId())
                 .build();
 
         mockMvc.perform(post("/api/v1/ia/generar-intervencion")

@@ -16,14 +16,18 @@ interface AuthState {
 
 const getInitialUser = (): User | null => {
   try {
-    const raw = localStorage.getItem('disciplina_user');
+    const raw = sessionStorage.getItem('disciplina_user') || localStorage.getItem('disciplina_user');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 };
 
-const initialToken = localStorage.getItem('disciplina_token');
+const getInitialToken = (): string | null => {
+  return sessionStorage.getItem('disciplina_token') || localStorage.getItem('disciplina_token');
+};
+
+const initialToken = getInitialToken();
 const initialUser = getInitialUser();
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -47,8 +51,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         rol: data.rol,
       };
 
-      localStorage.setItem('disciplina_token', data.token);
-      localStorage.setItem('disciplina_user', JSON.stringify(user));
+      // Guardar preferentemente en sessionStorage para no persistir sesiones tras cerrar navegador
+      sessionStorage.setItem('disciplina_token', data.token);
+      sessionStorage.setItem('disciplina_user', JSON.stringify(user));
+      // Purgar almacenamiento previo en localStorage para mitigar retención indebida en terminales compartidas
+      localStorage.removeItem('disciplina_token');
+      localStorage.removeItem('disciplina_user');
 
       set({
         user,
@@ -77,6 +85,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    // Notificar al backend para que invalide la cookie HttpOnly
+    apiClient.post('/auth/logout').catch(() => {});
+
+    sessionStorage.removeItem('disciplina_token');
+    sessionStorage.removeItem('disciplina_user');
     localStorage.removeItem('disciplina_token');
     localStorage.removeItem('disciplina_user');
     set({

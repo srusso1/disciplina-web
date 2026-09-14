@@ -194,12 +194,7 @@ public class AuditoriaService {
         try {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs != null) {
-                HttpServletRequest request = attrs.getRequest();
-                String xForwardedFor = request.getHeader("X-Forwarded-For");
-                if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-                    return xForwardedFor.split(",")[0].trim();
-                }
-                return request.getRemoteAddr();
+                return com.disciplina.common.util.ClienteIpUtil.obtenerIpCliente(attrs.getRequest());
             }
         } catch (Exception ignored) {
         }
@@ -209,11 +204,59 @@ public class AuditoriaService {
     private String toJson(Object obj) {
         if (obj == null) return null;
         if (obj instanceof String s) return s;
+
+        // Guard against direct JPA entity serialization: entities annotated with @Entity
+        // or Hibernate proxies can cause LazyInitializationException or infinite recursion.
+        if (isJpaEntity(obj)) {
+            log.warn("Attempted to serialize a JPA entity directly in audit log ({}). Using safe fallback.",
+                    obj.getClass().getSimpleName());
+            return buildEntityFallback(obj);
+        }
+
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            log.warn("No fue posible serializar objeto para auditoria: {}", e.getMessage());
-            return String.valueOf(obj);
+            log.warn("No fue posible serializar objeto para auditoria ({}): {}", obj.getClass().getSimpleName(), e.getMessage());
+            return buildEntityFallback(obj);
+        }
+    }
+
+    /**
+     * Checks whether the given object is a JPA-managed entity or a Hibernate proxy.
+     * This prevents accidental serialization of lazy collections or bidirectional relations.
+     */
+    private boolean isJpaEntity(Object obj) {
+        if (obj == null) return false;
+        Class<?> clazz = obj.getClass();
+        // Check for @Entity annotation on the class or its superclass (Hibernate proxies use CGLIB subclasses)
+        while (clazz != null && clazz != Object.class) {
+            if (clazz.isAnnotationPresent(jakarta.persistence.Entity.class)) {
+                return true;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        // Detect Hibernate CGLIB/ByteBuddy proxies by class name convention
+        String className = obj.getClass().getName();
+        return className.contains("$HibernateProxy") || className.contains("$$_javassist") || className.contains("$$EnhancerBy");
+    }
+
+    /**
+     * Produces a safe minimal JSON fallback when full serialization of an object is not possible.
+     * Attempts to extract a numeric id field via reflection, otherwise records the class name only.
+     */
+    private String buildEntityFallback(Object obj) {
+        try {
+            try {
+                java.lang.reflect.Method getId = obj.getClass().getMethod("getId");
+                Object idValue = getId.invoke(obj);
+                return String.format("{\"entidadId\": \"%s\", \"tipo\": \"%s\", \"nota\": \"Serializacion completa omitida por seguridad\"}",
+                        idValue, obj.getClass().getSimpleName());
+            } catch (NoSuchMethodException e) {
+                return String.format("{\"tipo\": \"%s\", \"error\": \"No se pudo serializar el estado — sin getId()\"}",
+                        obj.getClass().getSimpleName());
+            }
+        } catch (Exception ex) {
+            return "{\"error\": \"No se pudo serializar el estado previo\"}";
         }
     }
 }

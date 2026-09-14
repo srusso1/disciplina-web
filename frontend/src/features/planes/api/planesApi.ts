@@ -61,7 +61,7 @@ export const planesApi = {
     return response.data;
   },
 
-  generarPropuestaIa: async (estudianteId: number, incidenteOrigenId?: number): Promise<PropuestaIaResponse> => {
+  generarPropuestaIa: async (estudianteId: number, incidenteOrigenId: number): Promise<PropuestaIaResponse> => {
     const response = await apiClient.post<PropuestaIaResponse>('/ia/generar-intervencion', {
       estudianteId,
       incidenteOrigenId,

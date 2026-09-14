@@ -179,9 +179,16 @@ public class ImportadorMatriculasService {
     }
 
     private void procesarEnLote(List<FilaParsed> filas, int anioLectivo, ImportacionMatriculasResumenDTO resumen) {
-        // 1. Precargar cache de estudiantes existentes en O(1)
-        Map<String, Estudiante> estudiantesCache = estudianteRepository.findAll().stream()
-                .collect(Collectors.toMap(Estudiante::getDocumento, e -> e, (a, b) -> a, HashMap::new));
+        // 1. Precargar cache únicamente de los estudiantes presentes en la planilla Excel
+        Set<String> documentosPlanilla = filas.stream()
+                .map(f -> f.documento)
+                .filter(doc -> doc != null && !doc.isBlank())
+                .collect(Collectors.toSet());
+
+        Map<String, Estudiante> estudiantesCache = documentosPlanilla.isEmpty()
+                ? new HashMap<>()
+                : estudianteRepository.findByDocumentoIn(documentosPlanilla).stream()
+                        .collect(Collectors.toMap(Estudiante::getDocumento, e -> e, (a, b) -> a, HashMap::new));
 
         List<Estudiante> estudiantesAGuardar = new ArrayList<>();
         int creadosEst = 0;

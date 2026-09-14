@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping({"/matriculas", "/api/v1/matriculas"})
+@RequestMapping("/api/v1/matriculas")
 @RequiredArgsConstructor
 public class MatriculaController {
 
@@ -31,7 +31,7 @@ public class MatriculaController {
     private final EstudianteService estudianteService;
 
     @GetMapping(value = "/plantilla-ejemplo", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    @PreAuthorize("hasRole('RECTOR')")
+    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
     public ResponseEntity<byte[]> descargarPlantillaEjemplo() {
         byte[] excel = importadorMatriculasService.generarPlantillaEjemplo();
         return ResponseEntity.ok()
@@ -41,7 +41,7 @@ public class MatriculaController {
     }
 
     @PostMapping(value = "/importar-masivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('RECTOR')")
+    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
     public ResponseEntity<ImportacionMatriculasResumenDTO> importarPlanillaMasiva(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "anioLectivo", required = false) Integer anioLectivo) {

@@ -1,11 +1,11 @@
 package com.disciplina.controller;
 
 import com.disciplina.domain.enums.EstadoPlanIntervencion;
+import com.disciplina.domain.enums.EstadoProceso;
+import com.disciplina.domain.enums.RolEstudianteIncidente;
 import com.disciplina.domain.enums.RolUsuario;
-import com.disciplina.domain.model.Estudiante;
-import com.disciplina.domain.model.Usuario;
-import com.disciplina.domain.repository.EstudianteRepository;
-import com.disciplina.domain.repository.UsuarioRepository;
+import com.disciplina.domain.model.*;
+import com.disciplina.domain.repository.*;
 import com.disciplina.dto.plan.CrearPlanIntervencionDTO;
 import com.disciplina.dto.plan.RegistrarSeguimientoDTO;
 import com.disciplina.security.JwtTokenProvider;
@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -49,12 +50,25 @@ class PlanIntervencionControllerTest {
     @Autowired
     private EstudianteRepository estudianteRepository;
 
+    @Autowired
+    private IncidenteRepository incidenteRepository;
+
+    @Autowired
+    private IncidenteEstudianteRepository incidenteEstudianteRepository;
+
+    @Autowired
+    private DocenteRepository docenteRepository;
+
+    @Autowired
+    private LugarRepository lugarRepository;
+
     private String tokenOrientador;
     private Estudiante estudiantePrueba;
+    private Incidente incidentePrueba;
 
     @BeforeEach
     void setUp() {
-        usuarioRepository.findByUsername("orientador_plan_test").orElseGet(() ->
+        Usuario orientador = usuarioRepository.findByUsername("orientador_plan_test").orElseGet(() ->
                 usuarioRepository.save(Usuario.builder()
                         .username("orientador_plan_test")
                         .passwordHash(passwordEncoder.encode("Password123!"))
@@ -76,6 +90,39 @@ class PlanIntervencionControllerTest {
                         .telefonoAcudiente("3159876543")
                         .activo(true)
                         .build()));
+
+        Docente docente = docenteRepository.findAll().stream().findFirst().orElseGet(() ->
+                docenteRepository.save(Docente.builder()
+                        .documento("DOC_" + System.nanoTime())
+                        .nombres("Carlos")
+                        .apellidos("Docente")
+                        .activo(true)
+                        .build()));
+
+        Lugar lugar = lugarRepository.findAll().stream().findFirst().orElseGet(() ->
+                lugarRepository.save(Lugar.builder()
+                        .nombre("Aula 101 Test")
+                        .activo(true)
+                        .build()));
+
+        incidentePrueba = incidenteRepository.save(Incidente.builder()
+                .fechaIncidente(LocalDate.now())
+                .horaIncidente(LocalTime.of(10, 0))
+                .lugar(lugar)
+                .docenteReporta(docente)
+                .usuarioRegistro(orientador)
+                .descripcionHechos("Incidente de prueba para plan de intervencion")
+                .estadoProceso(EstadoProceso.REPORTADO)
+                .build());
+
+        incidenteEstudianteRepository.save(IncidenteEstudiante.builder()
+                .incidente(incidentePrueba)
+                .estudiante(estudiantePrueba)
+                .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                .anioLectivo(LocalDate.now().getYear())
+                .gradoMomento("9")
+                .grupoMomento("A")
+                .build());
     }
 
     @Test
@@ -83,6 +130,7 @@ class PlanIntervencionControllerTest {
     void crearPlanIntervencion_exitoso() throws Exception {
         CrearPlanIntervencionDTO dto = CrearPlanIntervencionDTO.builder()
                 .estudianteId(estudiantePrueba.getId())
+                .incidenteOrigenId(incidentePrueba.getId())
                 .diagnosticoSituacional("Dificultad recurrente en la regulación de impulsos ante frustración académica.")
                 .recomendacionesIa("Estrategias de autorregulación emocional y pausas activas.")
                 .accionesAcordadas("Asistencia semanal a taller de mediación y acuerdos restaurativos.")
@@ -98,8 +146,25 @@ class PlanIntervencionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.estudianteId", is(estudiantePrueba.getId())))
+                .andExpect(jsonPath("$.incidenteOrigenId", is(incidentePrueba.getId())))
                 .andExpect(jsonPath("$.estado", is("EN_SEGUIMIENTO")))
                 .andExpect(jsonPath("$.accionesAcordadas", containsString("taller de mediación")));
+    }
+
+    @Test
+    @DisplayName("Debe rechazar con 400 Bad Request si no se proporciona incidenteOrigenId")
+    void crearPlanIntervencion_sinIncidente_retornaBadRequest() throws Exception {
+        CrearPlanIntervencionDTO dto = CrearPlanIntervencionDTO.builder()
+                .estudianteId(estudiantePrueba.getId())
+                .diagnosticoSituacional("Sin incidente previo.")
+                .accionesAcordadas("Acciones sin respaldo fáctico.")
+                .build();
+
+        mockMvc.perform(post("/api/v1/planes-intervencion")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -108,6 +173,7 @@ class PlanIntervencionControllerTest {
         // 1. Crear plan primero
         CrearPlanIntervencionDTO crearDto = CrearPlanIntervencionDTO.builder()
                 .estudianteId(estudiantePrueba.getId())
+                .incidenteOrigenId(incidentePrueba.getId())
                 .diagnosticoSituacional("Diagnóstico inicial para seguimiento")
                 .accionesAcordadas("Acciones iniciales")
                 .estado(EstadoPlanIntervencion.EN_SEGUIMIENTO)

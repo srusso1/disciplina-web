@@ -1,5 +1,6 @@
 package com.disciplina.service;
 
+import com.disciplina.common.exception.OperacionInvalidaException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
 import com.disciplina.domain.enums.EstadoPlanIntervencion;
 import com.disciplina.domain.model.*;
@@ -27,6 +28,7 @@ public class PlanIntervencionService {
     private final SeguimientoCasoRepository seguimientoCasoRepository;
     private final EstudianteRepository estudianteRepository;
     private final IncidenteRepository incidenteRepository;
+    private final IncidenteEstudianteRepository incidenteEstudianteRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaService auditoriaService;
 
@@ -38,10 +40,17 @@ public class PlanIntervencionService {
         Usuario orientador = usuarioRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con username: " + username));
 
-        Incidente incidente = null;
-        if (dto.getIncidenteOrigenId() != null) {
-            incidente = incidenteRepository.findById(dto.getIncidenteOrigenId())
-                    .orElseThrow(() -> new RecursoNoEncontradoException("Incidente de origen no encontrado con ID: " + dto.getIncidenteOrigenId()));
+        if (dto.getIncidenteOrigenId() == null) {
+            throw new OperacionInvalidaException("Todo plan de intervención formativa debe estar asociado a un incidente convivencial previo.");
+        }
+
+        Incidente incidente = incidenteRepository.findById(dto.getIncidenteOrigenId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Incidente de origen no encontrado con ID: " + dto.getIncidenteOrigenId()));
+
+        boolean estudianteInvolucrado = incidenteEstudianteRepository.findByIncidenteIdAndEstudianteId(
+                incidente.getId(), estudiante.getId()).isPresent();
+        if (!estudianteInvolucrado) {
+            throw new OperacionInvalidaException("El estudiante no está vinculado al incidente seleccionado como origen del plan.");
         }
 
         PlanIntervencion plan = PlanIntervencion.builder()
@@ -87,11 +96,18 @@ public class PlanIntervencionService {
         }
 
         List<PlanIntervencion> planes = planIntervencionRepository.findByEstudianteIdConDetalles(estudianteId);
+        if (planes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> planIds = planes.stream().map(PlanIntervencion::getId).toList();
+        Map<Integer, List<SeguimientoCaso>> seguimientosPorPlan = seguimientoCasoRepository
+                .findByPlanIdInConUsuario(planIds)
+                .stream()
+                .collect(Collectors.groupingBy(s -> s.getPlan().getId()));
+
         return planes.stream()
-                .map(p -> {
-                    List<SeguimientoCaso> segs = seguimientoCasoRepository.findByPlanIdConUsuario(p.getId());
-                    return mapearADTO(p, segs);
-                })
+                .map(p -> mapearADTO(p, seguimientosPorPlan.getOrDefault(p.getId(), Collections.emptyList())))
                 .collect(Collectors.toList());
     }
 
@@ -107,12 +123,22 @@ public class PlanIntervencionService {
                 busqueda != null ? busqueda.trim() : null,
                 pageable);
 
-        List<PlanIntervencionResponseDTO> dtos = resultado.getContent().stream()
-                .map(p -> {
-                    List<SeguimientoCaso> segs = seguimientoCasoRepository.findByPlanIdConUsuario(p.getId());
-                    return mapearADTO(p, segs);
-                })
-                .collect(Collectors.toList());
+        List<PlanIntervencion> planes = resultado.getContent();
+        List<PlanIntervencionResponseDTO> dtos;
+
+        if (planes.isEmpty()) {
+            dtos = Collections.emptyList();
+        } else {
+            List<Integer> planIds = planes.stream().map(PlanIntervencion::getId).toList();
+            Map<Integer, List<SeguimientoCaso>> seguimientosPorPlan = seguimientoCasoRepository
+                    .findByPlanIdInConUsuario(planIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(s -> s.getPlan().getId()));
+
+            dtos = planes.stream()
+                    .map(p -> mapearADTO(p, seguimientosPorPlan.getOrDefault(p.getId(), Collections.emptyList())))
+                    .collect(Collectors.toList());
+        }
 
         return PaginaRespuestaDTO.<PlanIntervencionResponseDTO>builder()
                 .contenido(dtos)

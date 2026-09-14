@@ -6,7 +6,6 @@ import {
   FileText, 
   Users, 
   LogOut, 
-  Sparkles,
   Layers,
   HelpCircle,
   Bell
@@ -73,11 +72,6 @@ export const OrientadorLayout: React.FC = () => {
             <NavLink to="/orientador/planes" className={navItemClass}>
               <Layers className="w-4 h-4 shrink-0" />
               <span>Planes de Intervencion</span>
-            </NavLink>
-
-            <NavLink to="/orientador/asistente-ia" className={navItemClass}>
-              <Sparkles className="w-4 h-4 shrink-0 text-trujillo-gold" />
-              <span>Asistencia Pedagogica</span>
             </NavLink>
           </nav>
         </div>

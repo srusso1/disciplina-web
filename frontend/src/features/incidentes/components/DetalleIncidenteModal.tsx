@@ -249,21 +249,25 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
       >
         
         {/* Header Modal */}
-        <div className="px-6 py-5 bg-trujillo-navy text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-trujillo-navy-light rounded-xl border border-sky-400/30">
-              <Scale className="w-5 h-5 text-trujillo-sky" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
+              <Scale className="w-5 h-5 stroke-[1.75]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold tracking-tight">Expediente #{incidente?.id || incidenteId}</h2>
+                <h2 id="modal-detalle-title" className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                  Expediente #{incidente?.id || incidenteId}
+                </h2>
                 {incidente && (
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-trujillo-ice text-trujillo-navy border border-sky-200">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
                     {incidente.estadoProceso}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-sky-200/80">Seguimiento Formativo y Garantía del Debido Proceso (Ley 1620)</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Seguimiento Formativo y Garantía del Debido Proceso (Ley 1620)
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -272,16 +276,16 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
                 type="button"
                 onClick={handleDescargarActaPdf}
                 disabled={descargandoPdf}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50"
+                className="h-8 px-2.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-blue-900 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                 title="Descargar acta oficial de debido proceso en PDF"
               >
-                <FileDown className={`w-3.5 h-3.5 text-trujillo-sky ${descargandoPdf ? 'animate-bounce' : ''}`} />
-                <span>{descargandoPdf ? 'Generando PDF...' : 'Acta PDF'}</span>
+                <FileDown className={`w-3.5 h-3.5 text-blue-600 ${descargandoPdf ? 'animate-bounce' : ''}`} />
+                <span>{descargandoPdf ? 'Generando...' : 'Acta PDF'}</span>
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-sky-200 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
               title="Cerrar ventana"
             >
               <X className="w-5 h-5" />

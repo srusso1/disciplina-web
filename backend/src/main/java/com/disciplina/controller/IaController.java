@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/ia", "/api/v1/ia"})
+@RequestMapping("/api/v1/ia")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
 public class IaController {

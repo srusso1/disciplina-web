@@ -391,16 +391,16 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     >
       <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-4xl max-h-[92vh] min-h-0 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Cabecera del Modal */}
-        <div className="bg-trujillo-navy text-white px-5 py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center text-trujillo-sky shadow-xs">
-              <Shield size={18} />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
+              <Shield className="w-5 h-5 stroke-[1.75]" />
             </div>
             <div>
-              <h2 id="modal-registro-incidente-title" className="text-sm sm:text-base font-bold text-white tracking-tight">
+              <h2 id="modal-registro-incidente-title" className="text-base font-bold text-slate-900 tracking-tight leading-none">
                 Registrar Incidente de Convivencia Escolar
               </h2>
-              <p className="text-xs text-sky-200/80">
+              <p className="text-xs text-slate-500 mt-1">
                 Sistema Integral de Debido Proceso y Tipificación según Ley 1620 de 2013
               </p>
             </div>
@@ -409,10 +409,10 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
           <button
             type="button"
             onClick={handleCerrar}
-            className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition active:scale-[0.97] cursor-pointer"
+            className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             aria-label="Cerrar ventana"
           >
-            <X size={18} />
+            <X className="w-5 h-5" />
           </button>
         </div>
 

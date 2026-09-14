@@ -18,4 +18,5 @@ public class CatalogoFaltaResponseDTO {
     private GravedadInstitucional gravedadInstitucional;
     private String descripcion;
     private String procedimientoSugerido;
+    private Boolean activo;
 }

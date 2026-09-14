@@ -105,7 +105,6 @@ class IncidenteControllerTest {
                         .documento("DOC_TEST_" + System.nanoTime())
                         .nombres("Docente")
                         .apellidos("Prueba")
-                        .areaDesempeno("Matematicas")
                         .activo(true)
                         .build()));
 
@@ -118,7 +117,7 @@ class IncidenteControllerTest {
 
         faltaPrueba = catalogoFaltaRepository.findAll().stream().findFirst().orElseGet(() ->
                 catalogoFaltaRepository.save(CatalogoFalta.builder()
-                        .codigo("FALTA_" + System.nanoTime())
+                        .codigo("F_" + (System.currentTimeMillis() % 10000000))
                         .clasificacionLey(ClasificacionLey.TIPO_II)
                         .gravedadInstitucional(GravedadInstitucional.GRAVE)
                         .descripcion("Falta de prueba")

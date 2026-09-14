@@ -24,7 +24,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  FolderOpen
+  FolderOpen,
+  FileText,
 } from 'lucide-react';
 
 export const PlanesIntervencionPage: React.FC = () => {
@@ -134,26 +135,19 @@ export const PlanesIntervencionPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header Institucional */}
-      <div className="bg-trujillo-navy rounded-xl p-6 sm:p-7 text-white shadow-sm border border-slate-200/80">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-trujillo-sky/20 border border-trujillo-sky/30 text-xs font-semibold text-sky-200 mb-2">
-              <Layers className="w-3.5 h-3.5" />
-              <span>Acompañamiento Formativo y Restaurativo • Plan Integral</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Planes de Intervención Pedagógica
-            </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              Gestión centralizada de acuerdos formativos, compromisos familiares, bitácora de seguimientos periódicos y asistencia de IA.
-            </p>
-          </div>
-
+    <div className="space-y-4 pb-12">
+      {/* Barra de Título Compacta */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-200 gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <HeartHandshake className="w-5 h-5 text-slate-700" /> Planes de Intervención Pedagógica
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">Gestión de acuerdos formativos, compromisos familiares y seguimiento restaurativo.</p>
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsModalNuevoOpen(true)}
-            className="px-4 py-2 rounded-lg bg-trujillo-sky hover:bg-sky-400 text-trujillo-dark font-bold text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0 cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-md bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Formular Nuevo Plan</span>
@@ -161,66 +155,70 @@ export const PlanesIntervencionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-trujillo-navy/10 text-trujillo-navy flex items-center justify-center shrink-0">
-            <Layers className="w-5 h-5" />
+      {/* Tarjetas KPI Compactas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-600" /> Total Planes
+            </span>
+            <Layers className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Total Planes</span>
-            <p className="text-xl font-extrabold text-slate-800">{totalElementos}</p>
-          </div>
+          <p className="text-2xl font-bold text-slate-900 leading-tight mt-1">{totalElementos}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Registros formulados</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-            <Clock className="w-5 h-5" />
+        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" /> En Seguimiento
+            </span>
+            <Clock className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">En Seguimiento</span>
-            <p className="text-xl font-extrabold text-slate-800">{metricas.enSeguimiento}</p>
-          </div>
+          <p className="text-2xl font-bold text-slate-900 leading-tight mt-1">{metricas.enSeguimiento}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Planes activos en curso</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
+        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Cumplidos
+            </span>
+            <CheckCircle2 className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Cumplidos</span>
-            <p className="text-xl font-extrabold text-slate-800">{metricas.cumplidos}</p>
-          </div>
+          <p className="text-2xl font-bold text-slate-900 leading-tight mt-1">{metricas.cumplidos}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Metas pedagógicas alcanzadas</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-            <XCircle className="w-5 h-5" />
+        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" /> Incumplidos
+            </span>
+            <XCircle className="w-4 h-4 text-slate-400" />
           </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Incumplidos</span>
-            <p className="text-xl font-extrabold text-slate-800">{metricas.incumplidos}</p>
-          </div>
+          <p className="text-2xl font-bold text-slate-900 leading-tight mt-1">{metricas.incumplidos}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Requieren escalamiento</p>
         </div>
       </div>
 
-      {/* Barra de Filtros */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-        <form onSubmit={handleBuscar} className="flex flex-col md:flex-row gap-3">
+      {/* Barra de Filtros (Toolbar) */}
+      <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs">
+        <form onSubmit={handleBuscar} className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Buscar por estudiante, documento o diagnóstico..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 focus:border-trujillo-sky"
+              className="w-full pl-9 pr-8 h-9 text-xs border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
             />
             {busqueda && (
               <button
                 type="button"
                 onClick={() => setBusqueda('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -234,7 +232,7 @@ export const PlanesIntervencionPage: React.FC = () => {
                 setFiltroEstado(e.target.value);
                 setPaginaActual(0);
               }}
-              className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 focus:border-trujillo-sky"
+              className="h-9 px-2.5 text-xs border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-slate-700 font-medium"
             >
               <option value="">Todos los Estados</option>
               <option value="EN_SEGUIMIENTO">En Seguimiento</option>
@@ -245,9 +243,9 @@ export const PlanesIntervencionPage: React.FC = () => {
 
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-trujillo-navy hover:bg-trujillo-dark text-white text-sm font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+              className="h-9 px-3.5 bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-3.5 h-3.5" />
               <span>Filtrar</span>
             </button>
 
@@ -255,7 +253,7 @@ export const PlanesIntervencionPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLimpiarFiltros}
-                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                className="h-9 px-3 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
                 <span>Limpiar</span>
@@ -267,70 +265,74 @@ export const PlanesIntervencionPage: React.FC = () => {
 
       {/* Alertas */}
       {mensajeExito && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{mensajeExito}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center justify-between">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 cursor-pointer">
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
       {/* Tabla de Planes */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {cargando ? (
-          <div className="p-16 flex flex-col items-center justify-center text-slate-400 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-trujillo-sky" />
-            <p className="text-xs font-semibold uppercase tracking-wider">Cargando planes de intervención...</p>
-          </div>
-        ) : planes.length === 0 ? (
-          <div className="p-16 text-center text-slate-400 space-y-2">
-            <HeartHandshake className="w-12 h-12 mx-auto text-slate-300" />
-            <p className="text-sm font-bold text-slate-700">No se encontraron planes de intervención</p>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Puedes formular un nuevo plan con el botón superior o buscar otro criterio.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-slate-100/75 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+              <tr>
+                <th className="py-2.5 px-3.5">Radicado / Estudiante</th>
+                <th className="py-2.5 px-3.5">Diagnóstico y Compromisos</th>
+                <th className="py-2.5 px-3.5">Próximo Seguimiento</th>
+                <th className="py-2.5 px-3.5 text-center">Seguimientos</th>
+                <th className="py-2.5 px-3.5 text-center">Estado</th>
+                <th className="py-2.5 px-3.5 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {cargando ? (
                 <tr>
-                  <th className="py-2.5 px-3.5">ID / Estudiante</th>
-                  <th className="py-2.5 px-3.5">Diagnóstico y Acciones</th>
-                  <th className="py-2.5 px-3.5">Próximo Seguimiento</th>
-                  <th className="py-2.5 px-3.5 text-center">Seguimientos</th>
-                  <th className="py-2.5 px-3.5 text-center">Estado</th>
-                  <th className="py-2.5 px-3.5 text-right">Acciones</th>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600 mb-2" />
+                    <p className="text-xs font-medium text-slate-600">Cargando planes de intervención...</p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {planes.map((plan) => (
-                  <tr key={plan.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+              ) : planes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+                    <p className="text-sm font-medium text-slate-700">No se encontraron planes de intervención</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Ajusta los filtros o formula un nuevo plan pedagógico con el botón superior.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                planes.map((plan) => (
+                  <tr key={plan.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 px-3.5">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 font-mono text-[11px] font-bold text-slate-600">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-[11px] font-bold text-slate-700">
                           #{plan.id}
                         </span>
                         <div>
                           <div className="font-semibold text-slate-800">{plan.estudianteNombre}</div>
-                          <div className="text-xs font-mono text-slate-400">{plan.estudianteDocumento}</div>
+                          <div className="text-[11px] font-mono text-slate-400">{plan.estudianteDocumento}</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-2.5 px-3.5 max-w-xs sm:max-w-md">
                       <div className="font-medium text-slate-800 text-xs line-clamp-1">
-                        <strong className="text-slate-500 uppercase text-[10px]">Diagnóstico: </strong>
+                        <span className="text-slate-500 font-semibold">Diag: </span>
                         {plan.diagnosticoSituacional}
                       </div>
-                      <div className="text-slate-500 text-xs line-clamp-1 mt-0.5">
-                        <strong className="text-slate-400 uppercase text-[10px]">Acciones: </strong>
+                      <div className="text-slate-500 text-[11px] line-clamp-1 mt-0.5">
+                        <span className="text-slate-400 font-semibold">Acciones: </span>
                         {plan.accionesAcordadas}
                       </div>
                     </td>
@@ -345,13 +347,13 @@ export const PlanesIntervencionPage: React.FC = () => {
                       )}
                     </td>
                     <td className="py-2.5 px-3.5 text-center">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-medium font-mono">
                         {plan.seguimientos?.length || 0} notas
                       </span>
                     </td>
                     <td className="py-2.5 px-3.5 text-center">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide border ${getBadgeEstado(
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${getBadgeEstado(
                           plan.estado
                         )}`}
                       >
@@ -363,30 +365,30 @@ export const PlanesIntervencionPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleAbrirDetalle(plan)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-xs font-semibold transition-all duration-150 active:scale-[0.98] border border-sky-200 cursor-pointer shadow-2xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-medium transition cursor-pointer"
                           title="Ver detalle y registrar evolución pedagógica"
                         >
-                          <FileEdit className="w-3.5 h-3.5 text-trujillo-navy" />
+                          <FileEdit className="w-3.5 h-3.5 text-slate-500" />
                           <span>Seguimiento</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setExpedienteEstudianteId(plan.estudianteId)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all duration-150 active:scale-[0.98] border border-slate-200 cursor-pointer shadow-2xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-medium transition cursor-pointer"
                           title="Abrir expediente escolar integral del estudiante"
                         >
-                          <FolderOpen className="w-3.5 h-3.5 text-trujillo-sky" />
+                          <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
                           <span>Expediente</span>
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Paginación */}
         {!cargando && totalPaginas > 1 && (

@@ -5,8 +5,8 @@ import {
   GraduationCap,
   Trash2,
   Loader2,
-  Info,
   Shield,
+  Users,
 } from 'lucide-react';
 import { matriculasApi } from '../../matriculas/api/matriculasApi';
 import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
@@ -186,16 +186,16 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
         <div className="relative">
           {/* Alerta contextual cuando la IA sugirió un nombre no matriculado */}
           {searchTerm && !data.estudianteId && (
-            <div className="mb-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 animate-in fade-in duration-150">
-              <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="font-bold text-amber-900 flex items-center gap-1.5">
+            <div className="mb-2 bg-amber-50/80 border border-amber-200/90 rounded-lg p-3.5 flex gap-3 animate-in fade-in duration-150">
+              <AlertTriangle className="text-amber-700 w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
                   <span>Estudiante pendiente de vincular:</span>
-                  <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">
+                  <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-amber-800 normal-case font-normal">
                     "{searchTerm}"
                   </span>
-                </p>
-                <p className="text-[11px] text-amber-700 leading-relaxed">
+                </h4>
+                <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
                   La IA identificó este nombre en el relato, pero <strong>no coincide con ningún estudiante matriculado</strong> en el sistema institucional. Debe seleccionar a un alumno del censo para poder guardar el caso, o quitarlo si no es un estudiante del plantel.
                 </p>
               </div>
@@ -215,11 +215,14 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                 setSearchTerm(e.target.value);
                 onChange({ busquedaEstudiante: e.target.value });
               }}
+              autoComplete="off"
+              spellCheck={false}
+              name="student-search-query-no-autofill"
               placeholder="Escriba apellido, nombre o documento (ej: Gomez, 1066...)"
               className={`w-full pl-9 pr-9 py-2 text-xs sm:text-sm bg-white border rounded-lg focus:ring-2 transition placeholder:text-slate-400 ${
                 searchTerm && !data.estudianteId
                   ? 'border-amber-300 ring-1 ring-amber-200 focus:ring-amber-400 focus:border-amber-400'
-                  : 'border-slate-300 focus:ring-trujillo-navy/20 focus:border-trujillo-navy'
+                  : 'border-slate-300 focus:ring-blue-500/30 focus:border-blue-500'
               }`}
             />
             {buscando && (
@@ -227,9 +230,17 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
             )}
           </div>
 
+          {/* Dropdown de Búsqueda en Curso */}
+          {buscando && searchTerm.trim().length >= 2 && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2 animate-in fade-in duration-100">
+              <Loader2 size={14} className="animate-spin text-blue-600" />
+              <span>Buscando en el censo escolar...</span>
+            </div>
+          )}
+
           {/* Dropdown de Resultados de Búsqueda */}
-          {resultados.length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-30 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
+          {!buscando && resultados.length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
               {resultados.map((est) => (
                 <button
                   key={est.id}
@@ -258,11 +269,17 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
             </div>
           )}
 
-          {/* Ayuda contextual si no hay resultados */}
+          {/* Dropdown flotante cuando no hay resultados */}
           {searchTerm.trim().length >= 2 && !buscando && resultados.length === 0 && !data.estudianteId && (
-            <div className="mt-1.5 p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-[11px] flex items-center gap-1.5">
-              <Info size={16} className="text-slate-400 shrink-0" />
-              <span>No se encontraron estudiantes con "{searchTerm}". Intente buscar por número de documento o apellido.</span>
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-30 p-4 text-center animate-in fade-in duration-100">
+              <Users size={22} className="mx-auto text-slate-300 mb-1.5 stroke-[1.5]" />
+              <p className="text-xs font-bold text-slate-700">No se encontraron estudiantes</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                No hay coincidencias para &quot;{searchTerm}&quot;.
+              </p>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Verifique documento o apellidos, o confirme que la matrícula institucional esté importada en el sistema.
+              </p>
             </div>
           )}
         </div>
@@ -350,6 +367,12 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                 </optgroup>
               )}
             </select>
+          )}
+          {!esVictimaOTestigo && faltas.length === 0 && (
+            <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 font-medium">
+              <AlertTriangle size={13} className="text-amber-600 shrink-0" />
+              <span>No hay faltas registradas en el catálogo. Debe configurarlas en Rectoría &gt; Configuración.</span>
+            </p>
           )}
         </div>
       </div>

@@ -10,7 +10,8 @@ import {
   LogOut, 
   ScrollText,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Settings,
 } from 'lucide-react';
 
 export const RectorLayout: React.FC = () => {
@@ -84,6 +85,11 @@ export const RectorLayout: React.FC = () => {
             <NavLink to="/rectoria/reportes" className={navItemClass}>
               <FileCheck className="w-4 h-4 shrink-0" />
               <span>Actas & Resoluciones</span>
+            </NavLink>
+
+            <NavLink to="/rectoria/configuracion" className={navItemClass}>
+              <Settings className="w-4 h-4 shrink-0" />
+              <span>Configuración</span>
             </NavLink>
           </nav>
         </div>

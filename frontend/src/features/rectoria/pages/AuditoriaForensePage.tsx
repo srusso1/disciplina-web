@@ -6,7 +6,6 @@ import { useLockBodyScroll } from '../../../core/hooks/useLockBodyScroll';
 import {
   ShieldAlert,
   Search,
-  Calendar,
   Clock,
   Code2,
   X,
@@ -15,9 +14,9 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Loader2,
-  Database,
   ArrowRightLeft,
   RefreshCw,
+  FileText,
 } from 'lucide-react';
 
 export const AuditoriaForensePage: React.FC = () => {
@@ -139,80 +138,87 @@ export const AuditoriaForensePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera Principal */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs">
+    <div className="space-y-4 pb-8">
+      {/* Barra de Título Compacta */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-200 gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center font-bold shadow-2xs">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                Bitácora de Auditoría y Trazabilidad Forense
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Custodia probatoria inmutable y cadena de custodia del debido proceso institucional
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-slate-700" />
+            Bitácora de Auditoría Forense
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Custodia probatoria inmutable y trazabilidad del debido proceso institucional.
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 self-start md:self-auto">
-          <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600">
-            Total Eventos: <span className="text-slate-900 font-bold">{totalElementos}</span>
-          </div>
-
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => cargarAuditorias(paginaActual)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-2xs transition active:scale-[0.98] cursor-pointer"
-            title="Refrescar bitácora"
+            disabled={cargando}
+            className="h-9 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${cargando ? 'animate-spin text-blue-700' : 'text-slate-500'}`} />
             <span>Actualizar</span>
           </button>
         </div>
       </div>
 
-      {/* Barra de Filtros de Búsqueda */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-        <form onSubmit={handleBuscar} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {/* Búsqueda por texto */}
-          <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por ID entidad, usuario, IP..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
-            />
-          </div>
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 p-0.5">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
-          {/* Filtro Entidad */}
-          <div>
+      {/* Contenedor de Tabla con Toolbar Integrado de 1 sola línea */}
+      <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+        {/* Toolbar en 1 sola línea */}
+        <div className="p-2.5 border-b border-slate-200 bg-slate-50/60">
+          <form onSubmit={handleBuscar} className="flex flex-wrap items-center gap-2">
+            {/* Búsqueda */}
+            <div className="relative flex-1 min-w-[180px] max-w-xs">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por ID, usuario, IP..."
+                className="w-full h-9 pl-8 pr-7 text-xs rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-slate-800"
+              />
+              {busqueda && (
+                <button
+                  type="button"
+                  onClick={() => setBusqueda('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Filtro Entidad */}
             <select
               value={filtroEntidad}
               onChange={(e) => setFiltroEntidad(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
+              className="h-9 px-2.5 text-xs rounded-md border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium"
             >
-              <option value="">-- Todas las Entidades --</option>
+              <option value="">Todas las Entidades</option>
               <option value="Incidente">Incidente</option>
-              <option value="IncidenteEstudiante">IncidenteEstudiante (Descargos)</option>
+              <option value="IncidenteEstudiante">IncidenteEstudiante</option>
               <option value="PlanIntervencion">Plan de Intervención</option>
-              <option value="MatriculaEstudiante">Matrículas</option>
+              <option value="MatriculaEstudiante">Matrícula</option>
             </select>
-          </div>
 
-          {/* Filtro Acción */}
-          <div>
+            {/* Filtro Acción */}
             <select
               value={filtroAccion}
               onChange={(e) => setFiltroAccion(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 transition"
+              className="h-9 px-2.5 text-xs rounded-md border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium"
             >
-              <option value="">-- Todas las Acciones --</option>
+              <option value="">Todas las Acciones</option>
               <option value="CREAR">CREAR</option>
               <option value="CAMBIO_ESTADO">CAMBIO_ESTADO</option>
               <option value="ACTUALIZAR">ACTUALIZAR</option>
@@ -220,231 +226,236 @@ export const AuditoriaForensePage: React.FC = () => {
               <option value="REGISTRAR_SEGUIMIENTO">REGISTRAR_SEGUIMIENTO</option>
               <option value="IMPORTACION_MASIVA">IMPORTACION_MASIVA</option>
             </select>
-          </div>
 
-          {/* Botones */}
-          <div className="flex items-center gap-2">
+            {/* Rango de Fechas */}
+            <div className="flex items-center gap-1 text-xs text-slate-500">
+              <input
+                type="date"
+                value={fechaDesde}
+                onChange={(e) => setFechaDesde(e.target.value)}
+                className="h-9 text-xs px-2 rounded-md border border-slate-300 bg-white text-slate-700"
+                title="Fecha inicial"
+              />
+              <span>-</span>
+              <input
+                type="date"
+                value={fechaHasta}
+                onChange={(e) => setFechaHasta(e.target.value)}
+                className="h-9 text-xs px-2 rounded-md border border-slate-300 bg-white text-slate-700"
+                title="Fecha final"
+              />
+            </div>
+
+            {/* Botones */}
             <button
               type="submit"
-              className="flex-1 py-2 px-3 rounded-xl bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-semibold shadow-2xs transition active:scale-[0.98] cursor-pointer text-center"
+              className="h-9 px-3 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-xs"
             >
-              Filtrar
+              <Search className="w-3.5 h-3.5" />
+              <span>Filtrar</span>
             </button>
-            <button
-              type="button"
-              onClick={handleLimpiarFiltros}
-              className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition cursor-pointer"
-            >
-              Limpiar
-            </button>
-          </div>
-        </form>
 
-        {/* Rango de Fechas */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 text-xs text-slate-600">
-          <div className="flex items-center gap-1.5 font-medium">
-            <Calendar className="w-3.5 h-3.5 text-trujillo-sky" />
-            <span>Rango de Fechas:</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={fechaDesde}
-              onChange={(e) => setFechaDesde(e.target.value)}
-              className="text-xs px-2.5 py-1 rounded-lg border border-slate-200 bg-white"
-            />
-            <span className="text-slate-400">hasta</span>
-            <input
-              type="date"
-              value={fechaHasta}
-              onChange={(e) => setFechaHasta(e.target.value)}
-              className="text-xs px-2.5 py-1 rounded-lg border border-slate-200 bg-white"
-            />
-          </div>
+            {(busqueda || filtroEntidad || filtroAccion || fechaDesde || fechaHasta) && (
+              <button
+                type="button"
+                onClick={handleLimpiarFiltros}
+                className="h-9 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium rounded-md flex items-center gap-1 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Limpiar</span>
+              </button>
+            )}
+
+            <div className="text-xs text-slate-500 font-medium ml-auto">
+              Total: <strong className="text-slate-700">{totalElementos}</strong> eventos
+            </div>
+          </form>
         </div>
-      </div>
 
-      {/* Tabla de Registros Forenses */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-        {cargando ? (
-          <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin text-trujillo-navy mb-3" />
-            <p className="text-xs font-medium">Consultando registros inmutables de auditoría...</p>
-          </div>
-        ) : error ? (
-          <div className="p-10 text-center text-rose-700 bg-rose-50 m-4 rounded-xl border border-rose-200">
-            <p className="text-xs font-bold">{error}</p>
-          </div>
-        ) : registros.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 space-y-2">
-            <Database className="w-10 h-10 mx-auto text-slate-300" />
-            <p className="text-sm font-semibold">No se encontraron eventos de auditoría</p>
-            <p className="text-xs text-slate-400">Intente modificar los filtros o el rango de fechas.</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto relative">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-100 border-b border-slate-200">
-                  <tr className="text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-3.5 bg-slate-100">Timestamp</th>
-                    <th className="py-3 px-3.5 bg-slate-100">Acción</th>
-                    <th className="py-3 px-3.5 bg-slate-100">Entidad Afectada</th>
-                    <th className="py-3 px-3.5 bg-slate-100">Usuario Actor</th>
-                    <th className="py-3 px-3.5 bg-slate-100">IP Origen</th>
-                    <th className="py-3 px-3.5 text-center bg-slate-100">Registro de Cambios</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {registros.map((r) => (
-                    <tr key={r.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
-                      <td className="py-2.5 px-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 text-slate-800 font-medium">
-                          <Clock className="w-3.5 h-3.5 text-trujillo-sky shrink-0" />
-                          <span>{new Date(r.createdAt).toLocaleString()}</span>
-                        </div>
-                      </td>
+        {/* Tabla de Registros Forenses */}
+        <div className="overflow-x-auto relative">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th className="py-2.5 px-3">Fecha / Hora</th>
+                <th className="py-2.5 px-3">Usuario Actor</th>
+                <th className="py-2.5 px-3">Dirección IP</th>
+                <th className="py-2.5 px-3">Acción</th>
+                <th className="py-2.5 px-3">Entidad</th>
+                <th className="py-2.5 px-3 text-center">Detalle del Cambio</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {cargando ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
+                    <p className="text-xs font-medium text-slate-600">Consultando registros inmutables de auditoría...</p>
+                  </td>
+                </tr>
+              ) : registros.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+                    <p className="text-sm font-medium text-slate-700">No se encontraron eventos de auditoría</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Ajusta los filtros o el rango de fechas para consultar registros históricos.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                registros.map((r) => (
+                  <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-slate-800 font-medium">
+                        <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span>{new Date(r.createdAt).toLocaleString()}</span>
+                      </div>
+                    </td>
 
-                      <td className="py-2.5 px-3.5 whitespace-nowrap">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${getBadgeAccion(
-                            r.accion
-                          )}`}
-                        >
-                          {r.accion}
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <div>
+                        <span className="font-semibold text-slate-900 block">
+                          {r.usuarioNombreCompleto || r.usuarioUsername}
                         </span>
-                      </td>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {r.usuarioUsername} ({r.usuarioRol?.replace('ROLE_', '') || 'SISTEMA'})
+                        </span>
+                      </div>
+                    </td>
 
-                      <td className="py-2.5 px-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-slate-800">{r.entidad}</span>
-                          <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                            #{r.entidadId}
-                          </span>
-                        </div>
-                      </td>
+                    <td className="py-2.5 px-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
+                      {r.ipOrigen || '127.0.0.1'}
+                    </td>
 
-                      <td className="py-2.5 px-3.5 whitespace-nowrap">
-                        <div>
-                          <span className="font-semibold text-slate-800 block">
-                            {r.usuarioNombreCompleto || r.usuarioUsername}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-medium">
-                            {r.usuarioUsername} ({r.usuarioRol?.replace('ROLE_', '') || 'SISTEMA'})
-                          </span>
-                        </div>
-                      </td>
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${getBadgeAccion(
+                          r.accion
+                        )}`}
+                      >
+                        {r.accion}
+                      </span>
+                    </td>
 
-                      <td className="py-2.5 px-3.5 whitespace-nowrap font-mono text-[11px] text-slate-500">
-                        {r.ipOrigen || '127.0.0.1'}
-                      </td>
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium text-slate-800">{r.entidad}</span>
+                        <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-semibold">
+                          #{r.entidadId}
+                        </span>
+                      </div>
+                    </td>
 
-                      <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => setRegistroSeleccionado(r)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200 transition active:scale-[0.98] cursor-pointer"
-                          title="Inspeccionar detalle del cambio realizado"
-                        >
-                          <Code2 className="w-3.5 h-3.5" />
-                          <span>Ver Diff</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setRegistroSeleccionado(r)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-300 transition-colors shadow-2xs cursor-pointer"
+                        title="Inspeccionar diff JSON forense"
+                      >
+                        <Code2 className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Ver Diff</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-            {/* Paginación Completa Conectada a Base de Datos */}
-            <div className="p-4 bg-slate-50/80 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs">
-              <div className="flex items-center gap-3 text-slate-500">
-                <span>
-                  Mostrando <strong className="text-slate-800 font-semibold">{totalElementos === 0 ? 0 : paginaActual * tamanoPagina + 1}</strong> a{' '}
-                  <strong className="text-slate-800 font-semibold">{Math.min(totalElementos, (paginaActual + 1) * tamanoPagina)}</strong> de{' '}
-                  <strong className="text-slate-800 font-semibold">{totalElementos}</strong> eventos
-                </span>
-                <div className="h-4 w-[1px] bg-slate-300 hidden sm:block" />
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500">Por página:</span>
-                  <select
-                    value={tamanoPagina}
-                    onChange={(e) => handleCambiarTamano(Number(e.target.value))}
-                    className="px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-trujillo-navy"
-                  >
-                    <option value={10}>10</option>
-                    <option value={15}>15</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500 mr-1">
-                  Página <strong className="text-slate-800 font-semibold">{paginaActual + 1}</strong> de{' '}
-                  <strong className="text-slate-800 font-semibold">{totalPaginas}</strong>
-                </span>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    title="Primera página"
-                    disabled={paginaActual === 0}
-                    onClick={() => {
-                      setPaginaActual(0);
-                      cargarAuditorias(0, tamanoPagina);
-                    }}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
-                  >
-                    <ChevronsLeft className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Página anterior"
-                    disabled={paginaActual === 0}
-                    onClick={() => {
-                      const nueva = paginaActual - 1;
-                      setPaginaActual(nueva);
-                      cargarAuditorias(nueva, tamanoPagina);
-                    }}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Página siguiente"
-                    disabled={paginaActual >= totalPaginas - 1}
-                    onClick={() => {
-                      const nueva = paginaActual + 1;
-                      setPaginaActual(nueva);
-                      cargarAuditorias(nueva, tamanoPagina);
-                    }}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Última página"
-                    disabled={paginaActual >= totalPaginas - 1}
-                    onClick={() => {
-                      const ultima = totalPaginas - 1;
-                      setPaginaActual(ultima);
-                      cargarAuditorias(ultima, tamanoPagina);
-                    }}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
-                  >
-                    <ChevronsRight className="w-4 h-4" />
-                  </button>
-                </div>
+        {/* Paginación */}
+        {!cargando && totalElementos > 0 && (
+          <div className="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+            <div className="flex items-center gap-3">
+              <span>
+                Mostrando <strong className="text-slate-700">{paginaActual * tamanoPagina + 1}</strong> a{' '}
+                <strong className="text-slate-700">
+                  {Math.min(totalElementos, (paginaActual + 1) * tamanoPagina)}
+                </strong>{' '}
+                de <strong className="text-slate-700">{totalElementos}</strong> eventos
+              </span>
+              <div className="h-3.5 w-[1px] bg-slate-300 hidden sm:block" />
+              <div className="flex items-center gap-1">
+                <span>Por pág:</span>
+                <select
+                  value={tamanoPagina}
+                  onChange={(e) => handleCambiarTamano(Number(e.target.value))}
+                  className="h-7 px-1.5 rounded border border-slate-300 bg-white text-xs text-slate-700"
+                >
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
               </div>
             </div>
-          </>
+
+            <div className="flex items-center gap-2">
+              <span>
+                Página <strong className="text-slate-700">{paginaActual + 1}</strong> de{' '}
+                <strong className="text-slate-700">{totalPaginas}</strong>
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Primera página"
+                  disabled={paginaActual === 0}
+                  onClick={() => {
+                    setPaginaActual(0);
+                    cargarAuditorias(0, tamanoPagina);
+                  }}
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                >
+                  <ChevronsLeft className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  title="Página anterior"
+                  disabled={paginaActual === 0}
+                  onClick={() => {
+                    const nueva = paginaActual - 1;
+                    setPaginaActual(nueva);
+                    cargarAuditorias(nueva, tamanoPagina);
+                  }}
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  title="Página siguiente"
+                  disabled={paginaActual >= totalPaginas - 1}
+                  onClick={() => {
+                    const nueva = paginaActual + 1;
+                    setPaginaActual(nueva);
+                    cargarAuditorias(nueva, tamanoPagina);
+                  }}
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  title="Última página"
+                  disabled={paginaActual >= totalPaginas - 1}
+                  onClick={() => {
+                    const ultima = totalPaginas - 1;
+                    setPaginaActual(ultima);
+                    cargarAuditorias(ultima, tamanoPagina);
+                  }}
+                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                >
+                  <ChevronsRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
@@ -455,84 +466,84 @@ export const AuditoriaForensePage: React.FC = () => {
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] min-h-0 flex flex-col overflow-hidden shadow-lg border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] min-h-0 flex flex-col overflow-hidden shadow-xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
             {/* Cabecera del Modal */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div className="p-3.5 sm:p-4 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div>
                 <div className="flex items-center gap-2">
-                  <Code2 className="w-5 h-5 text-trujillo-navy" />
-                  <h3 className="text-sm font-bold text-slate-800">
-                    Inspección Forense de Estado #{registroSeleccionado.id}
+                  <Code2 className="w-4 h-4 text-blue-700" />
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Inspección Forense de Mutación #{registroSeleccionado.id}
                   </h3>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Mutación sobre {registroSeleccionado.entidad} (ID #{registroSeleccionado.entidadId}) por{' '}
-                  {registroSeleccionado.usuarioNombreCompleto}
+                  Registro sobre {registroSeleccionado.entidad} (#{registroSeleccionado.entidadId}) por{' '}
+                  {registroSeleccionado.usuarioNombreCompleto || registroSeleccionado.usuarioUsername}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setRegistroSeleccionado(null)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Contenido Comparativo */}
-            <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-4 modal-scroll-body">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3 modal-scroll-body">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* Datos Anteriores */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-rose-700 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">
                     <span>Estado Previo (Antes):</span>
-                    <ArrowRightLeft className="w-3.5 h-3.5" />
+                    <ArrowRightLeft className="w-3 h-3" />
                   </div>
-                  <pre className="p-3 bg-slate-900 text-slate-200 rounded-xl text-[11px] font-mono overflow-x-auto max-h-72 border border-slate-800">
+                  <pre className="p-2.5 bg-slate-900 text-slate-200 rounded-md text-[11px] font-mono overflow-x-auto max-h-64 border border-slate-800">
                     {formatearJson(registroSeleccionado.datosAnteriores) || 'null (Creación Inicial)'}
                   </pre>
                 </div>
 
                 {/* Datos Nuevos */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
                     <span>Estado Posterior (Después):</span>
-                    <ArrowRightLeft className="w-3.5 h-3.5" />
+                    <ArrowRightLeft className="w-3 h-3" />
                   </div>
-                  <pre className="p-3 bg-slate-900 text-emerald-300 rounded-xl text-[11px] font-mono overflow-x-auto max-h-72 border border-slate-800">
+                  <pre className="p-2.5 bg-slate-900 text-emerald-300 rounded-md text-[11px] font-mono overflow-x-auto max-h-64 border border-slate-800">
                     {formatearJson(registroSeleccionado.datosNuevos) || 'null'}
                   </pre>
                 </div>
               </div>
 
               {/* Ficha Técnica del Evento */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-2.5 bg-slate-50 rounded-md border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Acción:</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Acción:</span>
                   <span className="font-semibold text-slate-800">{registroSeleccionado.accion}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Usuario:</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Usuario:</span>
                   <span className="font-semibold text-slate-800">{registroSeleccionado.usuarioUsername}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">IP Cliente:</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">IP Origen:</span>
                   <span className="font-mono text-slate-800">{registroSeleccionado.ipOrigen}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Timestamp:</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Hora:</span>
                   <span className="text-slate-800">{new Date(registroSeleccionado.createdAt).toLocaleTimeString()}</span>
                 </div>
               </div>
             </div>
 
             {/* Pie del Modal */}
-            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end shrink-0">
+            <div className="p-3 border-t border-slate-200 bg-slate-50 flex justify-end shrink-0">
               <button
                 type="button"
                 onClick={() => setRegistroSeleccionado(null)}
-                className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold transition cursor-pointer"
+                className="h-8 px-3 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium transition cursor-pointer"
               >
                 Cerrar
               </button>

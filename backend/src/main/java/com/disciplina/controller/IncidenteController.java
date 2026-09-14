@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping({"/incidentes", "/api/v1/incidentes"})
+@RequestMapping("/api/v1/incidentes")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
 public class IncidenteController {

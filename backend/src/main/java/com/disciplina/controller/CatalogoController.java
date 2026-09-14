@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/catalogos", "/api/v1/catalogos"})
+@RequestMapping("/api/v1/catalogos")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
 public class CatalogoController {

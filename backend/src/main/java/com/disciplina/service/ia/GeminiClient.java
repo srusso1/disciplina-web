@@ -49,8 +49,8 @@ public class GeminiClient {
         }
 
         String url = String.format(
-                "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
-                model, apiKey
+                "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent",
+                model
         );
 
         try {
@@ -72,6 +72,7 @@ public class GeminiClient {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")
+                    .header("x-goog-api-key", apiKey)
                     .timeout(Duration.ofSeconds(timeoutSeconds))
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                     .build();

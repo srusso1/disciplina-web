@@ -124,12 +124,13 @@ public class RectoriaService {
         // Análisis temporal y Franjas Horarias
         List<Object[]> fechasHoras = incidenteRepository.obtenerFechasYHorasIncidentes();
         Map<String, Long> franjasMap = new LinkedHashMap<>();
-        franjasMap.put("06:00 - 08:00 (Ingreso)", 0L);
-        franjasMap.put("08:00 - 10:00 (Clases Mañana)", 0L);
-        franjasMap.put("10:00 - 11:30 (Descanso / Recreo)", 0L);
-        franjasMap.put("11:30 - 13:30 (Salida / Almuerzo)", 0L);
-        franjasMap.put("13:30 - 15:30 (Jornada Tarde)", 0L);
-        franjasMap.put("15:30 - 18:00 (Cierre / Salida)", 0L);
+        franjasMap.put("06:00 - 07:00 (Ingreso y Formación)", 0L);
+        franjasMap.put("07:00 - 09:30 (Clases Mañana - Bloque I)", 0L);
+        franjasMap.put("09:30 - 10:30 (Descanso / Recreo)", 0L);
+        franjasMap.put("10:30 - 12:30 (Clases Mediodía - Bloque II)", 0L);
+        franjasMap.put("12:30 - 13:30 (Almuerzo Escolar - PAE)", 0L);
+        franjasMap.put("13:30 - 14:30 (Cierre y Salida)", 0L);
+        franjasMap.put("Extracurricular / Fuera de Jornada", 0L);
 
         Map<YearMonth, Long> mesesMap = new TreeMap<>();
 
@@ -143,20 +144,8 @@ public class RectoriaService {
             }
 
             if (hora != null) {
-                int totalMin = hora.getHour() * 60 + hora.getMinute();
-                if (totalMin >= 360 && totalMin < 480) { // 06:00 - 07:59
-                    franjasMap.compute("06:00 - 08:00 (Ingreso)", (k, v) -> v == null ? 1L : v + 1);
-                } else if (totalMin >= 480 && totalMin < 600) { // 08:00 - 09:59
-                    franjasMap.compute("08:00 - 10:00 (Clases Mañana)", (k, v) -> v == null ? 1L : v + 1);
-                } else if (totalMin >= 600 && totalMin < 690) { // 10:00 - 11:29
-                    franjasMap.compute("10:00 - 11:30 (Descanso / Recreo)", (k, v) -> v == null ? 1L : v + 1);
-                } else if (totalMin >= 690 && totalMin < 810) { // 11:30 - 13:29
-                    franjasMap.compute("11:30 - 13:30 (Salida / Almuerzo)", (k, v) -> v == null ? 1L : v + 1);
-                } else if (totalMin >= 810 && totalMin < 930) { // 13:30 - 15:29
-                    franjasMap.compute("13:30 - 15:30 (Jornada Tarde)", (k, v) -> v == null ? 1L : v + 1);
-                } else {
-                    franjasMap.compute("15:30 - 18:00 (Cierre / Salida)", (k, v) -> v == null ? 1L : v + 1);
-                }
+                String franja = clasificarFranjaHoraria(hora);
+                franjasMap.compute(franja, (k, v) -> v == null ? 1L : v + 1);
             }
         }
 
@@ -221,5 +210,39 @@ public class RectoriaService {
             case EN_INTERVENCION -> "4. En Intervención";
             case CERRADO -> "5. Proceso Cerrado";
         };
+    }
+
+    public String clasificarFranjaHoraria(LocalTime hora) {
+        if (hora == null) {
+            return "Sin hora registrada";
+        }
+
+        // 06:00 a 07:00
+        if (!hora.isBefore(LocalTime.of(6, 0)) && hora.isBefore(LocalTime.of(7, 0))) {
+            return "06:00 - 07:00 (Ingreso y Formación)";
+        }
+        // 07:00 a 09:30
+        if (!hora.isBefore(LocalTime.of(7, 0)) && hora.isBefore(LocalTime.of(9, 30))) {
+            return "07:00 - 09:30 (Clases Mañana - Bloque I)";
+        }
+        // 09:30 a 10:30 (Recreo)
+        if (!hora.isBefore(LocalTime.of(9, 30)) && hora.isBefore(LocalTime.of(10, 30))) {
+            return "09:30 - 10:30 (Descanso / Recreo)";
+        }
+        // 10:30 a 12:30
+        if (!hora.isBefore(LocalTime.of(10, 30)) && hora.isBefore(LocalTime.of(12, 30))) {
+            return "10:30 - 12:30 (Clases Mediodía - Bloque II)";
+        }
+        // 12:30 a 13:30 (Almuerzo PAE)
+        if (!hora.isBefore(LocalTime.of(12, 30)) && hora.isBefore(LocalTime.of(13, 30))) {
+            return "12:30 - 13:30 (Almuerzo Escolar - PAE)";
+        }
+        // 13:30 a 14:30
+        if (!hora.isBefore(LocalTime.of(13, 30)) && !hora.isAfter(LocalTime.of(14, 30))) {
+            return "13:30 - 14:30 (Cierre y Salida)";
+        }
+
+        // Cualquier hora fuera del rango escolar ordinario
+        return "Extracurricular / Fuera de Jornada";
     }
 }

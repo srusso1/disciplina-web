@@ -15,5 +15,6 @@ public class GenerarPropuestaIntervencionDTO {
     @NotNull(message = "El ID del estudiante es obligatorio")
     private Integer estudianteId;
 
+    @NotNull(message = "El incidenteOrigenId es obligatorio para generar la propuesta de intervención con IA")
     private Integer incidenteOrigenId;
 }
