@@ -311,7 +311,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
           ) : incidente ? (
             <>
               {/* Barra de Gestión de Estado del Proceso (Debido Proceso) */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-trujillo-sky" />
