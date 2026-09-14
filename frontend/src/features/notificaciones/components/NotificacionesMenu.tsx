@@ -60,6 +60,8 @@ export const NotificacionesMenu: React.FC = () => {
   const { data: conteoData } = useQuery({
     queryKey: ['notificaciones', 'conteo'],
     queryFn: notificacionesApi.obtenerConteoNoLeidas,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     refetchInterval: 30000,
   });
 
@@ -68,6 +70,8 @@ export const NotificacionesMenu: React.FC = () => {
     queryKey: ['notificaciones', 'ultimas'],
     queryFn: () => notificacionesApi.obtenerUltimas(15),
     enabled: open,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     refetchInterval: open ? 30000 : false,
   });
 
