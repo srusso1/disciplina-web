@@ -162,11 +162,11 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
               <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
                 <span>Doc: <strong className="text-slate-700">{data.estudianteSeleccionado.documento}</strong></span>
                 <span>•</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-trujillo-navy bg-white px-2 py-0.5 rounded border border-sky-200 text-[11px]">
+                <span className="inline-flex items-center gap-1 font-semibold text-trujillo-navy bg-white px-2 py-0.5 rounded border border-sky-200 text-xs">
                   <GraduationCap size={14} className="text-trujillo-sky" />
                   Grado {data.estudianteSeleccionado.grado}-{data.estudianteSeleccionado.grupo}
                 </span>
-                <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   Matrícula Activa
                 </span>
               </div>
@@ -256,12 +256,12 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
                       <p className="font-bold text-slate-800 group-hover:text-trujillo-navy">
                         {est.nombres} {est.apellidos}
                       </p>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-xs text-slate-500">
                         Doc: {est.documento} • Grado: {est.grado}-{est.grupo} ({est.jornada || 'DIURNA'})
                       </p>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-md bg-slate-100 group-hover:bg-trujillo-navy group-hover:text-white text-slate-700 text-[10px] font-semibold transition">
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 group-hover:bg-trujillo-navy group-hover:text-white text-slate-700 text-xs font-semibold transition">
                     Seleccionar
                   </span>
                 </button>
@@ -274,10 +274,10 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
             <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-30 p-4 text-center animate-in fade-in duration-100">
               <Users size={22} className="mx-auto text-slate-300 mb-1.5 stroke-[1.5]" />
               <p className="text-xs font-bold text-slate-700">No se encontraron estudiantes</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 No hay coincidencias para &quot;{searchTerm}&quot;.
               </p>
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 Verifique documento o apellidos, o confirme que la matrícula institucional esté importada en el sistema.
               </p>
             </div>
@@ -311,7 +311,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
               Falta Tipificada (Ley 1620) {!esVictimaOTestigo && <span className="text-rose-500 font-bold">*</span>}
             </span>
             {esVictimaOTestigo && (
-              <span className="text-[10px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+              <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
                 Debido Proceso
               </span>
             )}
@@ -369,7 +369,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
             </select>
           )}
           {!esVictimaOTestigo && faltas.length === 0 && (
-            <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 font-medium">
+            <p className="text-xs text-amber-700 mt-1 flex items-center gap-1 font-medium">
               <AlertTriangle size={13} className="text-amber-600 shrink-0" />
               <span>No hay faltas registradas en el catálogo. Debe configurarlas en Rectoría &gt; Configuración.</span>
             </p>
@@ -383,7 +383,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
           <label className="block text-xs font-semibold text-slate-700 tracking-wide">
             Observación / Justificación Individual del Estudiante
           </label>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-xs text-slate-400">
             {data.descripcionIndividual?.length
               ? `${data.descripcionIndividual.length} caracteres`
               : 'Opcional (descargo o versión preliminar)'}

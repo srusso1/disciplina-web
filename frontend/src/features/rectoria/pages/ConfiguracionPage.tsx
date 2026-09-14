@@ -692,31 +692,31 @@ const TabDocentes: React.FC = () => {
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span className="font-semibold text-slate-700">Columnas reconocidas por el motor de importación:</span>
-              <span className="text-[11px] text-slate-500">Compatible con listados oficiales de secretaría y nómina</span>
+              <span className="text-xs text-slate-500 font-medium">Compatible con listados oficiales de secretaría y nómina</span>
             </div>
             <div className="flex flex-wrap gap-1.5 items-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-medium border border-emerald-200">
                 CEDULA / DOCUMENTO
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-medium border border-emerald-200">
                 1NOMBRE / NOMBRES
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-medium border border-emerald-200">
                 1APELLIDO / APELLIDOS
               </span>
 
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">
                 2NOMBRE
               </span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">
                 2APELLIDO
               </span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300" title="Si no está presente o está vacía, se asigna 'PENDIENTE POR REGISTRO'">
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300" title="Si no está presente o está vacía, se asigna 'PENDIENTE POR REGISTRO'">
                 AREA (defecto: PENDIENTE POR REGISTRO)
               </span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">
                 CORREO
               </span>
             </div>
@@ -828,24 +828,24 @@ const TabDocentes: React.FC = () => {
             <div className="space-y-3 pt-2">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Filas Leídas</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Filas Leídas</span>
                   <p className="text-xl font-bold text-slate-900 mt-1">{resumenImportacion.totalFilas}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{resumenImportacion.tiempoMs} ms</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{resumenImportacion.tiempoMs} ms</p>
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 border-l-4 border-l-emerald-500">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Docentes Creados</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">Docentes Creados</span>
                   <p className="text-xl font-bold text-emerald-900 mt-1">{resumenImportacion.docentesCreados}</p>
-                  <p className="text-[10px] text-emerald-600 mt-0.5">Nuevos registros</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">Nuevos registros</p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 border-l-4 border-l-blue-500">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800">Actualizados</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-800">Actualizados</span>
                   <p className="text-xl font-bold text-blue-900 mt-1">{resumenImportacion.docentesActualizados}</p>
-                  <p className="text-[10px] text-blue-600 mt-0.5">Por cédula existente</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Por cédula existente</p>
                 </div>
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 border-l-4 border-l-amber-500">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">Inconsistencias</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-800">Inconsistencias</span>
                   <p className="text-xl font-bold text-amber-900 mt-1">{resumenImportacion.advertencias.length + resumenImportacion.errores.length}</p>
-                  <p className="text-[10px] text-amber-600 mt-0.5">Observaciones</p>
+                  <p className="text-xs text-amber-600 mt-0.5">Observaciones</p>
                 </div>
               </div>
 

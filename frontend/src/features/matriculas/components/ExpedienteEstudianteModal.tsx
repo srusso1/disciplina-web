@@ -172,19 +172,19 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                   <h2 id="modal-expediente-title" className="text-base font-bold text-slate-900 tracking-tight leading-none truncate">
                     {expediente.nombreCompleto}
                   </h2>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                     Doc: {expediente.documento}
                   </span>
                   {expediente.matriculaActual ? (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                    <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                       Grado {expediente.matriculaActual.grado}°-{expediente.matriculaActual.grupo} ({expediente.matriculaActual.anioLectivo})
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                    <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                       Sin matrícula vigente
                     </span>
                   )}
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                     expediente.activo
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       : 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -236,7 +236,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             <span><span className="hidden md:inline">Hoja de </span>Convivencia</span>
             {expediente && (
               <span
-                className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${
+                className={`px-2 py-0.5 text-xs rounded-full font-bold ${
                   tabActiva === 'convivencia'
                     ? 'bg-trujillo-ice text-trujillo-navy'
                     : 'bg-slate-100 text-slate-600'
@@ -262,7 +262,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
             <span><span className="hidden md:inline">Historial </span>Matrículas</span>
             {expediente && (
               <span
-                className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${
+                className={`px-2 py-0.5 text-xs rounded-full font-bold ${
                   tabActiva === 'matriculas'
                     ? 'bg-trujillo-ice text-trujillo-navy'
                     : 'bg-slate-100 text-slate-600'
@@ -333,7 +333,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                         <span className="text-2xl font-black text-trujillo-dark">
                           {expediente.resumenConvivencia.totalIncidentes}
                         </span>
-                        <span className="text-[11px] text-slate-400 font-medium">
+                        <span className="text-xs text-slate-500 font-medium">
                           en trayectoria
                         </span>
                       </div>
@@ -350,7 +350,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                           {expediente.resumenConvivencia.comoAgresorPrincipal +
                             expediente.resumenConvivencia.comoParticipe}
                         </span>
-                        <span className="text-[10px] text-rose-500 font-medium">
+                        <span className="text-xs text-rose-600 font-medium">
                           ({expediente.resumenConvivencia.comoAgresorPrincipal} dir,{' '}
                           {expediente.resumenConvivencia.comoParticipe} part)
                         </span>
@@ -368,7 +368,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                           {expediente.resumenConvivencia.comoVictima +
                             expediente.resumenConvivencia.comoTestigo}
                         </span>
-                        <span className="text-[10px] text-sky-600 font-medium">
+                        <span className="text-xs text-sky-700 font-medium">
                           ({expediente.resumenConvivencia.comoVictima} víc,{' '}
                           {expediente.resumenConvivencia.comoTestigo} test)
                         </span>
@@ -382,13 +382,13 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                         <AlertTriangle className="w-4 h-4 text-amber-500" />
                       </div>
                       <div className="flex items-center gap-1 text-xs font-bold mt-1">
-                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo1-bg text-convivencia-tipo1-text border border-convivencia-tipo1-border text-[10px] font-semibold" title="Faltas Tipo I (Leves)">
+                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo1-bg text-convivencia-tipo1-text border border-convivencia-tipo1-border text-xs font-semibold" title="Faltas Tipo I (Leves)">
                           T-I: {expediente.resumenConvivencia.faltasTipoI}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo2-bg text-convivencia-tipo2-text border border-convivencia-tipo2-border text-[10px] font-semibold" title="Faltas Tipo II (Graves)">
+                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo2-bg text-convivencia-tipo2-text border border-convivencia-tipo2-border text-xs font-semibold" title="Faltas Tipo II (Graves)">
                           T-II: {expediente.resumenConvivencia.faltasTipoII}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo3-bg text-convivencia-tipo3-text border border-convivencia-tipo3-border text-[10px] font-semibold" title="Faltas Tipo III (Gravísimas)">
+                        <span className="px-1.5 py-0.5 rounded bg-convivencia-tipo3-bg text-convivencia-tipo3-text border border-convivencia-tipo3-border text-xs font-semibold" title="Faltas Tipo III (Gravísimas)">
                           T-III: {expediente.resumenConvivencia.faltasTipoIII}
                         </span>
                       </div>
@@ -556,30 +556,30 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-100/75 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      <table className="w-full text-left border-collapse text-sm">
+                        <thead className="bg-slate-100/75 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
                           <tr>
-                            <th className="py-2.5 px-3.5">Año Lectivo</th>
-                            <th className="py-2.5 px-3.5">Grado / Grupo</th>
-                            <th className="py-2.5 px-3.5">Jornada</th>
-                            <th className="py-2.5 px-3.5">Estado Matrícula</th>
+                            <th className="py-3 px-3.5">Año Lectivo</th>
+                            <th className="py-3 px-3.5">Grado / Grupo</th>
+                            <th className="py-3 px-3.5">Jornada</th>
+                            <th className="py-3 px-3.5">Estado Matrícula</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700 text-xs">
+                        <tbody className="divide-y divide-slate-100 text-slate-700 text-sm">
                           {expediente.historialMatriculas.map((mat) => (
                             <tr key={mat.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
-                              <td className="py-2.5 px-3.5 font-bold font-mono text-trujillo-navy">
+                              <td className="py-3 px-3.5 font-bold font-mono text-trujillo-navy text-sm">
                                 {mat.anioLectivo}
                               </td>
-                              <td className="py-2.5 px-3.5 font-semibold">
-                                <span className="px-2 py-0.5 rounded bg-sky-50 text-trujillo-navy border border-sky-200">
+                              <td className="py-3 px-3.5 font-semibold">
+                                <span className="px-2.5 py-0.5 rounded bg-sky-50 text-trujillo-navy border border-sky-200 text-xs font-bold">
                                   Grado {mat.grado}° - Grupo {mat.grupo}
                                 </span>
                               </td>
-                              <td className="py-2.5 px-3.5">{mat.jornada}</td>
-                              <td className="py-2.5 px-3.5">
+                              <td className="py-3 px-3.5 text-sm">{mat.jornada}</td>
+                              <td className="py-3 px-3.5">
                                 <span
-                                  className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                     mat.estadoMatricula === 'ACTIVO'
                                       ? 'bg-emerald-100 text-emerald-800'
                                       : 'bg-slate-100 text-slate-600'
@@ -616,7 +616,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
 
                   <div className="space-y-4 text-xs">
                     <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="text-slate-400 font-semibold block uppercase tracking-wider text-[10px]">
+                      <span className="text-slate-500 font-semibold block uppercase tracking-wider text-xs">
                         Nombre del Acudiente / Tutor Legal:
                       </span>
                       <p className="text-sm font-bold text-slate-900 mt-1">
@@ -626,7 +626,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
 
                     <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between gap-3">
                       <div>
-                        <span className="text-slate-400 font-semibold block uppercase tracking-wider text-[10px]">
+                        <span className="text-slate-500 font-semibold block uppercase tracking-wider text-xs">
                           Teléfono de Contacto (Celular):
                         </span>
                         <p className="text-sm font-bold font-mono text-trujillo-navy mt-1 flex items-center gap-1.5">
@@ -671,7 +671,7 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                     {expediente.emailAcudiente && (
                       <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between gap-3">
                         <div>
-                          <span className="text-slate-400 font-semibold block uppercase tracking-wider text-[10px]">
+                          <span className="text-slate-500 font-semibold block uppercase tracking-wider text-xs">
                             Correo Electrónico:
                           </span>
                           <p className="text-sm font-medium text-slate-700 mt-1 flex items-center gap-1.5">

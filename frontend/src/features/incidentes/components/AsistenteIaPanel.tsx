@@ -64,7 +64,7 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
           <div>
             <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
               <span>Asistente Jurídico Inteligente</span>
-              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-trujillo-ice text-trujillo-navy border border-sky-200">
+              <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-trujillo-ice text-trujillo-navy border border-sky-200">
                 Google Gemini
               </span>
             </h4>
@@ -110,7 +110,7 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
           )}
 
           <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-            <span className="text-[11px] text-slate-500 italic">
+            <span className="text-xs text-slate-500 italic">
               Human-in-the-Loop: los datos estructurados son sugerencias editables antes de registrar.
             </span>
 
@@ -139,7 +139,7 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                       resultado.asistidoPorIa
                         ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                         : 'bg-amber-100 text-amber-700 border border-amber-200'
@@ -148,7 +148,7 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                     {resultado.asistidoPorIa ? 'Procesado con Google Gemini' : 'Modo Heurístico Institucional'}
                   </span>
                   {resultado.clasificacionLeySugerida && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
                       Ley 1620: {resultado.clasificacionLeySugerida.replace('_', ' ')}
                     </span>
                   )}
@@ -166,11 +166,11 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                 {/* Docente Detectado */}
-                <div className="p-2 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
+                <div className="p-2.5 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
                   <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Docente Detectado</span>
+                    <span className="text-xs uppercase font-semibold text-slate-400">Docente Detectado</span>
                     <span
-                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                      className={`px-2 py-0.5 rounded text-xs font-semibold ${
                         resultado.docenteReportaId
                           ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                           : resultado.docenteReportaNombre
@@ -191,11 +191,11 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                 </div>
 
                 {/* Lugar Detectado */}
-                <div className="p-2 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
+                <div className="p-2.5 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
                   <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Lugar Detectado</span>
+                    <span className="text-xs uppercase font-semibold text-slate-400">Lugar Detectado</span>
                     <span
-                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                      className={`px-2 py-0.5 rounded text-xs font-semibold ${
                         resultado.lugarSugeridoId
                           ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                           : resultado.lugarNombre
@@ -216,8 +216,8 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                 </div>
 
                 {/* Involucrados */}
-                <div className="p-2 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Involucrados Detectados</span>
+                <div className="p-2.5 rounded-lg bg-white border border-indigo-100 flex flex-col justify-between">
+                  <span className="text-xs uppercase font-semibold text-slate-400 block mb-1">Involucrados Detectados</span>
                   <span className="font-semibold text-slate-700 block">
                     {resultado.estudiantes?.length || 0} estudiante(s)
                   </span>
@@ -225,8 +225,8 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
               </div>
 
               {resultado.estudiantes && resultado.estudiantes.length > 0 && (
-                <div className="p-2.5 rounded-lg bg-white border border-indigo-100 space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                <div className="p-3 rounded-lg bg-white border border-indigo-100 space-y-2">
+                  <span className="text-xs uppercase font-semibold text-slate-400 block tracking-wider">
                     Identificación de Alumnos en Matrícula Institucional
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -235,7 +235,7 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                       return (
                         <div
                           key={eIdx}
-                          className={`p-2 rounded-lg border text-xs flex items-center justify-between gap-2 ${
+                          className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 ${
                             matriculado
                               ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
                               : 'bg-amber-50/70 border-amber-200 text-amber-900'
@@ -243,19 +243,19 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             {matriculado ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                             ) : (
-                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                             )}
                             <div className="truncate">
-                              <p className="font-bold truncate">{est.nombreCompleto || est.nombreMencionado}</p>
-                              <p className="text-[10px] opacity-80 truncate">
+                              <p className="font-bold truncate text-sm">{est.nombreCompleto || est.nombreMencionado}</p>
+                              <p className="text-xs opacity-80 truncate">
                                 Rol: {est.rolSugerido} • {matriculado ? `Grado ${est.gradoMomento || ''}-${est.grupoMomento || ''}` : 'No encontrado en censo'}
                               </p>
                             </div>
                           </div>
                           <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
+                            className={`px-2 py-0.5 rounded-md text-xs font-semibold shrink-0 ${
                               matriculado
                                 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                                 : 'bg-amber-100 text-amber-800 border border-amber-200'
@@ -270,17 +270,17 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                 </div>
               )}
 
-              <div className="p-2.5 rounded-lg bg-white border border-indigo-100">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              <div className="p-3 rounded-lg bg-white border border-indigo-100">
+                <span className="text-xs uppercase font-semibold text-slate-400 block mb-1">
                   Redacción Formal Estructurada
                 </span>
-                <p className="text-xs text-slate-700 leading-relaxed italic">
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
                   "{resultado.hechosEstandarizados}"
                 </p>
               </div>
 
               {resultado.mensajeAsistente && (
-                <p className="text-[11px] text-indigo-700 leading-normal">
+                <p className="text-xs text-indigo-700 leading-normal">
                   {resultado.mensajeAsistente}
                 </p>
               )}

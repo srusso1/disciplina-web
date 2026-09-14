@@ -280,23 +280,23 @@ export const CargaMatriculasPage: React.FC = () => {
         <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200 text-xs space-y-2.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <span className="font-extrabold text-slate-700">Columnas reconocidas por el motor de importación:</span>
-            <span className="text-[11px] text-slate-500 font-medium">Compatible con exportaciones de SIMAT / Secretaría</span>
+            <span className="text-xs text-slate-500 font-medium">Compatible con exportaciones de SIMAT / Secretaría</span>
           </div>
           <div className="flex flex-wrap gap-1.5 items-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
-            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">GRADO</span>
-            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">CODIGO</span>
-            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">DOCUMENTO</span>
-            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">PRIMER APELLIDO</span>
-            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200">PRIMER NOMBRE</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">GRADO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">CODIGO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">DOCUMENTO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">PRIMER APELLIDO</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">PRIMER NOMBRE</span>
 
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">SEGUNDO APELLIDO</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">SEGUNDO NOMBRE</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">SEDE</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">NOM1_ACU</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">APE1_ACU</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">TELEFONO</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">SEGUNDO APELLIDO</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">SEGUNDO NOMBRE</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">SEDE</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">NOM1_ACU</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">APE1_ACU</span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">TELEFONO</span>
           </div>
         </div>
 
@@ -347,8 +347,8 @@ export const CargaMatriculasPage: React.FC = () => {
                   <FileSpreadsheet className="w-6 h-6" />
                 </div>
                 <div className="text-left overflow-hidden">
-                  <p className="text-xs font-bold text-slate-800 truncate">{file.name}</p>
-                  <p className="text-[11px] text-slate-500">{formatearTamano(file.size)}</p>
+                  <p className="text-sm font-bold text-slate-800 truncate">{file.name}</p>
+                  <p className="text-xs text-slate-500">{formatearTamano(file.size)}</p>
                 </div>
               </div>
 
@@ -409,25 +409,25 @@ export const CargaMatriculasPage: React.FC = () => {
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-card">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Filas Procesadas</span>
               <p className="text-3xl font-black text-trujillo-dark mt-2">{resumen.totalFilasLeidas}</p>
-              <p className="text-[11px] text-slate-400 mt-1">En {resumen.tiempoProcesamientoMs} ms</p>
+              <p className="text-xs text-slate-400 mt-1">En {resumen.tiempoProcesamientoMs} ms</p>
             </div>
 
             <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-card border-l-4 border-l-emerald-500">
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">Estudiantes Creados</span>
               <p className="text-3xl font-black text-emerald-900 mt-2">{resumen.estudiantesCreados}</p>
-              <p className="text-[11px] text-slate-500 mt-1">Nuevos en base de datos</p>
+              <p className="text-xs text-slate-500 mt-1">Nuevos en base de datos</p>
             </div>
 
             <div className="bg-white border border-sky-200 rounded-2xl p-5 shadow-card border-l-4 border-l-sky-500">
               <span className="text-xs font-bold uppercase tracking-wider text-sky-800">Matrículas Vinculadas</span>
               <p className="text-3xl font-black text-sky-900 mt-2">{resumen.matriculasCreadas}</p>
-              <p className="text-[11px] text-slate-500 mt-1">Asignadas a la vigencia {resumen.anioLectivo || anioVigente}</p>
+              <p className="text-xs text-slate-500 mt-1">Asignadas a la vigencia {resumen.anioLectivo || anioVigente}</p>
             </div>
 
             <div className="bg-white border border-amber-200 rounded-2xl p-5 shadow-card border-l-4 border-l-amber-500">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-800">Inconsistencias Resueltas</span>
               <p className="text-3xl font-black text-amber-900 mt-2">{resumen.advertencias.length}</p>
-              <p className="text-[11px] text-slate-500 mt-1">Subsanadas con identificador</p>
+              <p className="text-xs text-slate-500 mt-1">Subsanadas con identificador</p>
             </div>
           </div>
 
@@ -465,7 +465,7 @@ export const CargaMatriculasPage: React.FC = () => {
                         <td className="px-3 py-2 font-semibold text-slate-800">{adv.estudiante}</td>
                         <td className="px-3 py-2 text-amber-800 font-medium">{adv.motivo}</td>
                         <td className="px-3 py-2">
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold">
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-xs font-bold">
                             {adv.accionTomada}
                           </span>
                         </td>
@@ -499,20 +499,20 @@ export const CargaMatriculasPage: React.FC = () => {
               value={busqueda}
               onChange={handleBusquedaChange}
               placeholder="Buscar por nombre, documento..."
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-trujillo-navy focus:ring-1 focus:ring-trujillo-navy"
+              className="w-full h-10 pl-9 pr-3 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-trujillo-navy focus:ring-2 focus:ring-blue-600/30"
             />
           </form>
         </div>
 
         {/* Filtro por Grado */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          <span className="text-xs font-semibold text-slate-500 shrink-0">Filtrar Grado:</span>
+          <span className="text-sm font-semibold text-slate-500 shrink-0">Filtrar Grado:</span>
           {gradosDisponibles.map((g) => (
             <button
               key={g}
               type="button"
               onClick={() => handleGradoChange(g)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 filtroGrado === g
                   ? 'bg-trujillo-navy text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -525,17 +525,17 @@ export const CargaMatriculasPage: React.FC = () => {
 
         {/* Tabla de Estudiantes */}
         <div className="overflow-x-auto border border-slate-200 rounded-xl">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-200">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-100/75 text-slate-600 font-semibold uppercase tracking-wider text-xs border-b border-slate-200">
               <tr>
-                <th className="py-2.5 px-3.5">Documento</th>
-                <th className="py-2.5 px-3.5">Nombre Completo</th>
-                <th className="py-2.5 px-3.5">Grado / Grupo</th>
-                <th className="py-2.5 px-3.5">Jornada</th>
-                <th className="py-2.5 px-3.5">Acudiente</th>
-                <th className="py-2.5 px-3.5">Teléfono Contacto</th>
-                <th className="py-2.5 px-3.5">Estado</th>
-                <th className="py-2.5 px-3.5 text-right">Acciones</th>
+                <th className="py-3 px-3.5">Documento</th>
+                <th className="py-3 px-3.5">Nombre Completo</th>
+                <th className="py-3 px-3.5">Grado / Grupo</th>
+                <th className="py-3 px-3.5">Jornada</th>
+                <th className="py-3 px-3.5">Acudiente</th>
+                <th className="py-3 px-3.5">Teléfono Contacto</th>
+                <th className="py-3 px-3.5">Estado</th>
+                <th className="py-3 px-3.5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -555,56 +555,55 @@ export const CargaMatriculasPage: React.FC = () => {
               ) : (
                 estudiantes.map((est) => (
                   <tr key={est.id} className="even:bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
-                    <td className="py-2.5 px-3.5 font-mono font-medium text-slate-700">
+                    <td className="py-3 px-3.5 font-mono text-sm font-medium text-slate-700">
                       {est.documento.startsWith('PENDIENTE_') ? (
-                        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-xs">
                           {est.documento}
                         </span>
                       ) : (
                         est.documento
                       )}
                     </td>
-                    <td className="py-2.5 px-3.5 font-semibold text-slate-800">
+                    <td className="py-3 px-3.5 font-semibold text-slate-900 text-sm">
                       {est.nombreCompleto}
                     </td>
-                    <td className="py-2.5 px-3.5">
-                      <span className="px-2 py-0.5 rounded bg-sky-50 text-trujillo-navy border border-sky-200 font-bold">
+                    <td className="py-3 px-3.5">
+                      <span className="px-2.5 py-0.5 rounded bg-sky-50 text-trujillo-navy border border-sky-200 font-bold text-xs">
                         {est.grado}° - {est.grupo}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3.5 text-slate-600">{est.jornada}</td>
-                    <td className="py-2.5 px-3.5 text-slate-600">{est.nombreAcudiente}</td>
-                    <td className="py-2.5 px-3.5 text-slate-600 font-mono">{est.telefonoAcudiente}</td>
-                    <td className="py-2.5 px-3.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                        <CheckCircle2 className="w-3 h-3" />
+                    <td className="py-3 px-3.5 text-slate-600 text-sm">{est.jornada}</td>
+                    <td className="py-3 px-3.5 text-slate-600 text-sm">{est.nombreAcudiente}</td>
+                    <td className="py-3 px-3.5 text-slate-600 font-mono text-sm">{est.telefonoAcudiente}</td>
+                    <td className="py-3 px-3.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>{est.estadoMatricula}</span>
                       </span>
                     </td>
-                    <td className="py-2.5 px-3.5 text-right">
+                    <td className="py-3 px-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
                           onClick={() => setExpedienteEstudianteId(est.id)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-trujillo-navy hover:text-white bg-trujillo-ice hover:bg-trujillo-navy rounded-lg border border-sky-200 hover:border-trujillo-navy transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-trujillo-navy hover:text-white bg-trujillo-ice hover:bg-trujillo-navy rounded-lg border border-sky-200 hover:border-trujillo-navy transition-all duration-150 active:scale-[0.98] cursor-pointer"
                           title="Ver expediente e historial disciplinario integral"
                         >
-                          <FolderKanban className="w-3 h-3 text-trujillo-sky" />
+                          <FolderKanban className="w-3.5 h-3.5 text-trujillo-sky" />
                           <span>Expediente</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleAbrirEditar(est)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-700 rounded-lg border border-slate-200 hover:border-slate-700 transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-700 rounded-lg border border-slate-200 hover:border-slate-700 transition-all duration-150 active:scale-[0.98] cursor-pointer"
                           title="Editar datos del estudiante"
                         >
-                          <Pencil className="w-3 h-3" />
+                          <Pencil className="w-3.5 h-3.5" />
                           <span>Editar</span>
                         </button>
                       </div>
                     </td>
-
                   </tr>
                 ))
               )}
@@ -613,16 +612,16 @@ export const CargaMatriculasPage: React.FC = () => {
         </div>
 
         {/* Barra de Paginación Inteligente */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-xs text-slate-600">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-sm text-slate-600">
           <div className="flex items-center gap-4">
             <span>
-              Mostrando <span className="font-semibold text-trujillo-dark">{desdeRegistro}</span> a{' '}
-              <span className="font-semibold text-trujillo-dark">{hastaRegistro}</span> de{' '}
-              <span className="font-semibold text-trujillo-dark">{totalElementos}</span> estudiantes
+              Mostrando <span className="font-semibold text-slate-800">{desdeRegistro}</span> a{' '}
+              <span className="font-semibold text-slate-800">{hastaRegistro}</span> de{' '}
+              <span className="font-semibold text-slate-800">{totalElementos}</span> estudiantes
             </span>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">Por página:</span>
+              <span className="text-slate-500">Por página:</span>
               <select
                 value={tamanoPagina}
                 onChange={(e) => {
@@ -643,7 +642,7 @@ export const CargaMatriculasPage: React.FC = () => {
               type="button"
               onClick={() => handlePageChange(0)}
               disabled={paginaActual === 0 || isLoadingEstudiantes}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98] cursor-pointer"
               title="Primera página"
             >
               <ChevronsLeft className="w-4 h-4 text-slate-600" />
@@ -653,13 +652,13 @@ export const CargaMatriculasPage: React.FC = () => {
               type="button"
               onClick={() => handlePageChange(paginaActual - 1)}
               disabled={paginaActual === 0 || isLoadingEstudiantes}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98] cursor-pointer"
               title="Página anterior"
             >
               <ChevronLeft className="w-4 h-4 text-slate-600" />
             </button>
 
-            <span className="px-3 py-1 font-semibold text-trujillo-navy bg-trujillo-ice border border-sky-200 rounded-lg">
+            <span className="px-3 py-1 font-semibold text-trujillo-navy bg-trujillo-ice border border-sky-200 rounded-lg text-xs font-mono">
               Página {totalPaginas === 0 ? 0 : paginaActual + 1} de {totalPaginas}
             </span>
 
@@ -667,7 +666,7 @@ export const CargaMatriculasPage: React.FC = () => {
               type="button"
               onClick={() => handlePageChange(paginaActual + 1)}
               disabled={paginaActual >= totalPaginas - 1 || isLoadingEstudiantes}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98] cursor-pointer"
               title="Página siguiente"
             >
               <ChevronRight className="w-4 h-4 text-slate-600" />
@@ -677,7 +676,7 @@ export const CargaMatriculasPage: React.FC = () => {
               type="button"
               onClick={() => handlePageChange(totalPaginas - 1)}
               disabled={paginaActual >= totalPaginas - 1 || isLoadingEstudiantes}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98]"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98] cursor-pointer"
               title="Última página"
             >
               <ChevronsRight className="w-4 h-4 text-slate-600" />

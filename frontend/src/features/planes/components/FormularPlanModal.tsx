@@ -313,11 +313,11 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                             <p className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
                               {estudiante.nombres} {estudiante.apellidos}
                             </p>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-xs text-slate-500 mt-0.5">
                               Doc: {estudiante.documento} • Grado: {(estudiante as Record<string, any>).gradoMomento || `${estudiante.grado}° - ${estudiante.grupo}`}
                             </p>
                           </div>
-                          <span className="text-[10px] font-medium text-blue-900 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                          <span className="text-xs font-medium text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded">
                             Seleccionar
                           </span>
                         </button>
@@ -328,11 +328,11 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                   {!buscandoEstudiante && debouncedBusquedaEstudiante.trim().length >= 2 && estudiantesBusqueda.length === 0 && (
                     <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-md shadow-lg z-50 p-4 text-center animate-in fade-in duration-100">
                       <Users className="w-6 h-6 mx-auto text-slate-300 mb-1.5 stroke-[1.5]" />
-                      <p className="text-xs font-semibold text-slate-700">No se encontraron estudiantes</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-sm font-semibold text-slate-700">No se encontraron estudiantes</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
                         No hay coincidencias para &quot;{debouncedBusquedaEstudiante}&quot;.
                       </p>
-                      <p className="text-[10px] text-slate-400 mt-1">
+                      <p className="text-xs text-slate-400 mt-1">
                         Verifique el número de documento o apellidos, o confirme que la matrícula esté importada en el sistema.
                       </p>
                     </div>

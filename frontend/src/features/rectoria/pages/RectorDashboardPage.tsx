@@ -124,10 +124,10 @@ export const RectorDashboardPage: React.FC = () => {
             type="button"
             onClick={() => cargarDatos(true)}
             disabled={cargando || recargando}
-            className="h-9 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+            className="h-10 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
             title="Refrescar métricas en tiempo real"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${recargando ? 'animate-spin text-blue-700' : 'text-slate-500'}`} />
+            <RefreshCw className={`w-4 h-4 ${recargando ? 'animate-spin text-blue-700' : 'text-slate-500'}`} />
             <span>Actualizar</span>
           </button>
 
@@ -135,9 +135,9 @@ export const RectorDashboardPage: React.FC = () => {
             type="button"
             onClick={handleDescargarInforme}
             disabled={descargandoPdf || cargando}
-            className="h-9 px-3.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            className="h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
           >
-            <FileSpreadsheet className={`w-3.5 h-3.5 ${descargandoPdf ? 'animate-pulse' : ''}`} />
+            <FileSpreadsheet className={`w-4 h-4 ${descargandoPdf ? 'animate-pulse' : ''}`} />
             <span>{descargandoPdf ? 'Generando...' : 'Exportar Informe'}</span>
           </button>
         </div>
@@ -151,7 +151,7 @@ export const RectorDashboardPage: React.FC = () => {
           </div>
           <button
             onClick={() => cargarDatos()}
-            className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-900 rounded-md font-semibold text-xs transition-colors cursor-pointer"
+            className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-900 rounded-lg font-semibold text-xs transition-colors cursor-pointer"
           >
             Reintentar
           </button>
@@ -161,9 +161,9 @@ export const RectorDashboardPage: React.FC = () => {
       {/* KPI Cards: Métricas Compactas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         {/* Total Casos */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-slate-700" />
               Total Casos
             </span>
@@ -172,16 +172,16 @@ export const RectorDashboardPage: React.FC = () => {
           <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
             {cargando ? '...' : (metricas?.totalIncidentes ?? 0)}
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5 flex items-center justify-between">
+          <p className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
             <span>En trámite: <strong className="text-amber-700">{metricas?.casosEnTramite ?? 0}</strong></span>
             <span>Cerrados: <strong className="text-emerald-700">{metricas?.casosCerrados ?? 0}</strong></span>
           </p>
         </div>
 
         {/* Faltas Tipo I */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-yellow-500" />
               Tipo I (Leves)
             </span>
@@ -190,15 +190,15 @@ export const RectorDashboardPage: React.FC = () => {
           <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
             {cargando ? '...' : (metricas?.tipoI ?? 0)}
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Mediaciones y acuerdos
           </p>
         </div>
 
         {/* Faltas Tipo II */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-orange-500" />
               Tipo II (Graves)
             </span>
@@ -207,15 +207,15 @@ export const RectorDashboardPage: React.FC = () => {
           <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
             {cargando ? '...' : (metricas?.tipoII ?? 0)}
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Comité & citación acudiente
           </p>
         </div>
 
         {/* Faltas Tipo III */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-rose-600" />
               Tipo III (Gravísimas)
             </span>
@@ -224,15 +224,15 @@ export const RectorDashboardPage: React.FC = () => {
           <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
             {cargando ? '...' : (metricas?.tipoIII ?? 0)}
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Ruta Integral (ICBF/Policía)
           </p>
         </div>
 
         {/* Tasa de Resolución y Efectividad */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-600" />
               Efectividad
             </span>
@@ -241,7 +241,7 @@ export const RectorDashboardPage: React.FC = () => {
           <div className="text-2xl font-bold text-slate-900 leading-tight mt-1">
             {cargando ? '...' : `${metricas?.tasaResolucion ?? 0}%`}
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5 flex items-center justify-between">
+          <p className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
             <span>Alumnos: <strong>{metricas?.totalEstudiantesInvolucrados ?? 0}</strong></span>
             <span>Reincid: <strong className="text-amber-700">{metricas?.totalEstudiantesReincidentes ?? 0}</strong></span>
           </p>
@@ -258,7 +258,7 @@ export const RectorDashboardPage: React.FC = () => {
                 <PieIcon className="w-4 h-4 text-slate-700" />
                 <div>
                   <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Distribución Ley 1620</h2>
-                  <p className="text-[11px] text-slate-500">Proporción por tipología de falta escolar</p>
+                  <p className="text-xs text-slate-500">Proporción por tipología de falta escolar</p>
                 </div>
               </div>
             </div>
@@ -282,13 +282,13 @@ export const RectorDashboardPage: React.FC = () => {
                     </Pie>
                     <Tooltip 
                       formatter={(val: unknown) => [`${val ?? 0} expedientes`, 'Cantidad']}
-                      contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
+                      contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '12px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
                     />
                     <Legend 
                       verticalAlign="bottom" 
                       height={32}
                       iconType="circle"
-                      wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -302,16 +302,16 @@ export const RectorDashboardPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100 text-center">
-            <div className="p-2 rounded bg-yellow-50/70 border border-yellow-200/50">
-              <span className="block text-[10px] font-semibold text-yellow-800">Tipo I</span>
+            <div className="p-2 rounded-lg bg-yellow-50/70 border border-yellow-200/50">
+              <span className="block text-xs font-semibold text-yellow-800">Tipo I</span>
               <strong className="text-sm font-bold text-yellow-900">{metricas?.tipoI ?? 0}</strong>
             </div>
-            <div className="p-2 rounded bg-orange-50/70 border border-orange-200/50">
-              <span className="block text-[10px] font-semibold text-orange-800">Tipo II</span>
+            <div className="p-2 rounded-lg bg-orange-50/70 border border-orange-200/50">
+              <span className="block text-xs font-semibold text-orange-800">Tipo II</span>
               <strong className="text-sm font-bold text-orange-900">{metricas?.tipoII ?? 0}</strong>
             </div>
-            <div className="p-2 rounded bg-rose-50/70 border border-rose-200/50">
-              <span className="block text-[10px] font-semibold text-rose-800">Tipo III</span>
+            <div className="p-2 rounded-lg bg-rose-50/70 border border-rose-200/50">
+              <span className="block text-xs font-semibold text-rose-800">Tipo III</span>
               <strong className="text-sm font-bold text-rose-900">{metricas?.tipoIII ?? 0}</strong>
             </div>
           </div>
@@ -325,10 +325,10 @@ export const RectorDashboardPage: React.FC = () => {
                 <MapPin className="w-4 h-4 text-slate-700" />
                 <div>
                   <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Mapa de Calor: Lugares Críticos</h2>
-                  <p className="text-[11px] text-slate-500">Zonas del plantel con mayor frecuencia de incidentes</p>
+                  <p className="text-xs text-slate-500">Zonas del plantel con mayor frecuencia de incidentes</p>
                 </div>
               </div>
-              <span className="text-[11px] font-medium text-slate-400">Top Espacios</span>
+              <span className="text-xs font-medium text-slate-400">Top Espacios</span>
             </div>
 
             <div className="h-56 w-full">
@@ -340,11 +340,11 @@ export const RectorDashboardPage: React.FC = () => {
                     margin={{ top: 5, right: 20, left: 30, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
                     <YAxis 
                       dataKey="nombreLugar" 
                       type="category" 
-                      tick={{ fontSize: 10, fill: '#475569' }} 
+                      tick={{ fontSize: 11, fill: '#475569' }} 
                       width={110}
                     />
                     <Tooltip 
@@ -352,7 +352,7 @@ export const RectorDashboardPage: React.FC = () => {
                         `${val ?? 0} casos (${props?.payload?.porcentaje ?? 0}%)`,
                         'Incidencia'
                       ]}
-                      contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
+                      contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '12px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
                     />
                     <Bar dataKey="cantidad" fill="#1E3A8A" radius={[0, 3, 3, 0]}>
                       {metricas.focosCriticosLugares.map((_, index) => (
@@ -369,7 +369,7 @@ export const RectorDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Recomendación: Fortalecer vigilancia docente en zonas críticas</span>
             <span className="font-semibold text-blue-700">Protocolo Preventivo</span>
           </div>
@@ -385,7 +385,7 @@ export const RectorDashboardPage: React.FC = () => {
               <TrendingUp className="w-4 h-4 text-slate-700" />
               <div>
                 <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Evolución Cronológica</h2>
-                <p className="text-[11px] text-slate-500">Comportamiento mensual en el año lectivo</p>
+                <p className="text-xs text-slate-500">Comportamiento mensual en el año lectivo</p>
               </div>
             </div>
           </div>
@@ -404,11 +404,11 @@ export const RectorDashboardPage: React.FC = () => {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip 
                     formatter={(val: unknown) => [`${val ?? 0} incidentes`, 'Casos']}
-                    contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
+                    contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '12px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
                   />
                   <Area 
                     type="monotone" 
@@ -435,10 +435,10 @@ export const RectorDashboardPage: React.FC = () => {
               <GraduationCap className="w-4 h-4 text-slate-700" />
               <div>
                 <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Incidencia por Grado</h2>
-                <p className="text-[11px] text-slate-500">Grado histórico capturado al momento de los hechos</p>
+                <p className="text-xs text-slate-500">Grado histórico capturado al momento de los hechos</p>
               </div>
             </div>
-            <span className="text-[11px] font-medium text-slate-400">Grados 6° a 11°</span>
+            <span className="text-xs font-medium text-slate-400">Grados 6° a 11°</span>
           </div>
 
           <div className="h-52 w-full">
@@ -451,16 +451,16 @@ export const RectorDashboardPage: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis 
                     dataKey="grado" 
-                    tick={{ fontSize: 10 }} 
+                    tick={{ fontSize: 11 }} 
                     tickFormatter={(g) => `${g}°`}
                   />
-                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip 
                     formatter={(val: unknown, _name: unknown, props: { payload?: { porcentaje?: number } }) => [
                       `${val ?? 0} casos (${props?.payload?.porcentaje ?? 0}%)`,
                       'Incidentes'
                     ]}
-                    contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
+                    contentStyle={{ borderRadius: '0.375rem', border: '1px solid #e2e8f0', fontSize: '12px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
                   />
                   <Bar dataKey="cantidad" fill="#1E3A8A" radius={[3, 3, 0, 0]} />
                 </BarChart>
@@ -483,7 +483,7 @@ export const RectorDashboardPage: React.FC = () => {
               <Clock className="w-4 h-4 text-slate-700" />
               <div>
                 <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Franjas Horarias Críticas</h2>
-                <p className="text-[11px] text-slate-500">Distribución por periodos de la jornada escolar</p>
+                <p className="text-xs text-slate-500">Distribución por periodos de la jornada escolar</p>
               </div>
             </div>
           </div>
@@ -513,10 +513,10 @@ export const RectorDashboardPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-slate-700" />
               <div>
                 <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Fases del Debido Proceso</h2>
-                <p className="text-[11px] text-slate-500">Trazabilidad de trámites institucionales activos</p>
+                <p className="text-xs text-slate-500">Trazabilidad de trámites institucionales activos</p>
               </div>
             </div>
-            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
               {metricas?.casosCerrados ?? 0} cerrados
             </span>
           </div>
@@ -552,12 +552,12 @@ export const RectorDashboardPage: React.FC = () => {
                 <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                   Ruta de Atención Integral (Ley 1620 de 2013)
                 </h2>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-500">
                   Custodia probatoria y garantía constitucional de debido proceso
                 </p>
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-200">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
               Protocolo Activo
             </span>
           </div>
@@ -567,22 +567,22 @@ export const RectorDashboardPage: React.FC = () => {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            <div className="p-2.5 rounded bg-slate-50 border border-slate-200">
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span>Seguridad Jurídica & Validez Histórica</span>
               </p>
-              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+              <p className="text-xs text-slate-500 mt-1 leading-normal">
                 Garantiza que la promoción académica no altere retroactivamente el curso donde ocurrieron las faltas.
               </p>
             </div>
 
-            <div className="p-2.5 rounded bg-slate-50 border border-slate-200">
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <Scale className="w-3.5 h-3.5 text-blue-700" />
+                <Scale className="w-4 h-4 text-blue-700" />
                 <span>Debido Proceso Constitucional</span>
               </p>
-              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+              <p className="text-xs text-slate-500 mt-1 leading-normal">
                 Registro inalterable de versiones libres, descargos y compromisos vinculantes.
               </p>
             </div>
@@ -598,7 +598,7 @@ export const RectorDashboardPage: React.FC = () => {
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                   Comité de Convivencia
                 </h3>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-500">
                   Instancia de concertación institucional
                 </p>
               </div>
@@ -606,25 +606,25 @@ export const RectorDashboardPage: React.FC = () => {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs p-2 rounded bg-slate-50 border border-slate-100">
-                <span className="font-medium text-slate-600">Rector (Presidente)</span>
-                <span className="font-bold text-blue-700 text-[11px]">Verificado</span>
+                <span className="font-medium text-slate-700">Rector (Presidente)</span>
+                <span className="font-bold text-blue-700 text-xs">Verificado</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2 rounded bg-slate-50 border border-slate-100">
-                <span className="font-medium text-slate-600">Orientación Escolar</span>
-                <span className="font-bold text-emerald-700 text-[11px]">En Línea</span>
+                <span className="font-medium text-slate-700">Orientación Escolar</span>
+                <span className="font-bold text-emerald-700 text-xs">En Línea</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2 rounded bg-slate-50 border border-slate-100">
-                <span className="font-medium text-slate-600">Personería Estudiantil</span>
-                <span className="font-medium text-slate-500 text-[11px]">Convocado</span>
+                <span className="font-medium text-slate-700">Personería Estudiantil</span>
+                <span className="font-medium text-slate-500 text-xs">Convocado</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2 rounded bg-slate-50 border border-slate-100">
-                <span className="font-medium text-slate-600">Consejo de Padres</span>
-                <span className="font-medium text-slate-500 text-[11px]">Convocado</span>
+                <span className="font-medium text-slate-700">Consejo de Padres</span>
+                <span className="font-medium text-slate-500 text-xs">Convocado</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Sesión Ordinaria:</span>
             <span className="font-semibold text-slate-800">Vigencia {new Date().getFullYear()}</span>
           </div>
