@@ -232,7 +232,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
 
           {/* Dropdown de Búsqueda en Curso */}
           {buscando && searchTerm.trim().length >= 2 && (
-            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-30 p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2 animate-in fade-in duration-100">
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2 animate-in fade-in duration-100">
               <Loader2 size={14} className="animate-spin text-blue-600" />
               <span>Buscando en el censo escolar...</span>
             </div>
@@ -240,7 +240,7 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
 
           {/* Dropdown de Resultados de Búsqueda */}
           {!buscando && resultados.length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-30 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
               {resultados.map((est) => (
                 <button
                   key={est.id}

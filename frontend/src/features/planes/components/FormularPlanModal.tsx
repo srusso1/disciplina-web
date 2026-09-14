@@ -169,6 +169,14 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
     onClose();
   };
 
+  const seleccionarEstudiante = (estudiante: EstudianteMatricula) => {
+    setEstudianteSeleccionado(estudiante);
+    setEstudiantesBusqueda([]);
+    setBusquedaEstudianteTexto('');
+  };
+
+  const mostrarResultados = !buscandoEstudiante && estudiantesBusqueda.length > 0;
+
   const handleCrearNuevoPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!estudianteSeleccionado) {
@@ -198,8 +206,8 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-200/80 overflow-hidden min-h-0 animate-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] min-h-[480px] flex flex-col justify-between shadow-xl border border-slate-200/80 min-h-0 animate-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0 rounded-t-xl">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
               <Plus className="w-5 h-5 stroke-[1.75]" />
@@ -223,8 +231,13 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
           </button>
         </div>
 
-        <form noValidate onSubmit={handleCrearNuevoPlan} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div ref={modalNuevoScrollRef} className="p-6 space-y-4 flex-1 overflow-y-auto min-h-0 modal-scroll-body">
+        <form noValidate onSubmit={handleCrearNuevoPlan} className="flex flex-col flex-1 min-h-0 justify-between">
+          <div
+            ref={modalNuevoScrollRef}
+            className={`p-6 space-y-4 flex-1 min-h-0 ${
+              estudianteSeleccionado ? 'overflow-y-auto modal-scroll-body' : 'overflow-visible'
+            }`}
+          >
             {/* Selector de Estudiante */}
             <div className="space-y-2">
               {totalEstudiantesSistema === 0 && (
@@ -263,7 +276,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="relative">
+                <div className="relative w-full">
                   <input
                     id="input-busqueda-estudiante-plan"
                     type="text"
@@ -280,33 +293,40 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                   )}
 
                   {buscandoEstudiante && debouncedBusquedaEstudiante.trim().length >= 2 && (
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2 animate-in fade-in duration-100">
+                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-md shadow-lg z-50 p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2 animate-in fade-in duration-100">
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
                       <span>Buscando en el censo escolar...</span>
                     </div>
                   )}
 
-                  {!buscandoEstudiante && estudiantesBusqueda.length > 0 && (
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100 animate-in fade-in duration-100">
-                      {estudiantesBusqueda.map((est) => (
-                        <div
-                          key={est.id}
-                          onClick={() => {
-                            setEstudianteSeleccionado(est);
-                            setEstudiantesBusqueda([]);
-                            setBusquedaEstudianteTexto('');
-                          }}
-                          className="p-2.5 hover:bg-slate-50 cursor-pointer text-xs"
+                  {/* Lista de coincidencias */}
+                  {mostrarResultados && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 max-h-56 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg z-50">
+                      {estudiantesBusqueda.map((estudiante) => (
+                        <button
+                          key={estudiante.id}
+                          type="button"
+                          onClick={() => seleccionarEstudiante(estudiante)}
+                          className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center justify-between transition-colors border-b border-slate-100 last:border-b-0 cursor-pointer"
                         >
-                          <span className="font-bold text-slate-800">{est.apellidos}, {est.nombres}</span>
-                          <span className="text-slate-400 ml-2 font-mono">({est.documento}) - {est.grado}° {est.grupo}</span>
-                        </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                              {estudiante.nombres} {estudiante.apellidos}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              Doc: {estudiante.documento} • Grado: {(estudiante as Record<string, any>).gradoMomento || `${estudiante.grado}° - ${estudiante.grupo}`}
+                            </p>
+                          </div>
+                          <span className="text-[10px] font-medium text-blue-900 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                            Seleccionar
+                          </span>
+                        </button>
                       ))}
                     </div>
                   )}
 
                   {!buscandoEstudiante && debouncedBusquedaEstudiante.trim().length >= 2 && estudiantesBusqueda.length === 0 && (
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-4 text-center animate-in fade-in duration-100">
+                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-md shadow-lg z-50 p-4 text-center animate-in fade-in duration-100">
                       <Users className="w-6 h-6 mx-auto text-slate-300 mb-1.5 stroke-[1.5]" />
                       <p className="text-xs font-semibold text-slate-700">No se encontraron estudiantes</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">
@@ -371,8 +391,8 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
             )}
           </div>
 
-          {/* Footer Fijo */}
-          <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+          {/* Footer Fijo y Desacoplado */}
+          <div className="mt-auto pt-4 px-6 py-3.5 bg-slate-50 border-t border-slate-100 rounded-b-xl flex items-center justify-between gap-3 shrink-0">
             <div className="min-w-0 flex-1">
               <span className="text-[11px] text-slate-400">Los campos marcados con asterisco (*) son obligatorios</span>
             </div>
