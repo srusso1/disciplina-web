@@ -41,7 +41,7 @@ public class MatriculaController {
     }
 
     @PostMapping(value = "/importar-masivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
+    @PreAuthorize("hasRole('RECTOR')")
     public ResponseEntity<ImportacionMatriculasResumenDTO> importarPlanillaMasiva(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "anioLectivo", required = false) Integer anioLectivo) {
