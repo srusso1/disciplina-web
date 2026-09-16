@@ -137,11 +137,11 @@ export const FaltasGravesPage: React.FC = () => {
 
       {/* Contenedor de Tabla con Toolbar Integrado */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-        {/* Toolbar integrado */}
+        {/* Toolbar integrado adaptable */}
         <div className="p-3 border-b border-slate-200 bg-slate-50/60">
-          <form onSubmit={handleBuscar} className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-              <div className="relative flex-1 min-w-[240px] max-w-md">
+          <form onSubmit={handleBuscar} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
+              <div className="relative flex-1 min-w-[200px]">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
@@ -157,47 +157,171 @@ export const FaltasGravesPage: React.FC = () => {
                       setBusqueda('');
                       setPaginaActual(0);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
 
-              <select
-                value={filtroEstado}
-                onChange={(e) => {
-                  setFiltroEstado(e.target.value as EstadoProceso | '');
-                  setPaginaActual(0);
-                }}
-                className="h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
-              >
-                <option value="">Todos los Estados</option>
-                <option value="REPORTADO">1. Reportado</option>
-                <option value="EN_INDAGACION">2. En Indagación</option>
-                <option value="CITACION_PADRES">3. Citación Acudientes</option>
-                <option value="EN_INTERVENCION">4. En Intervención</option>
-                <option value="CERRADO">5. Proceso Cerrado</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => {
+                    setFiltroEstado(e.target.value as EstadoProceso | '');
+                    setPaginaActual(0);
+                  }}
+                  className="flex-1 sm:flex-initial h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+                >
+                  <option value="">Todos los Estados</option>
+                  <option value="REPORTADO">1. Reportado</option>
+                  <option value="EN_INDAGACION">2. En Indagación</option>
+                  <option value="CITACION_PADRES">3. Citación Acudientes</option>
+                  <option value="EN_INTERVENCION">4. En Intervención</option>
+                  <option value="CERRADO">5. Proceso Cerrado</option>
+                </select>
 
-              <button
-                type="submit"
-                className="h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-              >
-                <Search className="w-4 h-4" />
-                <span>Filtrar</span>
-              </button>
+                <button
+                  type="submit"
+                  className="h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Filtrar</span>
+                </button>
+              </div>
             </div>
 
-            <div className="text-sm text-slate-600 font-medium ml-auto">
-              Total: <strong className="text-slate-800 font-bold">{totalElementos}</strong> expedientes
+            <div className="text-xs sm:text-sm text-slate-600 font-medium">
+              Total: <strong className="text-slate-800 font-bold">{totalElementos}</strong> casos
             </div>
           </form>
         </div>
 
-        {/* Tabla de Faltas Tipo III */}
-        <div className="overflow-x-auto">
+        {/* Vista Móvil: Tarjetas de Faltas Graves */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {cargando ? (
+            <div className="py-12 text-center text-slate-500">
+              <Loader2 className="w-7 h-7 animate-spin mx-auto text-red-600 mb-2" />
+              <p className="text-sm font-medium text-slate-600">Consultando expedientes de alta gravedad...</p>
+            </div>
+          ) : incidentes.length === 0 ? (
+            <div className="py-12 px-4 text-center text-slate-500">
+              <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+              <p className="text-base font-medium text-slate-700">No se encontraron casos críticos</p>
+              <p className="text-xs text-slate-400 mt-1">
+                No hay incidentes Tipo III clasificados según los filtros seleccionados.
+              </p>
+            </div>
+          ) : (
+            incidentes.map((inc) => (
+              <div key={`mob-grave-${inc.id}`} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-slate-900 text-sm bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                      #{inc.id}
+                    </span>
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${getBadgeEstado(
+                        inc.estadoProceso
+                      )}`}
+                    >
+                      {inc.estadoProceso}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                    <Calendar className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                    <span>{inc.fechaIncidente}</span>
+                    {inc.horaIncidente && <span>({inc.horaIncidente})</span>}
+                  </div>
+                </div>
+
+                {/* Tipificación Ley 1620 */}
+                <div className="bg-rose-50/60 p-2.5 rounded-lg border border-rose-200/80 space-y-1">
+                  <div className="text-[11px] font-bold text-rose-800 uppercase tracking-wider">
+                    Tipificación Ley 1620:
+                  </div>
+                  {inc.involucrados.find((i) => i.falta) ? (
+                    <div>
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-bold border bg-white text-rose-700 border-rose-200">
+                        {inc.involucrados.find((i) => i.falta)?.falta?.codigo} - Tipo III
+                      </span>
+                      <p className="text-xs text-slate-700 mt-1">
+                        {inc.involucrados.find((i) => i.falta)?.falta?.descripcion}
+                      </p>
+                    </div>
+                  ) : (
+                    <span className="text-slate-400 italic text-xs">Sin tipificación directa</span>
+                  )}
+                </div>
+
+                {/* Partes Involucradas */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                    Partes Involucradas:
+                  </span>
+                  {inc.involucrados.map((inv) => (
+                    <div
+                      key={`mob-inv-grave-${inv.id}`}
+                      className="bg-slate-50 p-2 rounded-lg border border-slate-200/60 flex items-center justify-between text-xs gap-2"
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0 ${
+                            inv.rolEstudiante === 'AGRESOR_PRINCIPAL'
+                              ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                              : inv.rolEstudiante === 'VICTIMA'
+                              ? 'bg-sky-100 text-sky-700 border border-sky-200'
+                              : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}
+                        >
+                          {inv.rolEstudiante}
+                        </span>
+                        <span className="font-semibold text-slate-900 truncate">
+                          {inv.estudianteNombreCompleto}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 font-mono shrink-0">
+                        {inv.gradoMomento}-{inv.grupoMomento}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Acciones Directivas */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIncidenteSeleccionadoId(inc.id)}
+                    className="min-h-[44px] px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-300 transition cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                  >
+                    <Eye className="w-4 h-4 text-slate-500" />
+                    <span>Expediente</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDescargarActa(inc.id)}
+                    disabled={descargandoId === inc.id}
+                    className="min-h-[44px] px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold border border-rose-200 transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                  >
+                    {descargandoId === inc.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-rose-700" />
+                    ) : (
+                      <FileDown className="w-4 h-4 text-rose-600" />
+                    )}
+                    <span>Descargar Acta</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Vista Escritorio: Tabla de Faltas Tipo III */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
+
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-xs">
               <tr>
                 <th className="py-3 px-4">Radicado</th>

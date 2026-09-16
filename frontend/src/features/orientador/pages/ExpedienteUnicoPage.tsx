@@ -174,11 +174,11 @@ export const ExpedienteUnicoPage: React.FC = () => {
 
       {/* Contenedor de Tabla con Toolbar Integrado */}
       <div className="bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden">
-        {/* Toolbar de búsqueda y filtros */}
+        {/* Toolbar de búsqueda y filtros adaptable */}
         <div className="p-3 border-b border-slate-200 bg-slate-50/60">
-          <form onSubmit={handleBuscar} className="flex flex-wrap items-center justify-between gap-2.5">
-            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
-              <div className="relative flex-1 min-w-[200px] max-w-md">
+          <form onSubmit={handleBuscar} className="flex flex-col gap-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="relative flex-1 min-w-[200px]">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
@@ -191,75 +191,154 @@ export const ExpedienteUnicoPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setBusqueda('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
 
-              <select
-                value={filtroGrado}
-                onChange={(e) => {
-                  setFiltroGrado(e.target.value);
-                  setPaginaActual(0);
-                }}
-                className="h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
-              >
-                <option value="">Todos los Grados</option>
-                <option value="6">Grado 6°</option>
-                <option value="7">Grado 7°</option>
-                <option value="8">Grado 8°</option>
-                <option value="9">Grado 9°</option>
-                <option value="10">Grado 10°</option>
-                <option value="11">Grado 11°</option>
-              </select>
-
-              <select
-                value={filtroGrupo}
-                onChange={(e) => {
-                  setFiltroGrupo(e.target.value);
-                  setPaginaActual(0);
-                }}
-                className="h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
-              >
-                <option value="">Todos los Grupos</option>
-                <option value="1">Grupo 1</option>
-                <option value="2">Grupo 2</option>
-                <option value="3">Grupo 3</option>
-                <option value="4">Grupo 4</option>
-                <option value="5">Grupo 5</option>
-              </select>
-
-              <button
-                type="submit"
-                className="h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-              >
-                <Search className="w-4 h-4" />
-                <span>Filtrar</span>
-              </button>
-
-              {(busquedaAplicada || filtroGrado || filtroGrupo) && (
-                <button
-                  type="button"
-                  onClick={handleLimpiarFiltros}
-                  className="h-10 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+                <select
+                  value={filtroGrado}
+                  onChange={(e) => {
+                    setFiltroGrado(e.target.value);
+                    setPaginaActual(0);
+                  }}
+                  className="w-full sm:w-auto h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
                 >
-                  <X className="w-4 h-4" />
-                  <span>Limpiar</span>
+                  <option value="">Todos los Grados</option>
+                  <option value="6">Grado 6°</option>
+                  <option value="7">Grado 7°</option>
+                  <option value="8">Grado 8°</option>
+                  <option value="9">Grado 9°</option>
+                  <option value="10">Grado 10°</option>
+                  <option value="11">Grado 11°</option>
+                </select>
+
+                <select
+                  value={filtroGrupo}
+                  onChange={(e) => {
+                    setFiltroGrupo(e.target.value);
+                    setPaginaActual(0);
+                  }}
+                  className="w-full sm:w-auto h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+                >
+                  <option value="">Todos los Grupos</option>
+                  <option value="1">Grupo 1</option>
+                  <option value="2">Grupo 2</option>
+                  <option value="3">Grupo 3</option>
+                  <option value="4">Grupo 4</option>
+                  <option value="5">Grupo 5</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 sm:flex-initial h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Filtrar</span>
                 </button>
-              )}
+
+                {(busquedaAplicada || filtroGrado || filtroGrupo) && (
+                  <button
+                    type="button"
+                    onClick={handleLimpiarFiltros}
+                    className="h-10 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Limpiar</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="text-sm text-slate-600 font-medium ml-auto">
-              Total: <strong className="text-slate-800">{totalElementos}</strong> estudiantes
+            <div className="text-xs text-slate-500 font-medium flex items-center justify-between pt-1">
+              <span>Filtro activo: {filtroGrado ? `Grado ${filtroGrado}°` : 'Todos'} {filtroGrupo ? `- Grupo ${filtroGrupo}` : ''}</span>
+              <span>Total: <strong className="text-slate-800">{totalElementos}</strong> estudiantes</span>
             </div>
           </form>
         </div>
 
-        {/* Tabla Estructurada */}
-        <div className="overflow-x-auto">
+        {/* Vista Móvil: Tarjetas Desacopladas Touch-Friendly */}
+        <div className="sm:hidden divide-y divide-slate-100">
+          {cargando ? (
+            <div className="py-12 text-center text-slate-500">
+              <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
+              <p className="text-sm font-medium text-slate-600">Cargando directorio de estudiantes...</p>
+            </div>
+          ) : estudiantes.length === 0 ? (
+            <div className="py-12 px-4 text-center text-slate-500">
+              <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+              <p className="text-base font-medium text-slate-700">No se encontraron registros</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Ajusta los filtros de búsqueda o verifica que la matrícula anual esté importada.
+              </p>
+            </div>
+          ) : (
+            estudiantes.map((est) => (
+              <div key={`mob-est-${est.id}`} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm leading-snug">
+                      {est.apellidos}, {est.nombres}
+                    </h3>
+                    <div className="text-xs font-mono text-slate-500 mt-0.5">
+                      Doc: {est.documento}
+                    </div>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide border shrink-0 ${
+                      est.estadoMatricula === 'ACTIVO'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : est.estadoMatricula === 'GRADUADO'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                    }`}
+                  >
+                    {est.estadoMatricula}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-600 font-medium">Grado y Grupo:</span>
+                  <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-800 font-bold">
+                    {est.grado}° - {est.grupo}
+                  </span>
+                </div>
+
+                {est.nombreAcudiente && (
+                  <div className="text-xs text-slate-600 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 space-y-1">
+                    <div className="text-slate-500 text-[11px] font-medium">Información del Acudiente:</div>
+                    <div className="font-semibold text-slate-800">{est.nombreAcudiente}</div>
+                    {est.telefonoAcudiente && (
+                      <div className="flex items-center gap-1 font-mono text-slate-700 text-xs pt-0.5">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{est.telefonoAcudiente}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setExpedienteEstudianteId(est.id)}
+                  className="w-full min-h-[44px] py-2.5 px-3 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-900 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs active:scale-[0.99]"
+                >
+                  <FileText className="w-4 h-4 text-slate-500" />
+                  <span>Ver Expediente Integral</span>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Tabla Estructurada en Escritorio */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
+
             <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-600">
               <tr>
                 <th className="py-3 px-3.5">Documento</th>

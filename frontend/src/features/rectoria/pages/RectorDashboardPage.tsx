@@ -119,12 +119,12 @@ export const RectorDashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => cargarDatos(true)}
             disabled={cargando || recargando}
-            className="h-10 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+            className="flex-1 sm:flex-initial h-10 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
             title="Refrescar métricas en tiempo real"
           >
             <RefreshCw className={`w-4 h-4 ${recargando ? 'animate-spin text-blue-700' : 'text-slate-500'}`} />
@@ -135,7 +135,7 @@ export const RectorDashboardPage: React.FC = () => {
             type="button"
             onClick={handleDescargarInforme}
             disabled={descargandoPdf || cargando}
-            className="h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            className="flex-1 sm:flex-initial h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
           >
             <FileSpreadsheet className={`w-4 h-4 ${descargandoPdf ? 'animate-pulse' : ''}`} />
             <span>{descargandoPdf ? 'Generando...' : 'Exportar Informe'}</span>

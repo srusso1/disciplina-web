@@ -202,7 +202,7 @@ export const PlanesIntervencionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Barra de Filtros (Toolbar) */}
+      {/* Barra de Filtros (Toolbar) Adaptable */}
       <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
         <form onSubmit={handleBuscar} className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
@@ -225,14 +225,14 @@ export const PlanesIntervencionPage: React.FC = () => {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <select
               value={filtroEstado}
               onChange={(e) => {
                 setFiltroEstado(e.target.value);
                 setPaginaActual(0);
               }}
-              className="h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-slate-700 font-medium"
+              className="flex-1 sm:flex-initial h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-slate-700 font-medium"
             >
               <option value="">Todos los Estados</option>
               <option value="EN_SEGUIMIENTO">En Seguimiento</option>
@@ -243,7 +243,7 @@ export const PlanesIntervencionPage: React.FC = () => {
 
             <button
               type="submit"
-              className="h-10 px-4 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              className="h-10 px-4 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <Search className="w-4 h-4" />
               <span>Filtrar</span>
@@ -253,10 +253,10 @@ export const PlanesIntervencionPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLimpiarFiltros}
-                className="h-10 px-3.5 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="h-10 px-3 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
-                <span>Limpiar</span>
+                <span className="hidden sm:inline">Limpiar</span>
               </button>
             )}
           </div>
@@ -280,10 +280,102 @@ export const PlanesIntervencionPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tabla de Planes */}
+      {/* Contenedor de Planes (Dual-View: Tarjetas en móvil, Tabla en escritorio) */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Vista Móvil: Tarjetas Desacopladas Touch-Friendly */}
+        <div className="sm:hidden divide-y divide-slate-100">
+          {cargando ? (
+            <div className="py-12 text-center text-slate-500">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600 mb-2" />
+              <p className="text-sm font-medium text-slate-600">Cargando planes de intervención...</p>
+            </div>
+          ) : planes.length === 0 ? (
+            <div className="py-12 px-4 text-center text-slate-500">
+              <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+              <p className="text-base font-medium text-slate-700">No se encontraron planes de intervención</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Ajusta los filtros o formula un nuevo plan pedagógico con el botón superior.
+              </p>
+            </div>
+          ) : (
+            planes.map((plan) => (
+              <div key={`mob-plan-${plan.id}`} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 font-mono text-xs font-bold text-slate-700 border border-slate-200">
+                      #{plan.id}
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${getBadgeEstado(
+                        plan.estado
+                      )}`}
+                    >
+                      {plan.estado}
+                    </span>
+                  </div>
+
+                  <span className="text-xs text-slate-500 font-mono">
+                    {plan.seguimientos?.length || 0} notas
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">{plan.estudianteNombre}</h3>
+                  <div className="text-xs font-mono text-slate-400">Doc: {plan.estudianteDocumento}</div>
+                </div>
+
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 space-y-1.5 text-xs">
+                  <div>
+                    <span className="font-semibold text-slate-700">Diagnóstico: </span>
+                    <span className="text-slate-600">{plan.diagnosticoSituacional}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-700">Acciones: </span>
+                    <span className="text-slate-600">{plan.accionesAcordadas}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span className="font-medium">Próximo seguimiento:</span>
+                  {plan.fechaProximoSeguimiento ? (
+                    <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{plan.fechaProximoSeguimiento}</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 italic">Sin fecha</span>
+                  )}
+                </div>
+
+                {/* Botones de acción en cuadrícula táctil */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleAbrirDetalle(plan)}
+                    className="min-h-[44px] px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-[0.98]"
+                  >
+                    <FileEdit className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Seguimiento</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setExpedienteEstudianteId(plan.estudianteId)}
+                    className="min-h-[44px] px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-[0.98]"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Expediente</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Vista Escritorio: Tabla Completa */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
+
             <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-600">
               <tr>
                 <th className="py-3 px-4">Radicado / Estudiante</th>

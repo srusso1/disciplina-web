@@ -139,7 +139,7 @@ export const NotificacionesMenu: React.FC = () => {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-80 sm:w-96 p-0 shadow-xl border border-slate-200 bg-white rounded-xl overflow-hidden z-50 animate-in fade-in-0 zoom-in-95"
+        className="w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm p-0 shadow-xl border border-slate-200 bg-white rounded-xl overflow-hidden z-50 animate-in fade-in-0 zoom-in-95"
       >
         {/* Encabezado */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/60">

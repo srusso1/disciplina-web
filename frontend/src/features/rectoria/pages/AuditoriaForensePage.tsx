@@ -192,48 +192,50 @@ export const AuditoriaForensePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setBusqueda('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* Filtro Entidad */}
-            <select
-              value={filtroEntidad}
-              onChange={(e) => setFiltroEntidad(e.target.value)}
-              className="h-10 px-3 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
-            >
-              <option value="">Todas las Entidades</option>
-              <option value="Incidente">Incidente</option>
-              <option value="IncidenteEstudiante">IncidenteEstudiante</option>
-              <option value="PlanIntervencion">Plan de Intervención</option>
-              <option value="MatriculaEstudiante">Matrícula</option>
-            </select>
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+              {/* Filtro Entidad */}
+              <select
+                value={filtroEntidad}
+                onChange={(e) => setFiltroEntidad(e.target.value)}
+                className="w-full sm:w-auto h-10 px-3 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+              >
+                <option value="">Todas las Entidades</option>
+                <option value="Incidente">Incidente</option>
+                <option value="IncidenteEstudiante">IncidenteEstudiante</option>
+                <option value="PlanIntervencion">Plan de Intervención</option>
+                <option value="MatriculaEstudiante">Matrícula</option>
+              </select>
 
-            {/* Filtro Acción */}
-            <select
-              value={filtroAccion}
-              onChange={(e) => setFiltroAccion(e.target.value)}
-              className="h-10 px-3 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
-            >
-              <option value="">Todas las Acciones</option>
-              <option value="CREAR">CREAR</option>
-              <option value="CAMBIO_ESTADO">CAMBIO_ESTADO</option>
-              <option value="ACTUALIZAR">ACTUALIZAR</option>
-              <option value="ACTUALIZAR_DESCARGO">ACTUALIZAR_DESCARGO</option>
-              <option value="REGISTRAR_SEGUIMIENTO">REGISTRAR_SEGUIMIENTO</option>
-              <option value="IMPORTACION_MASIVA">IMPORTACION_MASIVA</option>
-            </select>
+              {/* Filtro Acción */}
+              <select
+                value={filtroAccion}
+                onChange={(e) => setFiltroAccion(e.target.value)}
+                className="w-full sm:w-auto h-10 px-3 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+              >
+                <option value="">Todas las Acciones</option>
+                <option value="CREAR">CREAR</option>
+                <option value="CAMBIO_ESTADO">CAMBIO_ESTADO</option>
+                <option value="ACTUALIZAR">ACTUALIZAR</option>
+                <option value="ACTUALIZAR_DESCARGO">ACTUALIZAR_DESCARGO</option>
+                <option value="REGISTRAR_SEGUIMIENTO">REGISTRAR_SEGUIMIENTO</option>
+                <option value="IMPORTACION_MASIVA">IMPORTACION_MASIVA</option>
+              </select>
+            </div>
 
             {/* Rango de Fechas */}
-            <div className="flex items-center gap-1.5 text-sm text-slate-500">
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500">
               <input
                 type="date"
                 value={fechaDesde}
                 onChange={(e) => setFechaDesde(e.target.value)}
-                className="h-10 text-sm px-2.5 rounded-lg border border-slate-300 bg-white text-slate-700"
+                className="h-10 text-xs sm:text-sm px-2.5 rounded-lg border border-slate-300 bg-white text-slate-700"
                 title="Fecha inicial"
               />
               <span>-</span>
@@ -241,39 +243,107 @@ export const AuditoriaForensePage: React.FC = () => {
                 type="date"
                 value={fechaHasta}
                 onChange={(e) => setFechaHasta(e.target.value)}
-                className="h-10 text-sm px-2.5 rounded-lg border border-slate-300 bg-white text-slate-700"
+                className="h-10 text-xs sm:text-sm px-2.5 rounded-lg border border-slate-300 bg-white text-slate-700"
                 title="Fecha final"
               />
             </div>
 
             {/* Botones */}
-            <button
-              type="submit"
-              className="h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-            >
-              <Search className="w-4 h-4" />
-              <span>Filtrar</span>
-            </button>
-
-            {(busqueda || filtroEntidad || filtroAccion || fechaDesde || fechaHasta) && (
+            <div className="flex items-center gap-2">
               <button
-                type="button"
-                onClick={handleLimpiarFiltros}
-                className="h-10 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                type="submit"
+                className="flex-1 sm:flex-initial h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
               >
-                <X className="w-4 h-4" />
-                <span>Limpiar</span>
+                <Search className="w-4 h-4" />
+                <span>Filtrar</span>
               </button>
-            )}
 
-            <div className="text-sm text-slate-600 font-medium ml-auto">
+              {(busqueda || filtroEntidad || filtroAccion || fechaDesde || fechaHasta) && (
+                <button
+                  type="button"
+                  onClick={handleLimpiarFiltros}
+                  className="h-10 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline">Limpiar</span>
+                </button>
+              )}
+            </div>
+
+            <div className="text-xs sm:text-sm text-slate-600 font-medium sm:ml-auto">
               Total: <strong className="text-slate-800 font-bold">{totalElementos}</strong> eventos
             </div>
           </form>
         </div>
 
-        {/* Tabla de Registros Forenses */}
-        <div className="w-full overflow-x-auto lg:overflow-x-visible relative">
+        {/* Vista Móvil: Tarjetas Forenses */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {cargando ? (
+            <div className="py-12 text-center text-slate-500">
+              <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
+              <p className="text-sm font-medium text-slate-600">Consultando registros inmutables de auditoría...</p>
+            </div>
+          ) : registros.length === 0 ? (
+            <div className="py-12 px-4 text-center text-slate-500">
+              <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+              <p className="text-base font-medium text-slate-700">No se encontraron eventos de auditoría</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Ajusta los filtros o el rango de fechas para consultar registros históricos.
+              </p>
+            </div>
+          ) : (
+            registros.map((r) => (
+              <div key={`mob-audit-${r.id}`} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="font-semibold">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold border ${getBadgeAccion(
+                      r.accion
+                    )}`}
+                  >
+                    {r.accion}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Entidad afectada:</span>
+                    <span className="font-semibold text-slate-800">
+                      {r.entidad} <span className="font-mono text-slate-500">#{r.entidadId}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Usuario responsable:</span>
+                    <span className="font-semibold text-slate-800 truncate max-w-[180px]">
+                      {r.usuarioNombreCompleto || r.usuarioUsername}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Dirección IP:</span>
+                    <span className="font-mono text-slate-600">{r.ipOrigen || '127.0.0.1'}</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setRegistroSeleccionado(r)}
+                  className="w-full min-h-[44px] py-2.5 px-3 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-300 transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
+                >
+                  <Code2 className="w-4 h-4 text-blue-600" />
+                  <span>Inspeccionar Diff Forense</span>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Vista Escritorio: Tabla de Registros Forenses */}
+        <div className="hidden md:block w-full overflow-x-auto lg:overflow-x-visible relative">
           <table className="w-full text-left text-sm border-collapse">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-xs">
               <tr>
