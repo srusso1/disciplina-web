@@ -10,6 +10,7 @@ import {
   HelpCircle,
   Menu,
   X,
+  Scale,
 } from 'lucide-react';
 import { NotificacionesMenu } from '../../notificaciones/components/NotificacionesMenu';
 
@@ -24,10 +25,10 @@ export const OrientadorLayout: React.FC = () => {
   };
 
   const navItemClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-[0.98] ${
+    `group flex items-center gap-3 px-3 py-2.5 rounded-r-xl text-xs font-medium transition-all duration-150 border-l-4 ${
       isActive
-        ? 'bg-trujillo-sky/15 text-trujillo-sky border border-trujillo-sky/30 shadow-sm'
-        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+        ? 'bg-sky-500/10 text-sky-400 border-sky-400 font-semibold'
+        : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
     }`;
 
   return (
@@ -47,30 +48,30 @@ export const OrientadorLayout: React.FC = () => {
           sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
-        <div>
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Logo & Marca Institucional */}
-          <div className="px-2 py-3 mb-6 border-b border-slate-800 flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 p-1 flex items-center justify-center shrink-0 shadow-sm ring-1 ring-white/10">
+          <div className="px-1 py-2 mb-4 border-b border-slate-800/80 flex items-start justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-white/10 p-1 flex items-center justify-center shrink-0 shadow-sm ring-1 ring-white/10">
                   <img 
                     src="/escudo-ie-trujillo.png" 
                     alt="Escudo IE Trujillo" 
-                    className="w-8 h-8 object-contain"
+                    className="w-7 h-7 object-contain"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h2 className="font-extrabold text-base tracking-tight text-white leading-tight">
-                    Disciplina<span className="text-trujillo-sky font-black">+</span>
+                    Disciplina<span className="text-sky-400 font-black">+</span>
                   </h2>
                   <p className="text-[11px] font-medium text-slate-400">
                     IE Trujillo
                   </p>
                 </div>
               </div>
-              <div className="mt-3 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/80 text-[11px] text-trujillo-sky font-semibold flex items-center justify-between">
-                <span>Orientación Escolar</span>
-                <span className="w-2 h-2 rounded-full bg-trujillo-laurel"></span>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/80 text-[10px] text-sky-400 font-semibold tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>IE Trujillo • Orientación Escolar</span>
               </div>
             </div>
 
@@ -85,48 +86,85 @@ export const OrientadorLayout: React.FC = () => {
             </button>
           </div>
 
-          {/* Menú de Navegación Operativo */}
-          <nav className="space-y-1.5">
-            <NavLink to="/orientador/incidentes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
-              <FileText className="w-4 h-4 shrink-0" />
-              <span>Bitácora de Incidentes</span>
-            </NavLink>
+          {/* Menú de Navegación por Categorías */}
+          <nav className="space-y-4 overflow-y-auto pr-1 flex-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {/* Categoría: GESTIÓN OPERATIVA */}
+            <div className="space-y-1">
+              <span className="block text-[11px] font-semibold tracking-wider text-slate-400 uppercase px-3 py-1">
+                Gestión Operativa
+              </span>
+              <div className="space-y-0.5">
+                <NavLink to="/orientador/incidentes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span>Bitácora de Incidentes</span>
+                </NavLink>
 
-            <NavLink to="/orientador/expedientes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
-              <Users className="w-4 h-4 shrink-0" />
-              <span>Expediente Único</span>
-            </NavLink>
+                <NavLink to="/orientador/expedientes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span>Expediente Único</span>
+                </NavLink>
+              </div>
+            </div>
 
-            <NavLink to="/orientador/planes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
-              <Layers className="w-4 h-4 shrink-0" />
-              <span>Planes de Intervención</span>
-            </NavLink>
+            {/* Categoría: PEDAGOGÍA & SEGUIMIENTO */}
+            <div className="space-y-1">
+              <span className="block text-[11px] font-semibold tracking-wider text-slate-400 uppercase px-3 py-1">
+                Pedagogía & Seguimiento
+              </span>
+              <div className="space-y-0.5">
+                <NavLink to="/orientador/planes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
+                  <Layers className="w-4 h-4 shrink-0" />
+                  <span>Planes de Intervención</span>
+                </NavLink>
+              </div>
+            </div>
+
+            {/* Marco Normativo & Convivencia (Equilibrio visual de Orientación) */}
+            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 text-slate-400 space-y-1 mt-4">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-400">
+                <Scale className="w-3.5 h-3.5 shrink-0" />
+                <span>Marco Normativo</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-slate-400">
+                Ruta de Atención Integral para la Convivencia Escolar (Ley 1620 de 2013).
+              </p>
+            </div>
           </nav>
         </div>
 
-        {/* Sección Inferior: Usuario & Acciones */}
-        <div className="pt-4 border-t border-slate-800 space-y-3">
-          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-trujillo-navy flex items-center justify-center text-white font-bold text-xs shrink-0 ring-1 ring-trujillo-sky/40">
+        {/* Footer: Tarjeta compacta de usuario con Cerrar Sesión Inline */}
+        <div className="pt-3 border-t border-slate-800/80 mt-auto">
+          <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 flex items-center gap-2.5 shadow-xs">
+            <div 
+              className="w-8 h-8 rounded-full bg-trujillo-navy flex items-center justify-center text-white font-bold text-xs shrink-0 ring-1 ring-sky-500/30"
+              title={`${user?.nombres || ''} ${user?.apellidos || ''}`}
+            >
               {user?.nombres?.charAt(0) || 'O'}{user?.apellidos?.charAt(0) || 'E'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-white truncate">
+              <p 
+                className="text-xs font-semibold text-slate-200 truncate leading-snug"
+                title={`${user?.nombres || ''} ${user?.apellidos || ''}`}
+              >
                 {user?.nombres} {user?.apellidos}
               </p>
-              <p className="text-[11px] text-slate-400 truncate">
+              <p 
+                className="text-[10px] text-slate-400 truncate leading-tight mt-0.5"
+                title={user?.email || ''}
+              >
                 {user?.email}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+              title="Cerrar Sesión"
+              aria-label="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-900/80 hover:bg-rose-950/40 hover:text-rose-300 text-slate-400 border border-slate-800 hover:border-rose-900/50 text-xs font-medium transition-all duration-150 cursor-pointer active:scale-[0.98]"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Cerrar Sesión</span>
-          </button>
         </div>
       </aside>
 
