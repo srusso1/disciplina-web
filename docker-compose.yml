@@ -7,9 +7,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-disciplina_db}
       POSTGRES_USER: ${POSTGRES_USER:-admin_disciplina}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret_password_2026}
-    # Security: Port 5432 is strictly internal to disciplina-net, NOT exposed to host / public IP
-    expose:
-      - "5432"
+    # Security: Port 5432 bound strictly to loopback (127.0.0.1) for local host dev & SSH tunnels.
+    # NOT accessible from external/public network interfaces.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
