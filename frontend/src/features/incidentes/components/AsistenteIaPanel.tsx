@@ -252,6 +252,11 @@ export const AsistenteIaPanel: React.FC<AsistenteIaPanelProps> = ({
                               <p className="text-xs opacity-80 truncate">
                                 Rol: {est.rolSugerido} • {matriculado ? `Grado ${est.gradoMomento || ''}-${est.grupoMomento || ''}` : 'No encontrado en censo'}
                               </p>
+                              {est.catalogoFaltaId && est.faltaCodigo && est.rolSugerido !== 'VICTIMA' && est.rolSugerido !== 'TESTIGO' && (
+                                <p className="text-xs font-semibold text-indigo-700 truncate mt-0.5">
+                                  Falta sugerida: {est.faltaCodigo} (editable)
+                                </p>
+                              )}
                             </div>
                           </div>
                           <span
