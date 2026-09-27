@@ -1,6 +1,62 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { EstadoPlanIntervencion } from '../types/planes.types';
 import { Sparkles, Loader2, BrainCircuit, ChevronDown, ChevronUp, FileText, ShieldAlert } from 'lucide-react';
+
+interface EditableSectionProps {
+  title: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  required?: boolean;
+  accent?: 'blue' | 'amber' | 'slate';
+}
+
+const renderPlanText = (value: string) => {
+  const lines = value.split(/\n|(?=\d+\.\s)/).map((line) => line.trim()).filter(Boolean);
+  const hasNumberedItems = lines.filter((line) => /^\d+\.\s/.test(line)).length >= 2;
+
+  if (!hasNumberedItems) {
+    return <p className="text-sm text-slate-700 leading-6 whitespace-pre-wrap">{value}</p>;
+  }
+
+  return (
+    <ol className="space-y-2.5">
+      {lines.map((line, index) => {
+        const item = line.replace(/^\d+\.\s*/, '');
+        return (
+          <li key={`${item}-${index}`} className="flex gap-3 text-sm text-slate-700 leading-6">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">{index + 1}</span>
+            <span>{item}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+};
+
+const EditableSection: React.FC<EditableSectionProps> = ({ title, value, onChange, placeholder, required, accent = 'blue' }) => {
+  const [editando, setEditando] = useState(false);
+  const accentClasses = accent === 'amber' ? 'border-amber-200 bg-amber-50/30' : accent === 'slate' ? 'border-slate-200 bg-slate-50/40' : 'border-indigo-200 bg-indigo-50/20';
+
+  return (
+    <section className={`rounded-2xl border p-4 space-y-3 ${accentClasses}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-bold text-slate-800">{title} {required && <span className="text-rose-500">*</span>}</h3>
+          <span className="text-[11px] font-medium text-indigo-600">Sugerencia IA Â· Editable</span>
+        </div>
+        <button type="button" onClick={() => setEditando((prev) => !prev)} className="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+          {editando ? 'Ver propuesta' : 'Editar'}
+        </button>
+      </div>
+      {editando ? (
+        <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={6} className="w-full rounded-xl border border-indigo-200 bg-white p-3 text-sm leading-6 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-y" required={required} />
+      ) : (
+        <div className="rounded-xl border border-white bg-white/80 p-3.5">{value ? renderPlanText(value) : <p className="text-sm italic text-slate-400">AÃºn no hay contenido. GenerÃ¡ una propuesta o escribila manualmente.</p>}</div>
+      )}
+    </section>
+  );
+};
 
 export interface IncidenteOpcionPlan {
   incidenteId: number;
@@ -70,13 +126,13 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
             <FileText className="w-4 h-4 text-sky-700" />
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-sky-800">Contexto del caso</p>
-              <p className="text-xs text-sky-700">La propuesta se construirá sobre este incidente.</p>
+              <p className="text-xs text-sky-700">La propuesta se construirÃ¡ sobre este incidente.</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Caso</span><span className="font-bold text-slate-800">#{incidenteSeleccionado.incidenteId}</span><span className="block text-slate-500 mt-0.5">{incidenteSeleccionado.fechaIncidente || 'Fecha no disponible'}</span></div>
-            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Falta tipificada</span><span className="font-bold text-trujillo-navy">{codigoFalta || 'Sin código asociado'}</span></div>
-            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Hechos registrados</span><span className="block text-slate-700 line-clamp-2">{descripcionHechos || 'Sin descripción adicional'}</span></div>
+            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Falta tipificada</span><span className="font-bold text-trujillo-navy">{codigoFalta || 'Sin cÃ³digo asociado'}</span></div>
+            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Hechos registrados</span><span className="block text-slate-700 line-clamp-2">{descripcionHechos || 'Sin descripciÃ³n adicional'}</span></div>
           </div>
         </section>
       )}
@@ -96,7 +152,7 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
           <option value="">-- Seleccione el caso convivencial ({incidentes.length} disponibles) --</option>
           {incidentes.map((inc) => {
             const codigo = inc.faltaCodigo || inc.falta?.codigo;
-            const desc = inc.descripcionHechos || inc.descripcion || 'Sin descripción adicional';
+            const desc = inc.descripcionHechos || inc.descripcion || 'Sin descripciÃ³n adicional';
             return (
               <option key={inc.incidenteId} value={inc.incidenteId}>
                 Caso #{inc.incidenteId} {inc.fechaIncidente ? `(${inc.fechaIncidente})` : ''} - {codigo ? `[${codigo}] ` : ''}
@@ -107,12 +163,12 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
         </select>
       </div>
 
-      {/* Botón de Asistente IA */}
+      {/* BotÃ³n de Asistente IA */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-indigo-50 border border-indigo-200 gap-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
           <span className="text-xs text-indigo-900 font-semibold">
-            ¿Deseas consultar sugerencias pedagógicas con Google Gemini para este caso?
+            Â¿Deseas consultar sugerencias pedagÃ³gicas con Google Gemini para este caso?
           </span>
         </div>
         <button
@@ -134,52 +190,15 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
         </div>
       )}
 
-      {/* Diagnóstico Situacional */}
-      <div>
-        <label htmlFor="textarea-diagnostico-plan" className="block text-xs font-bold text-slate-700 mb-1">
-          Diagnóstico Situacional / Causas Raíz <span className="text-rose-500">*</span>
-        </label>
-        <textarea
-          id="textarea-diagnostico-plan"
-          rows={3}
-          placeholder="Factores desencadenantes, historial de convivencia y estado socioemocional observado..."
-          value={diagnostico}
-          onChange={(e) => onCambiarDiagnostico(e.target.value)}
-          className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 resize-y min-h-[80px]"
-          required
-        />
+            <div className="flex items-center gap-2 pt-1">
+        <span className="h-px bg-slate-200 flex-1" />
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Revisá y ajustá el plan</span>
+        <span className="h-px bg-slate-200 flex-1" />
       </div>
 
-      {/* Acciones Acordadas */}
-      <div>
-        <label htmlFor="textarea-acciones-plan" className="block text-xs font-bold text-slate-700 mb-1">
-          Acciones Formativas y Restaurativas Acordadas <span className="text-rose-500">*</span>
-        </label>
-        <textarea
-          id="textarea-acciones-plan"
-          rows={3}
-          placeholder="Talleres, cartas de reparación, servicio pedagógico comunitario o acuerdos de aula..."
-          value={accionesAcordadas}
-          onChange={(e) => onCambiarAccionesAcordadas(e.target.value)}
-          className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 resize-y min-h-[80px]"
-          required
-        />
-      </div>
-
-      {/* Compromiso de los Padres */}
-      <div>
-        <label htmlFor="textarea-compromiso-padres" className="block text-xs font-bold text-slate-700 mb-1">
-          Compromiso de los Padres / Entorno Familiar
-        </label>
-        <textarea
-          id="textarea-compromiso-padres"
-          rows={2}
-          placeholder="Pautas de crianza positiva, control de horarios, asistencia a escuela de padres..."
-          value={compromisoPadres}
-          onChange={(e) => onCambiarCompromisoPadres(e.target.value)}
-          className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-trujillo-sky/30 resize-y"
-        />
-      </div>
+      <EditableSection title="Diagnóstico situacional y causas raíz" value={diagnostico} onChange={onCambiarDiagnostico} placeholder="Factores desencadenantes, historial de convivencia y estado socioemocional observado..." required />
+      <EditableSection title="Acciones formativas y restaurativas acordadas" value={accionesAcordadas} onChange={onCambiarAccionesAcordadas} placeholder="Talleres, acciones reparadoras o acuerdos de aula..." required />
+      <EditableSection title="Compromiso de los padres y entorno familiar" value={compromisoPadres} onChange={onCambiarCompromisoPadres} placeholder="Pautas de acompañamiento, supervisión y comunicación familiar..." accent="slate" />
 
       {/* Recomendaciones Asistente IA */}
       {recomendacionesIa && (
@@ -213,7 +232,7 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
       <div className={`grid grid-cols-1 ${mostrarSelectorEstado ? 'sm:grid-cols-2' : ''} gap-3 pt-1`}>
         <div>
           <label htmlFor="input-fecha-seguimiento" className="block text-xs font-bold text-slate-700 mb-1">
-            Fecha Próximo Seguimiento
+            Fecha PrÃ³ximo Seguimiento
           </label>
           <input
             id="input-fecha-seguimiento"
