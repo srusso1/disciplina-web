@@ -255,9 +255,15 @@ public class IaConvivenciaService {
                             .filter(f -> f.getCodigo().equalsIgnoreCase(faltaCodigoEfectivo.trim()))
                             .findFirst().orElse(null);
                     if (cfMatch != null) {
-                        faltaId = cfMatch.getId();
                         if (clasificacionLey == null) {
                             clasificacionLey = cfMatch.getClasificacionLey();
+                        } else if (cfMatch.getClasificacionLey() != clasificacionLey) {
+                            log.warn("La IA sugirio la falta {} como {}, pero no corresponde a la clasificacion {}. Se descarta la falta para mantener consistencia del catalogo.",
+                                    cfMatch.getCodigo(), cfMatch.getClasificacionLey(), clasificacionLey);
+                            cfMatch = null;
+                        }
+                        if (cfMatch != null) {
+                            faltaId = cfMatch.getId();
                         }
                     }
                 }
@@ -266,7 +272,7 @@ public class IaConvivenciaService {
                         .nombreMencionado(nombreMencionado)
                         .rolSugerido(rol)
                         .catalogoFaltaId(faltaId)
-                        .faltaCodigo(faltaCodigoEfectivo)
+                        .faltaCodigo(cfMatch != null ? cfMatch.getCodigo() : null)
                         .justificacionRol(justificacion);
 
                 if (matchMatricula != null) {
