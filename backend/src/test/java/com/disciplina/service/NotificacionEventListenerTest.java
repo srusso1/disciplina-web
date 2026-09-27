@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,16 +63,13 @@ class NotificacionEventListenerTest {
                 contains("Incidente #50"),
                 eq(TipoNotificacion.CRITICA),
                 eq(SeveridadNotificacion.CRITICA),
-                eq("/rectoria/faltas-graves")
+                eq("/rectoria/faltas-graves"),
+                eq("INCIDENTE"), eq("50"), eq("tipo-iii:incidente:50")
         );
 
-        verify(notificacionService).notificarPorRol(
+        verify(notificacionService, never()).notificarPorRol(
                 eq(RolUsuario.ROLE_ORIENTADOR),
-                contains("Nuevo Incidente"),
-                contains("#50"),
-                eq(TipoNotificacion.INFORMATIVA),
-                eq(SeveridadNotificacion.MEDIA),
-                eq("/orientador/incidentes")
+                any(), any(), any(), any(), any()
         );
     }
 
@@ -104,7 +102,8 @@ class NotificacionEventListenerTest {
                 contains("Ana Gomez"),
                 eq(TipoNotificacion.CRITICA),
                 eq(SeveridadNotificacion.ALTA),
-                eq("/rectoria/faltas-graves")
+                eq("/rectoria/faltas-graves"),
+                eq("ESTUDIANTE"), eq("9"), eq("acoso:incidente:51:estudiante:9")
         );
 
         verify(notificacionService).notificarPorRol(
@@ -113,7 +112,8 @@ class NotificacionEventListenerTest {
                 contains("Ana Gomez"),
                 eq(TipoNotificacion.CRITICA),
                 eq(SeveridadNotificacion.ALTA),
-                eq("/orientador/expedientes")
+                eq("/orientador/expedientes"),
+                eq("ESTUDIANTE"), eq("9"), eq("acoso:incidente:51:estudiante:9")
         );
     }
 }

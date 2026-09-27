@@ -57,6 +57,15 @@ public class Notificacion {
     @Column(name = "ruta_enlace", length = 200)
     private String rutaEnlace;
 
+    @Column(name = "recurso_tipo", length = 40)
+    private String recursoTipo;
+
+    @Column(name = "recurso_id", length = 80)
+    private String recursoId;
+
+    @Column(name = "evento_clave", length = 160)
+    private String eventoClave;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean leida = false;

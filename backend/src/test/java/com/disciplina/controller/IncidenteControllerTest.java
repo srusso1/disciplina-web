@@ -8,6 +8,7 @@ import com.disciplina.dto.incidente.ActualizarEstadoIncidenteDTO;
 import com.disciplina.dto.incidente.InvolucradoRequestDTO;
 import com.disciplina.dto.incidente.RegistrarIncidenteDTO;
 import com.disciplina.security.JwtTokenProvider;
+import com.disciplina.service.notificacion.NotificacionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -64,6 +65,9 @@ class IncidenteControllerTest {
 
     @Autowired
     private IncidenteRepository incidenteRepository;
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     private String tokenRector;
     private String tokenOrientador;
@@ -147,6 +151,35 @@ class IncidenteControllerTest {
                 .build());
 
         return est;
+    }
+
+    @Test
+    void historialNotificacionesSoloExponeDestinatarioYConservaLeidas() throws Exception {
+        Integer rectorId = usuarioRepository.findByUsername("rector_inc").orElseThrow().getId();
+        String titulo = "Historial prueba " + System.nanoTime();
+        Long id = notificacionService.crearNotificacion(rectorId, titulo, "Alerta de prueba",
+                TipoNotificacion.INFORMATIVA, SeveridadNotificacion.MEDIA, null,
+                "USUARIO", rectorId.toString(), "prueba:historial:" + titulo).getId();
+        notificacionService.marcarComoLeida(id, rectorId);
+
+        mockMvc.perform(get("/api/v1/notificaciones/historial")
+                        .header("Authorization", "Bearer " + tokenRector)
+                        .param("leida", "true").param("tipo", "INFORMATIVA").param("tamano", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido[*].titulo", hasItem(titulo)));
+
+        mockMvc.perform(get("/api/v1/notificaciones/historial")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .param("leida", "true").param("tipo", "INFORMATIVA").param("tamano", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido[*].titulo", not(hasItem(titulo))));
+
+        String hoy = LocalDate.now(java.time.ZoneId.of("America/Bogota")).toString();
+        mockMvc.perform(get("/api/v1/notificaciones/historial")
+                        .header("Authorization", "Bearer " + tokenRector)
+                        .param("desde", hoy).param("hasta", hoy).param("tamano", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido[*].titulo", hasItem(titulo)));
     }
 
     @Test
@@ -322,6 +355,20 @@ class IncidenteControllerTest {
                         .content(objectMapper.writeValueAsString(cambioEstado)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estadoProceso", is("EN_INDAGACION")));
+
+        mockMvc.perform(patch("/api/v1/incidentes/" + incidenteId + "/estado")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cambioEstado)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/incidentes/" + incidenteId + "/historial-estados")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(2)))
+                .andExpect(jsonPath("$[0].estadoAnterior", is("REPORTADO")))
+                .andExpect(jsonPath("$[0].estadoNuevo", is("EN_INDAGACION")))
+                .andExpect(jsonPath("$[1].estadoNuevo", is("REPORTADO")));
     }
 
     @Test

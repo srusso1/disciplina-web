@@ -8,10 +8,21 @@ export interface NotificacionItem {
   tipo: TipoNotificacion;
   severidad: SeveridadNotificacion;
   rutaEnlace?: string;
+  recursoTipo?: string;
+  recursoId?: string;
   leida: boolean;
   createdAt: string;
 }
 
 export interface ConteoNotificacionesDTO {
   noLeidas: number;
+}
+
+export interface PaginaNotificaciones {
+  contenido: NotificacionItem[];
+  pagina: number;
+  totalPaginas: number;
+  totalElementos: number;
+  primera: boolean;
+  ultima: boolean;
 }

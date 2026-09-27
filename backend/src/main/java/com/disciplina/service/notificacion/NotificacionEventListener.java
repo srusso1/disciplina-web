@@ -39,19 +39,11 @@ public class NotificacionEventListener {
                         "Activación de Ruta Integral: Incidente #" + event.getIncidenteId() + " registrado con presunta falta gravísima Tipo III.",
                         TipoNotificacion.CRITICA,
                         SeveridadNotificacion.CRITICA,
-                        "/rectoria/faltas-graves"
+                        "/rectoria/faltas-graves",
+                        "INCIDENTE", event.getIncidenteId().toString(),
+                        "tipo-iii:incidente:" + event.getIncidenteId()
                 );
             }
-
-            // 2. Notificar a los orientadores del registro de un nuevo incidente
-            notificacionService.notificarPorRol(
-                    RolUsuario.ROLE_ORIENTADOR,
-                    "Nuevo Incidente Registrado",
-                    "Nuevo incidente #" + event.getIncidenteId() + " registrado en el sistema.",
-                    TipoNotificacion.INFORMATIVA,
-                    SeveridadNotificacion.MEDIA,
-                    "/orientador/incidentes"
-            );
 
             // 3. Alerta de presunto acoso si la víctima acumula >= 2 faltas en 6 semanas
             if (event.getInvolucrados() != null) {
@@ -76,7 +68,9 @@ public class NotificacionEventListener {
                                     alertaMensaje,
                                     TipoNotificacion.CRITICA,
                                     SeveridadNotificacion.ALTA,
-                                    "/rectoria/faltas-graves"
+                                    "/rectoria/faltas-graves",
+                                    "ESTUDIANTE", inv.getEstudianteId().toString(),
+                                    "acoso:incidente:" + event.getIncidenteId() + ":estudiante:" + inv.getEstudianteId()
                             );
 
                             notificacionService.notificarPorRol(
@@ -85,7 +79,9 @@ public class NotificacionEventListener {
                                     alertaMensaje,
                                     TipoNotificacion.CRITICA,
                                     SeveridadNotificacion.ALTA,
-                                    "/orientador/expedientes"
+                                    "/orientador/expedientes",
+                                    "ESTUDIANTE", inv.getEstudianteId().toString(),
+                                    "acoso:incidente:" + event.getIncidenteId() + ":estudiante:" + inv.getEstudianteId()
                             );
                         }
                     }

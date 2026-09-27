@@ -10,13 +10,17 @@ import com.disciplina.domain.model.Usuario;
 import com.disciplina.domain.repository.NotificacionRepository;
 import com.disciplina.domain.repository.UsuarioRepository;
 import com.disciplina.dto.notificacion.NotificacionResponseDTO;
+import com.disciplina.dto.common.PaginaRespuestaDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -36,6 +40,20 @@ public class NotificacionService {
             TipoNotificacion tipo,
             SeveridadNotificacion severidad,
             String rutaEnlace) {
+        return crearNotificacion(usuarioId, titulo, mensaje, tipo, severidad, rutaEnlace, null, null, null);
+    }
+
+    @Transactional
+    public NotificacionResponseDTO crearNotificacion(Integer usuarioId, String titulo, String mensaje,
+            TipoNotificacion tipo, SeveridadNotificacion severidad, String rutaEnlace,
+            String recursoTipo, String recursoId, String eventoClave) {
+
+        if (eventoClave != null) {
+            var existente = notificacionRepository.findByUsuarioIdAndEventoClave(usuarioId, eventoClave);
+            if (existente.isPresent()) {
+                return mapearADTO(existente.get());
+            }
+        }
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + usuarioId));
@@ -47,6 +65,9 @@ public class NotificacionService {
                 .tipo(tipo)
                 .severidad(severidad != null ? severidad : SeveridadNotificacion.MEDIA)
                 .rutaEnlace(rutaEnlace)
+                .recursoTipo(recursoTipo)
+                .recursoId(recursoId)
+                .eventoClave(eventoClave)
                 .leida(false)
                 .build();
 
@@ -63,6 +84,13 @@ public class NotificacionService {
             TipoNotificacion tipo,
             SeveridadNotificacion severidad,
             String rutaEnlace) {
+        notificarPorRol(rol, titulo, mensaje, tipo, severidad, rutaEnlace, null, null, null);
+    }
+
+    @Transactional
+    public void notificarPorRol(RolUsuario rol, String titulo, String mensaje,
+            TipoNotificacion tipo, SeveridadNotificacion severidad, String rutaEnlace,
+            String recursoTipo, String recursoId, String eventoClave) {
 
         List<Usuario> usuarios = usuarioRepository.findByRolAndActivoTrue(rol);
         if (usuarios.isEmpty()) {
@@ -70,6 +98,7 @@ public class NotificacionService {
         }
 
         List<Notificacion> notificaciones = usuarios.stream()
+                .filter(u -> eventoClave == null || !notificacionRepository.existsByUsuarioIdAndEventoClave(u.getId(), eventoClave))
                 .map(u -> Notificacion.builder()
                         .usuario(u)
                         .titulo(titulo != null ? titulo.trim() : "")
@@ -77,16 +106,32 @@ public class NotificacionService {
                         .tipo(tipo)
                         .severidad(severidad != null ? severidad : SeveridadNotificacion.MEDIA)
                         .rutaEnlace(rutaEnlace)
+                        .recursoTipo(recursoTipo)
+                        .recursoId(recursoId)
+                        .eventoClave(eventoClave)
                         .leida(false)
                         .build())
                 .toList();
 
-        notificacionRepository.saveAll(notificaciones);
-        log.info("Notificacion masiva enviada a {} usuarios con rol: {}", usuarios.size(), rol);
+        if (!notificaciones.isEmpty()) {
+            notificacionRepository.saveAll(notificaciones);
+        }
+        log.info("Notificacion masiva enviada a {} usuarios con rol: {}", notificaciones.size(), rol);
     }
 
-    public boolean existeNotificacionNoLeida(Integer usuarioId, TipoNotificacion tipo, String identificadorRecurso) {
-        return notificacionRepository.existeNotificacionNoLeidaActiva(usuarioId, tipo, identificadorRecurso);
+    public PaginaRespuestaDTO<NotificacionResponseDTO> obtenerHistorial(Integer usuarioId, TipoNotificacion tipo,
+            Boolean leida, LocalDate desde, LocalDate hasta, int pagina, int tamano) {
+        if (desde != null && hasta != null && desde.isAfter(hasta)) {
+            throw new OperacionInvalidaException("La fecha inicial no puede ser posterior a la final.");
+        }
+        ZoneId zona = ZoneId.of("America/Bogota");
+        Instant inicio = desde == null ? null : desde.atStartOfDay(zona).toInstant();
+        Instant finExclusivo = hasta == null ? null : hasta.plusDays(1).atStartOfDay(zona).toInstant();
+        return PaginaRespuestaDTO.de(notificacionRepository.buscarHistorial(usuarioId,
+                tipo, tipo != null, leida, leida != null, inicio, inicio != null,
+                finExclusivo, finExclusivo != null,
+                PageRequest.of(Math.max(0, pagina), tamano > 0 && tamano <= 100 ? tamano : 20,
+                        Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")))).map(this::mapearADTO));
     }
 
     public List<NotificacionResponseDTO> obtenerUltimas(Integer usuarioId, int limite) {
@@ -135,6 +180,8 @@ public class NotificacionService {
                 .tipo(n.getTipo())
                 .severidad(n.getSeveridad())
                 .rutaEnlace(n.getRutaEnlace())
+                .recursoTipo(n.getRecursoTipo())
+                .recursoId(n.getRecursoId())
                 .leida(n.isLeida())
                 .createdAt(n.getCreatedAt())
                 .build();

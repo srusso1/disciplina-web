@@ -5,6 +5,8 @@ import com.disciplina.domain.model.Usuario;
 import com.disciplina.domain.repository.UsuarioRepository;
 import com.disciplina.dto.notificacion.ConteoNotificacionesDTO;
 import com.disciplina.dto.notificacion.NotificacionResponseDTO;
+import com.disciplina.dto.common.PaginaRespuestaDTO;
+import com.disciplina.domain.enums.TipoNotificacion;
 import com.disciplina.service.notificacion.NotificacionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping({"/notificaciones", "/api/v1/notificaciones"})
@@ -45,6 +49,20 @@ public class NotificacionController {
         Usuario usuario = obtenerUsuarioAutenticado(authentication);
         long noLeidas = notificacionService.contarNoLeidas(usuario.getId());
         return ResponseEntity.ok(ConteoNotificacionesDTO.of(noLeidas));
+    }
+
+    @GetMapping("/historial")
+    public ResponseEntity<PaginaRespuestaDTO<NotificacionResponseDTO>> obtenerHistorial(
+            @RequestParam(required = false) TipoNotificacion tipo,
+            @RequestParam(required = false) Boolean leida,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamano,
+            Authentication authentication) {
+        Usuario usuario = obtenerUsuarioAutenticado(authentication);
+        return ResponseEntity.ok(notificacionService.obtenerHistorial(usuario.getId(), tipo, leida,
+                desde, hasta, pagina, tamano));
     }
 
     @PatchMapping("/{id}/leer")

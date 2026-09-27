@@ -20,6 +20,8 @@ public class NotificacionResponseDTO {
     private TipoNotificacion tipo;
     private SeveridadNotificacion severidad;
     private String rutaEnlace;
+    private String recursoTipo;
+    private String recursoId;
     private boolean leida;
     private Instant createdAt;
 }

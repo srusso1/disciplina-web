@@ -7,6 +7,7 @@ import {
   Users, 
   LogOut, 
   Layers,
+  Bell,
   HelpCircle,
   Menu,
   X,
@@ -96,6 +97,11 @@ export const OrientadorLayout: React.FC = () => {
                 <NavLink to="/orientador/incidentes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
                   <FileText className="w-[18px] h-[18px] shrink-0" />
                   <span>Bitácora de Incidentes</span>
+                </NavLink>
+
+                <NavLink to="/orientador/bitacora-notificaciones" className={navItemClass} onClick={() => setSidebarOpen(false)}>
+                  <Bell className="w-[18px] h-[18px] shrink-0" />
+                  <span>Bitácora de notificaciones</span>
                 </NavLink>
 
                 <NavLink to="/orientador/expedientes" className={navItemClass} onClick={() => setSidebarOpen(false)}>

@@ -1,7 +1,17 @@
 import { apiClient } from '../../../core/api/apiClient';
-import { NotificacionItem, ConteoNotificacionesDTO } from '../types/notificacion.types';
+import { NotificacionItem, ConteoNotificacionesDTO, PaginaNotificaciones, TipoNotificacion } from '../types/notificacion.types';
 
 export const notificacionesApi = {
+  obtenerHistorial: async (filtros: {
+    pagina: number;
+    tipo?: TipoNotificacion;
+    leida?: boolean;
+    desde?: string;
+    hasta?: string;
+  }): Promise<PaginaNotificaciones> => {
+    const response = await apiClient.get<PaginaNotificaciones>('/notificaciones/historial', { params: filtros });
+    return response.data;
+  },
   obtenerUltimas: async (limite: number = 15): Promise<NotificacionItem[]> => {
     const response = await apiClient.get<NotificacionItem[]>(`/notificaciones?limite=${limite}`);
     return response.data;

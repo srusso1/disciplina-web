@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuthStore } from '../../../core/auth/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -55,6 +56,7 @@ export const NotificacionesMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const rol = useAuthStore(state => state.user?.rol);
 
   // Consulta 1: Conteo ligero de no leídas (Smart Polling cada 30 segundos en segundo plano)
   const { data: conteoData } = useQuery({
@@ -223,6 +225,10 @@ export const NotificacionesMenu: React.FC = () => {
             ))
           )}
         </div>
+        <button type="button" onClick={() => { setOpen(false); navigate(rol === 'ROLE_RECTOR' ? '/rectoria/bitacora-notificaciones' : '/orientador/bitacora-notificaciones'); }}
+          className="w-full border-t border-slate-200 p-3 text-center text-xs font-semibold text-blue-700 hover:bg-slate-50">
+          Ver historial completo
+        </button>
       </DropdownMenuContent>
     </DropdownMenu>
   );

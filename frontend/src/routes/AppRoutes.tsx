@@ -17,6 +17,7 @@ const AuditoriaForensePage = React.lazy(() => import('../features/rectoria/pages
 const RectorReportesPage = React.lazy(() => import('../features/rectoria/pages/RectorReportesPage').then(m => ({ default: m.RectorReportesPage })));
 const FaltasGravesPage = React.lazy(() => import('../features/rectoria/pages/FaltasGravesPage').then(m => ({ default: m.FaltasGravesPage })));
 const ConfiguracionPage = React.lazy(() => import('../features/rectoria/pages/ConfiguracionPage').then(m => ({ default: m.ConfiguracionPage })));
+const BitacoraNotificacionesPage = React.lazy(() => import('../features/notificaciones/pages/BitacoraNotificacionesPage').then(m => ({ default: m.BitacoraNotificacionesPage })));
 
 export const AppRoutes: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
@@ -50,6 +51,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="incidentes" element={<IncidentesPage />} />
           <Route path="expedientes" element={<ExpedienteUnicoPage />} />
           <Route path="planes" element={<PlanesIntervencionPage />} />
+          <Route path="bitacora-notificaciones" element={<BitacoraNotificacionesPage />} />
           <Route path="asistente-ia" element={<Navigate to="/orientador/planes" replace />} />
         </Route>
 
@@ -69,6 +71,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="auditoria" element={<AuditoriaForensePage />} />
           <Route path="reportes" element={<RectorReportesPage />} />
           <Route path="configuracion" element={<ConfiguracionPage />} />
+          <Route path="bitacora-notificaciones" element={<BitacoraNotificacionesPage />} />
         </Route>
 
         {/* Redireccion de Raiz y 404 */}

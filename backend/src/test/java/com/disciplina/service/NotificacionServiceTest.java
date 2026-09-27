@@ -170,4 +170,38 @@ class NotificacionServiceTest {
 
         assertThat(conteo).isEqualTo(5L);
     }
+
+    @Test
+    void eventoLeidoNoSeVuelveACrear() {
+        notificacion.setLeida(true);
+        when(notificacionRepository.findByUsuarioIdAndEventoClave(1, "tipo-iii:incidente:50"))
+                .thenReturn(Optional.of(notificacion));
+
+        NotificacionResponseDTO resultado = notificacionService.crearNotificacion(1, "Alerta", "Mensaje",
+                TipoNotificacion.CRITICA, SeveridadNotificacion.ALTA, "/rectoria/faltas-graves",
+                "INCIDENTE", "50", "tipo-iii:incidente:50");
+
+        assertThat(resultado.isLeida()).isTrue();
+        verify(notificacionRepository, never()).save(any());
+    }
+
+    @Test
+    void alertaPorRolNoDuplicaEventoYaLeido() {
+        when(usuarioRepository.findByRolAndActivoTrue(RolUsuario.ROLE_RECTOR)).thenReturn(List.of(usuario));
+        when(notificacionRepository.existsByUsuarioIdAndEventoClave(1, "estado-pendiente:incidente:42:cambio:9"))
+                .thenReturn(true);
+
+        notificacionService.notificarPorRol(RolUsuario.ROLE_RECTOR, "Estado pendiente", "Mensaje",
+                TipoNotificacion.SEGUIMIENTO, SeveridadNotificacion.ALTA, "/rectoria/bitacora-notificaciones",
+                "INCIDENTE", "42", "estado-pendiente:incidente:42:cambio:9");
+
+        verify(notificacionRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void historialRechazaRangoInvertido() {
+        assertThatThrownBy(() -> notificacionService.obtenerHistorial(1, null, null,
+                java.time.LocalDate.of(2026, 9, 27), java.time.LocalDate.of(2026, 9, 26), 0, 20))
+                .isInstanceOf(OperacionInvalidaException.class);
+    }
 }

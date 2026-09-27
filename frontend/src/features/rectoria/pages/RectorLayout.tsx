@@ -11,6 +11,7 @@ import {
   ScrollText,
   HelpCircle,
   Settings,
+  Bell,
   Menu,
   X,
 } from 'lucide-react';
@@ -122,6 +123,11 @@ export const RectorLayout: React.FC = () => {
                 <NavLink to="/rectoria/matriculas" className={navItemClass} onClick={() => setSidebarOpen(false)}>
                   <FileSpreadsheet className="w-[18px] h-[18px] shrink-0" />
                   <span>Carga de Matrículas</span>
+                </NavLink>
+
+                <NavLink to="/rectoria/bitacora-notificaciones" className={navItemClass} onClick={() => setSidebarOpen(false)}>
+                  <Bell className="w-[18px] h-[18px] shrink-0" />
+                  <span>Bitácora de notificaciones</span>
                 </NavLink>
 
                 <NavLink to="/rectoria/auditoria" className={navItemClass} onClick={() => setSidebarOpen(false)}>
