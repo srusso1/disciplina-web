@@ -7,6 +7,8 @@ import {
   Loader2,
   Shield,
   Users,
+  ChevronDown,
+  X,
 } from 'lucide-react';
 import { matriculasApi } from '../../matriculas/api/matriculasApi';
 import { EstudianteMatricula } from '../../matriculas/types/matricula.types';
@@ -47,6 +49,10 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
   const [searchTerm, setSearchTerm] = useState(data.busquedaEstudiante);
   const [resultados, setResultados] = useState<EstudianteMatricula[]>([]);
   const [buscando, setBuscando] = useState(false);
+  const [faltaAbierta, setFaltaAbierta] = useState(false);
+  const [faltaBusqueda, setFaltaBusqueda] = useState('');
+  const [faltaTipo, setFaltaTipo] = useState<'TODAS' | 'TIPO_I' | 'TIPO_II' | 'TIPO_III'>('TODAS');
+  const [faltaActiva, setFaltaActiva] = useState(0);
 
   // Debounce de 250ms para la búsqueda en servidor
   const debouncedSearch = useDebounce(searchTerm, 250);
@@ -120,6 +126,23 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
   };
 
   const esVictimaOTestigo = data.rolEstudiante === 'VICTIMA' || data.rolEstudiante === 'TESTIGO';
+  const faltaSeleccionada = faltas.find((f) => f.id === data.catalogoFaltaId);
+  const faltasFiltradas = faltas.filter((f) => {
+    const coincideTipo = faltaTipo === 'TODAS' || f.clasificacionLey === faltaTipo;
+    const termino = faltaBusqueda.trim().toLowerCase();
+    return coincideTipo && (!termino || `${f.codigo} ${f.descripcion}`.toLowerCase().includes(termino));
+  });
+  const conteosFaltas = {
+    TODAS: faltas.length,
+    TIPO_I: faltas.filter((f) => f.clasificacionLey === 'TIPO_I').length,
+    TIPO_II: faltas.filter((f) => f.clasificacionLey === 'TIPO_II').length,
+    TIPO_III: faltas.filter((f) => f.clasificacionLey === 'TIPO_III').length,
+  };
+  const seleccionarFalta = (falta: CatalogoFalta) => {
+    onChange({ catalogoFaltaId: falta.id });
+    setFaltaBusqueda('');
+    setFaltaAbierta(false);
+  };
 
   return (
     <div id={`involucrado-card-${data.idTemp}`} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm space-y-3.5 relative">
@@ -322,51 +345,65 @@ export const InvolucradoItemCard: React.FC<InvolucradoItemCardProps> = React.mem
               <span className="truncate italic">Parte protegida (exenta de falta disciplinaria)</span>
             </div>
           ) : (
-            <select
-              id={`select-falta-${data.idTemp}`}
-              value={data.catalogoFaltaId || ''}
-              onChange={(e) =>
-                onChange({
-                  catalogoFaltaId: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-              className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-800"
-            >
-              <option value="">Seleccione falta tipificada *...</option>
-              {faltas.filter((f) => f.clasificacionLey === 'TIPO_I').length > 0 && (
-                <optgroup label="Faltas Tipo I (Leves / Conflictos Cotidianos)">
-                  {faltas
-                    .filter((f) => f.clasificacionLey === 'TIPO_I')
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.codigo} — {f.descripcion}
-                      </option>
-                    ))}
-                </optgroup>
+            <div className="relative">
+              <button
+                type="button"
+                id={`select-falta-${data.idTemp}`}
+                aria-haspopup="listbox"
+                aria-expanded={faltaAbierta}
+                onClick={() => setFaltaAbierta((abierta) => !abierta)}
+                className="w-full min-h-10 px-3 py-2 text-left text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-trujillo-navy/20 focus:border-trujillo-navy transition text-slate-800 flex items-center justify-between gap-2"
+              >
+                <span className={faltaSeleccionada ? 'truncate' : 'text-slate-400'}>
+                  {faltaSeleccionada ? `${faltaSeleccionada.codigo} — ${faltaSeleccionada.descripcion}` : 'Buscar o seleccionar falta tipificada...'}
+                </span>
+                <ChevronDown size={16} className={`shrink-0 transition-transform ${faltaAbierta ? 'rotate-180' : ''}`} />
+              </button>
+              {faltaSeleccionada && (
+                <button type="button" aria-label="Limpiar falta seleccionada" onClick={() => onChange({ catalogoFaltaId: null })} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
+                  <X size={14} />
+                </button>
               )}
-              {faltas.filter((f) => f.clasificacionLey === 'TIPO_II').length > 0 && (
-                <optgroup label="Faltas Tipo II (Graves / Agresiones y Riñas)">
-                  {faltas
-                    .filter((f) => f.clasificacionLey === 'TIPO_II')
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.codigo} — {f.descripcion}
-                      </option>
+              {faltaAbierta && (
+                <div className="absolute z-40 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
+                  <div className="p-2 border-b border-slate-100">
+                    <input
+                      autoFocus
+                      value={faltaBusqueda}
+                      onChange={(e) => { setFaltaBusqueda(e.target.value); setFaltaActiva(0); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') setFaltaAbierta(false);
+                        if (e.key === 'ArrowDown') { e.preventDefault(); setFaltaActiva((i) => Math.min(i + 1, Math.max(0, faltasFiltradas.length - 1))); }
+                        if (e.key === 'ArrowUp') { e.preventDefault(); setFaltaActiva((i) => Math.max(0, i - 1)); }
+                        if (e.key === 'Enter' && faltasFiltradas[faltaActiva]) { e.preventDefault(); seleccionarFalta(faltasFiltradas[faltaActiva]); }
+                      }}
+                      placeholder="Buscar por código o descripción..."
+                      aria-label="Buscar falta tipificada"
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex gap-1 p-2 overflow-x-auto border-b border-slate-100">
+                    {(['TODAS', 'TIPO_I', 'TIPO_II', 'TIPO_III'] as const).map((tipo) => (
+                      <button key={tipo} type="button" onClick={() => { setFaltaTipo(tipo); setFaltaActiva(0); }} className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${faltaTipo === tipo ? 'bg-trujillo-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                        {tipo === 'TODAS' ? 'Todas' : tipo.replace('TIPO_', 'Tipo ')} ({conteosFaltas[tipo]})
+                      </button>
                     ))}
-                </optgroup>
-              )}
-              {faltas.filter((f) => f.clasificacionLey === 'TIPO_III').length > 0 && (
-                <optgroup label="Faltas Tipo III (Gravísimas / Presuntos Delitos)">
-                  {faltas
-                    .filter((f) => f.clasificacionLey === 'TIPO_III')
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.codigo} — {f.descripcion}
-                      </option>
+                  </div>
+                  <div role="listbox" className="max-h-64 overflow-y-auto p-1">
+                    {faltasFiltradas.length === 0 ? (
+                      <p className="px-3 py-6 text-center text-xs text-slate-500">No hay faltas que coincidan con la búsqueda.</p>
+                    ) : faltasFiltradas.map((falta, indice) => (
+                      <button key={falta.id} type="button" role="option" aria-selected={falta.id === data.catalogoFaltaId} onClick={() => seleccionarFalta(falta)} className={`w-full text-left rounded-lg px-3 py-2.5 transition ${indice === faltaActiva ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
+                        <span className="flex items-start gap-2">
+                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${falta.clasificacionLey === 'TIPO_III' ? 'bg-red-100 text-red-700' : falta.clasificacionLey === 'TIPO_II' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{falta.codigo}</span>
+                          <span className="min-w-0"><span className="block text-xs font-medium text-slate-800 line-clamp-2">{falta.descripcion}</span><span className="block mt-0.5 text-[10px] text-slate-500">{falta.clasificacionLey.replace('TIPO_', 'Tipo ')} · {falta.gravedadInstitucional}</span></span>
+                        </span>
+                      </button>
                     ))}
-                </optgroup>
+                  </div>
+                </div>
               )}
-            </select>
+            </div>
           )}
           {!esVictimaOTestigo && faltas.length === 0 && (
             <p className="text-xs text-amber-700 mt-1 flex items-center gap-1 font-medium">
