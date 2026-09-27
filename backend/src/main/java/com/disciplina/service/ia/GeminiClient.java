@@ -86,7 +86,7 @@ public class GeminiClient {
                     return Optional.of(textNode.asText());
                 }
             } else {
-                log.error("Error devuelto por la API de Google Gemini (HTTP {}): {}", response.statusCode(), response.body());
+                log.error("Error devuelto por la API de Google Gemini (HTTP {}). Se omite el cuerpo para no exponer datos del relato.", response.statusCode());
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
