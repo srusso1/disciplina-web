@@ -206,7 +206,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] min-h-[480px] flex flex-col justify-between shadow-xl border border-slate-200/80 min-h-0 animate-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] min-h-[560px] flex flex-col justify-between shadow-2xl border border-slate-200/80 min-h-0 animate-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0 rounded-t-xl">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
@@ -416,7 +416,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                 className="px-4 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-semibold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm cursor-pointer disabled:cursor-not-allowed"
               >
                 {planForm.guardando ? <Loader2 className="w-3.5 h-3.5 animate-spin text-trujillo-sky" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                <span>Formular Plan Oficial</span>
+                <span>Guardar plan revisado</span>
               </button>
             </div>
           </div>

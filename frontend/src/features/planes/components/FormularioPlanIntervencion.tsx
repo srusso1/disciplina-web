@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { EstadoPlanIntervencion } from '../types/planes.types';
-import { Sparkles, Loader2, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Loader2, BrainCircuit, ChevronDown, ChevronUp, FileText, ShieldAlert } from 'lucide-react';
 
 export interface IncidenteOpcionPlan {
   incidenteId: number;
@@ -58,9 +58,29 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
   onGenerarIa,
 }) => {
   const [mostrarRecomendacionesIa, setMostrarRecomendacionesIa] = useState<boolean>(true);
+  const incidenteSeleccionado = incidentes.find((incidente) => incidente.incidenteId === incidenteSeleccionadoId);
+  const codigoFalta = incidenteSeleccionado?.faltaCodigo || incidenteSeleccionado?.falta?.codigo;
+  const descripcionHechos = incidenteSeleccionado?.descripcionHechos || incidenteSeleccionado?.descripcion;
 
   return (
     <div className="space-y-4">
+      {incidenteSeleccionado && (
+        <section className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-sky-700" />
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-sky-800">Contexto del caso</p>
+              <p className="text-xs text-sky-700">La propuesta se construirá sobre este incidente.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Caso</span><span className="font-bold text-slate-800">#{incidenteSeleccionado.incidenteId}</span><span className="block text-slate-500 mt-0.5">{incidenteSeleccionado.fechaIncidente || 'Fecha no disponible'}</span></div>
+            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Falta tipificada</span><span className="font-bold text-trujillo-navy">{codigoFalta || 'Sin código asociado'}</span></div>
+            <div className="rounded-xl bg-white/80 border border-sky-100 p-3"><span className="block text-[10px] font-bold uppercase text-slate-400">Hechos registrados</span><span className="block text-slate-700 line-clamp-2">{descripcionHechos || 'Sin descripción adicional'}</span></div>
+          </div>
+        </section>
+      )}
+
       {/* Selector de Incidente de Origen */}
       <div className="space-y-1.5">
         <label htmlFor="select-incidente-origen-plan" className="block text-xs font-bold text-slate-700">
@@ -88,10 +108,10 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
       </div>
 
       {/* Botón de Asistente IA */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200 gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-indigo-50 border border-indigo-200 gap-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-xs text-amber-900 font-medium">
+          <span className="text-xs text-indigo-900 font-semibold">
             ¿Deseas consultar sugerencias pedagógicas con Google Gemini para este caso?
           </span>
         </div>
@@ -100,7 +120,7 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
           onClick={onGenerarIa}
           disabled={generandoIa || !incidenteSeleccionadoId}
           title={!incidenteSeleccionadoId ? 'Selecciona primero el incidente de origen' : undefined}
-          className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3.5 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {generandoIa ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
           <span>{generandoIa ? 'Analizando...' : 'Generar Propuesta'}</span>
@@ -108,7 +128,8 @@ export const FormularioPlanIntervencion: React.FC<FormularioPlanIntervencionProp
       </div>
 
       {advertenciaIa && (
-        <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-800 text-xs">
+        <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-800 text-xs flex items-start gap-2">
+          <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
           {advertenciaIa}
         </div>
       )}
