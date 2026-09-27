@@ -11,10 +11,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -584,6 +587,7 @@ public class IaConvivenciaService {
     }
 
     private String construirPromptSistemaIntervencion() {
+        String guiaInstitucional = cargarGuiaInstitucionalIntervencion();
         return """
             Eres un Orientador Escolar y Pedagogo experto en Convivencia Escolar y Justicia Restaurativa en Colombia (Ley 1620 de 2013).
             Debes generar una propuesta estructurada de Plan de Intervención Pedagógica individual para un estudiante con antecedentes disciplinarios.
@@ -597,7 +601,23 @@ public class IaConvivenciaService {
               "compromisoPadresSugerido": "Pautas de acompañamiento, supervisión y comunicación asertiva para la familia",
               "semanasSeguimientoSugeridas": 4
             }
-            """;
+
+            REGLAS INSTITUCIONALES OBLIGATORIAS:
+            %s
+
+            No inventes artículos, sanciones, protocolos ni competencias. La propuesta es preliminar,
+            editable y debe ser revisada y aprobada por el Orientador Escolar.
+            """.formatted(guiaInstitucional);
+    }
+
+    private String cargarGuiaInstitucionalIntervencion() {
+        try {
+            ClassPathResource resource = new ClassPathResource("ia/manual-convivencia-intervencion.md");
+            return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("No se pudo cargar la guía institucional para planes de intervención", e);
+            return "Aplicar debido proceso, enfoque pedagógico y restaurativo, proporcionalidad, confidencialidad y seguimiento. La propuesta debe ser revisada por el orientador.";
+        }
     }
 
     private String construirContextoUsuarioIntervencion(
