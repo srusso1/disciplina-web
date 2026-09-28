@@ -129,7 +129,6 @@ export const RectorLayout: React.FC = () => {
                   <Bell className="w-[18px] h-[18px] shrink-0" />
                   <span>Bitácora de notificaciones</span>
                 </NavLink>
-
                 <NavLink to="/rectoria/auditoria" className={navItemClass} onClick={() => setSidebarOpen(false)}>
                   <ScrollText className="w-[18px] h-[18px] shrink-0" />
                   <span>Auditoría Forense</span>

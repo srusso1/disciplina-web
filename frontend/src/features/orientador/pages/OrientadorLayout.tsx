@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Menu,
   X,
+
 } from 'lucide-react';
 import { NotificacionesMenu } from '../../notificaciones/components/NotificacionesMenu';
 
@@ -102,8 +103,7 @@ export const OrientadorLayout: React.FC = () => {
                 <NavLink to="/orientador/bitacora-notificaciones" className={navItemClass} onClick={() => setSidebarOpen(false)}>
                   <Bell className="w-[18px] h-[18px] shrink-0" />
                   <span>Bitácora de notificaciones</span>
-                </NavLink>
-
+                                </NavLink>
                 <NavLink to="/orientador/expedientes" className={navItemClass} onClick={() => setSidebarOpen(false)}>
                   <Users className="w-[18px] h-[18px] shrink-0" />
                   <span>Expediente Único</span>

@@ -116,7 +116,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publicos de autenticacion y error
-                        .requestMatchers("/auth/**", "/api/v1/auth/**", "/error").permitAll()
+                        .requestMatchers("/auth/**", "/api/v1/auth/**", "/error", "/api/v1/whatsapp/webhook").permitAll()
                         
                         // Defensa en profundidad a nivel de rutas directivas y auditoria forense
                         .requestMatchers(

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class ActualizarEstadoIncidenteDTO {
 
     @NotNull(message = "El nuevo estado del proceso es obligatorio")
@@ -26,5 +26,10 @@ public class ActualizarEstadoIncidenteDTO {
 
     public ActualizarEstadoIncidenteDTO(EstadoProceso estadoProceso) {
         this.estadoProceso = estadoProceso;
+    }
+
+    public ActualizarEstadoIncidenteDTO(EstadoProceso estadoProceso, String observaciones) {
+        this.estadoProceso = estadoProceso;
+        this.observaciones = observaciones;
     }
 }
