@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { matriculasApi } from '../api/matriculasApi';
-import { ImportacionMatriculasResumen, EstudianteMatricula } from '../types/matricula.types';
+import { ImportacionMatriculasResumen, EstudianteMatricula, ResumenMatriculas } from '../types/matricula.types';
 import { 
   FileSpreadsheet, 
   UploadCloud, 
@@ -20,7 +20,9 @@ import {
   ChevronsRight,
   Pencil,
   FolderKanban,
-  Download
+  Download,
+  PhoneOff,
+  UserX
 } from 'lucide-react';
 import { EditarEstudianteModal } from '../components/EditarEstudianteModal';
 import { ExpedienteEstudianteModal } from '../components/ExpedienteEstudianteModal';
@@ -69,6 +71,9 @@ export const CargaMatriculasPage: React.FC = () => {
   const [totalElementos, setTotalElementos] = useState<number>(0);
   const [totalPaginas, setTotalPaginas] = useState<number>(0);
   const [isLoadingEstudiantes, setIsLoadingEstudiantes] = useState(false);
+  const [resumenCenso, setResumenCenso] = useState<ResumenMatriculas | null>(null);
+  const [isLoadingResumen, setIsLoadingResumen] = useState(false);
+  const [filtroDatosPendientes, setFiltroDatosPendientes] = useState<'ACUDIENTE' | 'TELEFONO' | ''>('');
 
   // Estado del Modal de Edición
   const [estudianteAEditar, setEstudianteAEditar] = useState<EstudianteMatricula | null>(null);
@@ -93,7 +98,24 @@ export const CargaMatriculasPage: React.FC = () => {
     setEstudiantes((prev) =>
       prev.map((e) => (e.id === actualizado.id ? actualizado : e))
     );
+    setRecargarTrigger((prev) => prev + 1);
   };
+
+  useEffect(() => {
+    let cancelado = false;
+    setIsLoadingResumen(true);
+    matriculasApi.obtenerResumen(anioVigente)
+      .then((data) => {
+        if (!cancelado) setResumenCenso(data);
+      })
+      .catch((err) => {
+        if (!cancelado) notify.error('Error de indicadores', extraerMensajeError(err, 'No fue posible cargar los indicadores de contacto.'));
+      })
+      .finally(() => {
+        if (!cancelado) setIsLoadingResumen(false);
+      });
+    return () => { cancelado = true; };
+  }, [anioVigente, recargarTrigger]);
 
   // Cargar estudiantes matriculados con protección contra condiciones de carrera
   useEffect(() => {
@@ -108,6 +130,7 @@ export const CargaMatriculasPage: React.FC = () => {
           anioLectivo: anioVigente,
           grado: filtroGrado || undefined,
           busqueda: busquedaAplicada || undefined,
+          datosPendientes: filtroDatosPendientes || undefined,
         });
         if (!cancelado) {
           setEstudiantes(data.contenido);
@@ -131,7 +154,7 @@ export const CargaMatriculasPage: React.FC = () => {
     return () => {
       cancelado = true;
     };
-  }, [filtroGrado, busquedaAplicada, paginaActual, tamanoPagina, recargarTrigger]);
+  }, [filtroGrado, busquedaAplicada, filtroDatosPendientes, paginaActual, tamanoPagina, recargarTrigger]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +173,11 @@ export const CargaMatriculasPage: React.FC = () => {
 
   const handleGradoChange = (g: string) => {
     setFiltroGrado(g);
+    setPaginaActual(0);
+  };
+
+  const handleFiltroDatosPendientes = (filtro: 'ACUDIENTE' | 'TELEFONO' | '') => {
+    setFiltroDatosPendientes((actual) => actual === filtro ? '' : filtro);
     setPaginaActual(0);
   };
 
@@ -228,6 +256,9 @@ export const CargaMatriculasPage: React.FC = () => {
 
   const desdeRegistro = totalElementos === 0 ? 0 : paginaActual * tamanoPagina + 1;
   const hastaRegistro = Math.min((paginaActual + 1) * tamanoPagina, totalElementos);
+  const porcentaje = (cantidad: number) => resumenCenso?.totalMatriculados
+    ? `${((cantidad / resumenCenso.totalMatriculados) * 100).toFixed(1)} %`
+    : '0 %';
 
   return (
     <div className="space-y-6">
@@ -488,7 +519,10 @@ export const CargaMatriculasPage: React.FC = () => {
               <span>Estudiantes Matriculados en Vigencia {anioVigente}</span>
             </h2>
             <p className="text-xs text-slate-500">
-              Total de alumnos activos: <span className="font-bold text-trujillo-navy">{totalElementos}</span>
+              Matrícula total: <span className="font-bold text-trujillo-navy">{isLoadingResumen ? '—' : resumenCenso?.totalMatriculados ?? 0}</span>
+              {(filtroGrado || busquedaAplicada || filtroDatosPendientes) && (
+                <> · Resultados: <span className="font-bold text-trujillo-navy">{totalElementos}</span></>
+              )}
             </p>
           </div>
 
@@ -503,6 +537,54 @@ export const CargaMatriculasPage: React.FC = () => {
             />
           </form>
         </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => handleFiltroDatosPendientes('')}
+            className={`rounded-xl border p-4 text-left transition ${filtroDatosPendientes === '' ? 'border-sky-300 bg-sky-50 shadow-sm' : 'border-slate-200 bg-white hover:border-sky-200'}`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total matriculados</span>
+              <span className="rounded-lg bg-sky-100 p-2 text-sky-700"><Users className="h-4 w-4" /></span>
+            </div>
+            <p className="mt-2 text-2xl font-black text-trujillo-dark">{isLoadingResumen ? '—' : resumenCenso?.totalMatriculados ?? 0}</p>
+            <p className="mt-1 text-xs text-slate-500">Vigencia {anioVigente}</p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleFiltroDatosPendientes('ACUDIENTE')}
+            className={`rounded-xl border p-4 text-left transition ${filtroDatosPendientes === 'ACUDIENTE' ? 'border-amber-400 bg-amber-50 shadow-sm ring-2 ring-amber-100' : 'border-amber-200 bg-amber-50/50 hover:border-amber-300'}`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-800">Sin acudiente</span>
+              <span className="rounded-lg bg-amber-100 p-2 text-amber-700"><UserX className="h-4 w-4" /></span>
+            </div>
+            <p className="mt-2 text-2xl font-black text-amber-950">{isLoadingResumen ? '—' : resumenCenso?.sinAcudiente ?? 0}</p>
+            <p className="mt-1 text-xs text-amber-800/80">{porcentaje(resumenCenso?.sinAcudiente ?? 0)} de la matrícula · Pulse para filtrar</p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleFiltroDatosPendientes('TELEFONO')}
+            className={`rounded-xl border p-4 text-left transition ${filtroDatosPendientes === 'TELEFONO' ? 'border-rose-400 bg-rose-50 shadow-sm ring-2 ring-rose-100' : 'border-rose-200 bg-rose-50/50 hover:border-rose-300'}`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-800">Sin teléfono de contacto</span>
+              <span className="rounded-lg bg-rose-100 p-2 text-rose-700"><PhoneOff className="h-4 w-4" /></span>
+            </div>
+            <p className="mt-2 text-2xl font-black text-rose-950">{isLoadingResumen ? '—' : resumenCenso?.sinTelefonoContacto ?? 0}</p>
+            <p className="mt-1 text-xs text-rose-800/80">{porcentaje(resumenCenso?.sinTelefonoContacto ?? 0)} de la matrícula · Pulse para filtrar</p>
+          </button>
+        </div>
+
+        {filtroDatosPendientes && (
+          <div className="flex flex-col gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-slate-700 sm:flex-row sm:items-center sm:justify-between">
+            <span>Mostrando estudiantes <strong>{filtroDatosPendientes === 'ACUDIENTE' ? 'sin acudiente registrado' : 'sin teléfono de contacto'}</strong>.</span>
+            <button type="button" onClick={() => handleFiltroDatosPendientes('')} className="self-start text-xs font-bold text-sky-800 hover:underline sm:self-auto">Ver toda la matrícula</button>
+          </div>
+        )}
 
         {/* Filtro por Grado */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">

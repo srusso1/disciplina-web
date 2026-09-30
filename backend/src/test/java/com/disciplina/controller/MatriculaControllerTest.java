@@ -231,6 +231,33 @@ class MatriculaControllerTest {
     }
 
     @Test
+    @DisplayName("Debe exponer indicadores de datos de contacto faltantes")
+    void testResumenDatosContactoFaltantes() throws Exception {
+        mockMvc.perform(get("/api/v1/matriculas/resumen")
+                        .param("anioLectivo", "9999")
+                        .header("Authorization", "Bearer " + tokenOrientador))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.anioLectivo", is(9999)))
+                .andExpect(jsonPath("$.totalMatriculados", is(0)))
+                .andExpect(jsonPath("$.sinAcudiente", is(0)))
+                .andExpect(jsonPath("$.sinTelefonoContacto", is(0)));
+    }
+
+    @Test
+    @DisplayName("Debe permitir filtrar matrículas por datos de contacto faltantes")
+    void testFiltrarDatosContactoFaltantes() throws Exception {
+        for (String filtro : new String[]{"ACUDIENTE", "TELEFONO"}) {
+            mockMvc.perform(get("/api/v1/matriculas/estudiantes")
+                            .param("anioLectivo", "9999")
+                            .param("datosPendientes", filtro)
+                            .header("Authorization", "Bearer " + tokenOrientador))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.contenido", hasSize(0)))
+                    .andExpect(jsonPath("$.totalElementos", is(0)));
+        }
+    }
+
+    @Test
     @DisplayName("Debe rechazar subida de archivos no soportados con 415")
     void testArchivoNoSoportado() throws Exception {
         MockMultipartFile file = new MockMultipartFile(

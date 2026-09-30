@@ -65,6 +65,13 @@ export interface PaginaRespuesta<T> {
   ultima: boolean;
 }
 
+export interface ResumenMatriculas {
+  anioLectivo: number;
+  totalMatriculados: number;
+  sinAcudiente: number;
+  sinTelefonoContacto: number;
+}
+
 export interface MatriculaHistorial {
   id: number;
   anioLectivo: number;

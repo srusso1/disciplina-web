@@ -5,6 +5,7 @@ import com.disciplina.dto.expediente.ExpedienteEstudianteDTO;
 import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
 import com.disciplina.dto.matricula.ImportacionMatriculasResumenDTO;
+import com.disciplina.dto.matricula.ResumenMatriculasDTO;
 import com.disciplina.service.EstudianteService;
 import com.disciplina.service.ImportadorMatriculasService;
 import jakarta.validation.Valid;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/matriculas")
@@ -75,23 +74,19 @@ public class MatriculaController {
             @RequestParam(value = "anioLectivo", required = false) Integer anioLectivo,
             @RequestParam(value = "grado", required = false) String grado,
             @RequestParam(value = "grupo", required = false) String grupo,
-            @RequestParam(value = "busqueda", required = false) String busqueda) {
+            @RequestParam(value = "busqueda", required = false) String busqueda,
+            @RequestParam(value = "datosPendientes", required = false) String datosPendientes) {
 
         PaginaRespuestaDTO<EstudianteMatriculaResponseDTO> pagina = estudianteService
-                .listarEstudiantesPaginados(anioLectivo, grado, grupo, busqueda, page, size);
+                .listarEstudiantesPaginados(anioLectivo, grado, grupo, busqueda, datosPendientes, page, size);
         return ResponseEntity.ok(pagina);
     }
 
     @GetMapping("/resumen")
     @PreAuthorize("hasAnyRole('RECTOR', 'ORIENTADOR')")
-    public ResponseEntity<Map<String, Object>> obtenerResumen(
+    public ResponseEntity<ResumenMatriculasDTO> obtenerResumen(
             @RequestParam(value = "anioLectivo", required = false) Integer anioLectivo) {
-
-        long total = estudianteService.contarMatriculasPorAnio(anioLectivo);
-        return ResponseEntity.ok(Map.of(
-                "anioLectivo", anioLectivo != null ? anioLectivo : 2026,
-                "totalMatriculados", total
-        ));
+        return ResponseEntity.ok(estudianteService.obtenerResumenMatriculas(anioLectivo));
     }
 
     @PutMapping("/estudiantes/{id}")

@@ -5,6 +5,7 @@ import {
   PaginaRespuesta,
   ActualizarEstudianteData,
   ExpedienteEstudiante,
+  ResumenMatriculas,
 } from '../types/matricula.types';
 
 export const matriculasApi = {
@@ -34,6 +35,7 @@ export const matriculasApi = {
     grado?: string;
     grupo?: string;
     busqueda?: string;
+    datosPendientes?: 'ACUDIENTE' | 'TELEFONO';
   }): Promise<PaginaRespuesta<EstudianteMatricula>> => {
     const response = await apiClient.get<PaginaRespuesta<EstudianteMatricula>>('/matriculas/estudiantes', {
       params,
@@ -49,8 +51,8 @@ export const matriculasApi = {
     return response.data;
   },
 
-  obtenerResumen: async (anioLectivo?: number): Promise<{ anioLectivo: number; totalMatriculados: number }> => {
-    const response = await apiClient.get<{ anioLectivo: number; totalMatriculados: number }>(
+  obtenerResumen: async (anioLectivo?: number): Promise<ResumenMatriculas> => {
+    const response = await apiClient.get<ResumenMatriculas>(
       '/matriculas/resumen',
       { params: { anioLectivo } }
     );
