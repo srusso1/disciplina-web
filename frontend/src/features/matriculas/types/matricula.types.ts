@@ -1,4 +1,5 @@
 import type { EstadoProceso, RolEstudianteIncidente, CatalogoFalta } from '../../incidentes/types/incidente.types';
+import type { CitacionResponse } from '../../citaciones/types/citacion.types';
 
 export interface AdvertenciaFila {
   fila: number;
@@ -100,6 +101,7 @@ export interface IncidenteHistorialEstudiante {
   falta?: CatalogoFalta;
   descargoEstudiante?: string;
   compromisoIndividual?: string;
+  citaciones: CitacionResponse[];
   createdAt: string;
 }
 

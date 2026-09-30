@@ -14,6 +14,7 @@ import com.disciplina.domain.repository.IncidenteEstudianteRepository;
 import com.disciplina.domain.repository.MatriculaEstudianteRepository;
 import com.disciplina.dto.catalogo.CatalogoFaltaResponseDTO;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
+import com.disciplina.dto.citacion.CitacionResponseDTO;
 import com.disciplina.dto.expediente.*;
 import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
@@ -41,6 +42,7 @@ public class EstudianteService {
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
     private final IncidenteEstudianteRepository incidenteEstudianteRepository;
     private final AuditoriaService auditoriaService;
+    private final CitacionService citacionService;
 
     public PaginaRespuestaDTO<EstudianteMatriculaResponseDTO> listarEstudiantesPaginados(
             Integer anioLectivo,
@@ -223,6 +225,9 @@ public class EstudianteService {
         // 2. Historial de Incidentes y Debido Proceso
         List<IncidenteEstudiante> incidentesRel = incidenteEstudianteRepository
                 .findByEstudianteIdConIncidente(estudianteId);
+        Map<Integer, List<CitacionResponseDTO>> citacionesPorIncidente = citacionService
+                .listarPorEstudiante(estudianteId).stream()
+                .collect(Collectors.groupingBy(CitacionResponseDTO::getIncidenteId));
 
         long agresor = 0;
         long participe = 0;
@@ -281,6 +286,7 @@ public class EstudianteService {
                     .falta(faltaDTO)
                     .descargoEstudiante(ie.getDescargoEstudiante())
                     .compromisoIndividual(ie.getCompromisoIndividual())
+                    .citaciones(citacionesPorIncidente.getOrDefault(inc.getId(), List.of()))
                     .createdAt(inc.getCreatedAt())
                     .build());
         }

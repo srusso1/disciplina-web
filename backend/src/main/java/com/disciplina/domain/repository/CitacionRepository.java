@@ -5,5 +5,6 @@ import java.util.*;
 public interface CitacionRepository extends JpaRepository<Citacion, Long> {
     List<Citacion> findByIncidenteIdOrderByCreatedAtDesc(Integer incidenteId);
     List<Citacion> findByEstudianteIdOrderByFechaCitaDesc(Integer estudianteId);
+    List<Citacion> findByEstudianteIdInOrderByFechaCitaDesc(List<Integer> estudianteIds);
     Optional<Citacion> findByWaMessageId(String waMessageId);
 }

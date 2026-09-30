@@ -1,5 +1,6 @@
 package com.disciplina.domain.model;
 
+import com.disciplina.domain.enums.EstadoCitacion;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,11 +18,19 @@ public class Citacion {
     @Column(name = "hora_cita", nullable = false) private LocalTime horaCita;
     @Column(nullable = false, columnDefinition = "TEXT") private String asunto;
     @Column(columnDefinition = "TEXT") private String observaciones;
-    @Column(nullable = false, length = 20) @Builder.Default private String estado = "PENDIENTE";
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private EstadoCitacion estado = EstadoCitacion.PROGRAMADA;
     @Column(name = "wa_message_id", length = 100) private String waMessageId;
     @Column(name = "wa_estado_envio", length = 20) @Builder.Default private String waEstadoEnvio = "NO_ENVIADO";
     @Column(name = "wa_error_detalle", columnDefinition = "TEXT") private String waErrorDetalle;
     @Column(name = "wa_enviado_at") private Instant waEnviadoAt;
+    @Column(name = "wa_entregado_at") private Instant waEntregadoAt;
+    @Column(name = "wa_leido_at") private Instant waLeidoAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reprogramada_desde_id")
+    private Citacion reprogramadaDesde;
     @CreationTimestamp @Column(name = "created_at", updatable = false) private Instant createdAt;
     @UpdateTimestamp @Column(name = "updated_at") private Instant updatedAt;
 }

@@ -1,6 +1,7 @@
 import { CalendarDays, Clock3, MapPin, MessageCircleOff, UserRound } from 'lucide-react';
 import { CitacionResponse } from '../types/citacion.types';
 import { WaEstadoBadge } from './WaEstadoBadge';
+import { EstadoCitacionBadge } from './EstadoCitacionBadge';
 
 const formatDate = (value: string) => {
   const [year, month, day] = value.split('-').map(Number);
@@ -10,7 +11,13 @@ const formatDate = (value: string) => {
 
 const formatTime = (value: string) => value?.slice(0, 5) || '—';
 
-export const ListaCitaciones = ({ citaciones }: { citaciones: CitacionResponse[] }) => {
+interface Props {
+  citaciones: CitacionResponse[];
+  onGestionar?: (citacion: CitacionResponse) => void;
+  compacta?: boolean;
+}
+
+export const ListaCitaciones = ({ citaciones, onGestionar, compacta = false }: Props) => {
   if (citaciones.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
@@ -38,7 +45,10 @@ export const ListaCitaciones = ({ citaciones }: { citaciones: CitacionResponse[]
                 Acudiente: {citacion.nombreAcudiente || 'Sin nombre registrado'}
               </p>
             </div>
-            <WaEstadoBadge waEstadoEnvio={citacion.waEstadoEnvio} />
+            <div className="flex flex-wrap gap-2">
+              <EstadoCitacionBadge estado={citacion.estado} />
+              <WaEstadoBadge waEstadoEnvio={citacion.waEstadoEnvio} />
+            </div>
           </div>
 
           <div className="mt-3 grid gap-2 rounded-lg bg-slate-50 px-3 py-2.5 text-xs text-slate-600 sm:grid-cols-3">
@@ -48,6 +58,9 @@ export const ListaCitaciones = ({ citaciones }: { citaciones: CitacionResponse[]
           </div>
 
           {citacion.asunto && <p className="mt-3 text-sm leading-relaxed text-slate-600">{citacion.asunto}</p>}
+          {!compacta && citacion.observaciones && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">{citacion.observaciones}</p>}
+
+          {!compacta && <p className="mt-3 text-[11px] text-slate-400">Generada por {citacion.creadoPor}{citacion.waEnviadoAt ? ` · Enviada ${new Date(citacion.waEnviadoAt).toLocaleString('es-CO')}` : ''}{citacion.waLeidoAt ? ` · Leída ${new Date(citacion.waLeidoAt).toLocaleString('es-CO')}` : ''}</p>}
 
           {citacion.waEstadoEnvio === 'FALLIDO' && (
             <details className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
@@ -58,6 +71,7 @@ export const ListaCitaciones = ({ citaciones }: { citaciones: CitacionResponse[]
               <p className="mt-2 break-words leading-relaxed">{citacion.waErrorDetalle || 'WhatsApp no informó un detalle adicional.'}</p>
             </details>
           )}
+          {onGestionar && <button type="button" onClick={() => onGestionar(citacion)} className="mt-3 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Gestionar citación</button>}
         </article>
       ))}
     </div>

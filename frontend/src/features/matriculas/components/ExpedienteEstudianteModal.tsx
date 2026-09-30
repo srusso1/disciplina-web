@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { PlanesIntervencionTab } from './PlanesIntervencionTab';
 import { notify } from '../../../core/utils/notify';
+import { ListaCitaciones } from '../../citaciones/components/ListaCitaciones';
 
 interface ExpedienteEstudianteModalProps {
   estudianteId: number | null;
@@ -529,6 +530,17 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                               </p>
                             </div>
                           )}
+                        </div>
+
+                        <div className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3.5">
+                          <div className="mb-3 flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wider text-trujillo-navy">Comunicación con el acudiente</p>
+                              <p className="mt-0.5 text-[11px] text-slate-500">Citaciones vinculadas a este incidente.</p>
+                            </div>
+                            <span className="rounded-full bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 shadow-sm">{inc.citaciones?.length || 0}</span>
+                          </div>
+                          <ListaCitaciones citaciones={inc.citaciones || []} compacta />
                         </div>
                       </div>
                     ))

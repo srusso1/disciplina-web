@@ -5,6 +5,7 @@ import { incidentesApi } from '../../incidentes/api/incidentesApi';
 import { citacionesApi } from '../api/citacionesApi';
 import { extraerMensajeError } from '../../../core/api/apiClient';
 import { notify } from '../../../core/utils/notify';
+import { CitacionResponse } from '../types/citacion.types';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   incidenteId: number;
   involucrados: InvolucradoResponse[];
-  descripcionHechos?: string;
+  reprogramacion?: CitacionResponse | null;
   onSuccess: () => void;
 }
 
@@ -34,7 +35,7 @@ export const ModalCitacion: React.FC<Props> = ({
   onOpenChange,
   incidenteId,
   involucrados,
-  descripcionHechos,
+  reprogramacion,
   onSuccess,
 }) => {
   const [lugares, setLugares] = useState<{ id: number; nombre: string }[]>([]);
@@ -58,23 +59,22 @@ export const ModalCitacion: React.FC<Props> = ({
 
   useEffect(() => {
     if (!open) return;
-    setEstudianteId('');
-    setLugarCitaId('');
-    setFechaCita(hoyLocal());
-    setHoraCita('');
+    setEstudianteId(reprogramacion ? String(reprogramacion.estudianteId) : '');
+    setLugarCitaId(reprogramacion ? String(reprogramacion.lugarCita.id) : '');
+    setFechaCita(reprogramacion?.fechaCita || hoyLocal());
+    setHoraCita(reprogramacion?.horaCita?.slice(0, 5) || '');
     setAsunto(
-      descripcionHechos
-        ? `Citación relacionada con: ${descripcionHechos.slice(0, 180)}`
-        : 'Citación para tratar el incidente de convivencia escolar.',
+      reprogramacion?.asunto
+        || 'Entrevista de seguimiento, garantía del debido proceso y definición de acciones pedagógicas relacionadas con el incidente de convivencia escolar.',
     );
-    setObservaciones('');
+    setObservaciones(reprogramacion?.observaciones || '');
     setError('');
     setLoadingLugares(true);
     incidentesApi.listarLugares()
       .then(setLugares)
       .catch((exception) => setError(extraerMensajeError(exception, 'No fue posible cargar los lugares.')))
       .finally(() => setLoadingLugares(false));
-  }, [open, descripcionHechos]);
+  }, [open, reprogramacion]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -94,6 +94,7 @@ export const ModalCitacion: React.FC<Props> = ({
         horaCita,
         asunto: asunto.trim(),
         observaciones: observaciones.trim() || undefined,
+        reprogramacionDeId: reprogramacion?.id,
       });
       await onSuccess();
       onOpenChange(false);
@@ -132,9 +133,9 @@ export const ModalCitacion: React.FC<Props> = ({
                 <CalendarClock className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-lg text-slate-900">Programar citación</DialogTitle>
+                <DialogTitle className="text-lg text-slate-900">{reprogramacion ? 'Reprogramar citación' : 'Programar citación'}</DialogTitle>
                 <DialogDescription className="mt-1">
-                  Incidente #{incidenteId}. La citación se registrará y se intentará notificar por WhatsApp.
+                  Incidente #{incidenteId}. {reprogramacion ? `La citación #${reprogramacion.id} será cancelada al registrar la nueva fecha.` : 'La citación se registrará y se intentará notificar por WhatsApp.'}
                 </DialogDescription>
               </div>
             </div>
@@ -215,7 +216,7 @@ export const ModalCitacion: React.FC<Props> = ({
             <button type="button" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Cancelar</button>
             <button type="submit" disabled={isSubmitting || loadingLugares} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-trujillo-navy px-4 text-sm font-semibold text-white transition hover:bg-trujillo-dark disabled:cursor-not-allowed disabled:opacity-50">
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4 text-emerald-300" />}
-              {isSubmitting ? 'Registrando y enviando…' : 'Registrar y enviar'}
+              {isSubmitting ? 'Registrando y enviando…' : reprogramacion ? 'Reprogramar y enviar' : 'Registrar y enviar'}
             </button>
           </DialogFooter>
         </form>

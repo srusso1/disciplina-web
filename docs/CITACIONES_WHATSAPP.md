@@ -24,6 +24,10 @@ Todos los endpoints de citaciones requieren JWT y rol `RECTOR` u `ORIENTADOR`.
 ```text
 POST /api/v1/citaciones
 GET  /api/v1/citaciones/incidente/{incidenteId}
+GET  /api/v1/citaciones/estudiante/{estudianteId}
+PATCH /api/v1/citaciones/{id}/estado
+POST /api/v1/citaciones/{id}/reenviar
+GET  /api/v1/citaciones/{id}/historial
 ```
 
 El webhook es público para Meta:
@@ -39,11 +43,21 @@ El GET valida `hub.mode=subscribe` y `hub.verify_token`, y retorna `hub.challeng
 
 1. Se valida que el incidente exista, no esté cerrado y que el estudiante participe.
 2. Se valida el teléfono del acudiente.
-3. Se persiste la citación como `PENDIENTE` / `NO_ENVIADO`.
+3. Se persiste la citación como `PROGRAMADA` / `NO_ENVIADO`.
 4. El incidente avanza a `CITACION_PADRES` cuando corresponde.
 5. `WhatsAppService` envía el template `citacion_incidente_convivencia` directamente a Graph API usando `RestClient`.
-6. La citación se marca `ENVIADA` / `ENVIADO` o `FALLIDO`, conservando el detalle del error.
+6. El estado institucional permanece `PROGRAMADA`; el canal se marca `ENVIADO` o `FALLIDO`, conservando el detalle del error.
 7. Meta notifica `delivered`, `read` o `failed` en el webhook y se actualiza la trazabilidad.
+
+## Estados y trazabilidad
+
+El estado institucional (`PROGRAMADA`, `CONFIRMADA`, `ASISTIO`, `NO_ASISTIO`, `CANCELADA`)
+es independiente del estado técnico de WhatsApp (`NO_ENVIADO`, `ENVIADO`, `ENTREGADO`, `LEIDO`, `FALLIDO`).
+Cada cambio institucional registra usuario, fecha, acción y motivo. La inasistencia y la cancelación exigen motivo.
+
+Reprogramar no modifica una comunicación ya enviada: crea una nueva citación vinculada, cancela la anterior y
+conserva ambas en el historial. El reenvío por WhatsApp solo está permitido cuando el envío está `FALLIDO` o
+`NO_ENVIADO` y la citación no está cancelada.
 
 ## Prueba local con cURL
 

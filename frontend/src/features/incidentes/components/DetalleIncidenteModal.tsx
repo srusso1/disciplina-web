@@ -32,6 +32,7 @@ import { ModalCitacion } from '../../citaciones/components/ModalCitacion';
 import { ListaCitaciones } from '../../citaciones/components/ListaCitaciones';
 import { citacionesApi } from '../../citaciones/api/citacionesApi';
 import { CitacionResponse } from '../../citaciones/types/citacion.types';
+import { GestionCitacionModal } from '../../citaciones/components/GestionCitacionModal';
 
 interface DetalleIncidenteModalProps {
   incidenteId: number | null;
@@ -74,6 +75,8 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
   const [descargandoPdf, setDescargandoPdf] = useState<boolean>(false);
   const [citaciones, setCitaciones] = useState<CitacionResponse[]>([]);
   const [modalCitacionAbierto, setModalCitacionAbierto] = useState(false);
+  const [citacionGestionada, setCitacionGestionada] = useState<CitacionResponse | null>(null);
+  const [citacionReprogramada, setCitacionReprogramada] = useState<CitacionResponse | null>(null);
 
   const handleDescargarActaPdf = async () => {
     if (!incidente) return;
@@ -119,7 +122,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !modalCitacionAbierto && expedienteEstudianteId === null) {
+      if (e.key === 'Escape' && !modalCitacionAbierto && !citacionGestionada && expedienteEstudianteId === null) {
         onClose();
       }
     };
@@ -128,7 +131,7 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose, modalCitacionAbierto, expedienteEstudianteId]);
+  }, [isOpen, onClose, modalCitacionAbierto, citacionGestionada, expedienteEstudianteId]);
 
   useEffect(() => {
     if (isOpen && incidenteId) {
@@ -140,6 +143,8 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setModalCitacionAbierto(false);
+      setCitacionGestionada(null);
+      setCitacionReprogramada(null);
       setExpedienteEstudianteId(null);
     }
   }, [isOpen]);
@@ -632,9 +637,9 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
               <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div><h3 className="text-sm font-bold uppercase tracking-wider text-trujillo-navy">Citaciones</h3><p className="text-xs text-slate-500">Historial de comunicaciones a acudientes.</p></div>
-                  {incidente.estadoProceso !== 'CERRADO' && <button type="button" onClick={() => setModalCitacionAbierto(true)} className="rounded-xl bg-trujillo-navy px-4 py-2 text-xs font-bold text-white hover:bg-trujillo-navy-light">Programar citación</button>}
+                  {incidente.estadoProceso !== 'CERRADO' && <button type="button" onClick={() => { setCitacionReprogramada(null); setModalCitacionAbierto(true); }} className="rounded-xl bg-trujillo-navy px-4 py-2 text-xs font-bold text-white hover:bg-trujillo-navy-light">Programar citación</button>}
                 </div>
-                <ListaCitaciones citaciones={citaciones} />
+                <ListaCitaciones citaciones={citaciones} onGestionar={setCitacionGestionada} />
               </section>
             </>
           ) : null}
@@ -684,7 +689,17 @@ export const DetalleIncidenteModal: React.FC<DetalleIncidenteModalProps> = ({
         isOpen={expedienteEstudianteId !== null}
         onClose={() => setExpedienteEstudianteId(null)}
       />
-      {incidente && <ModalCitacion open={modalCitacionAbierto} onOpenChange={setModalCitacionAbierto} incidenteId={incidente.id} involucrados={incidente.involucrados} descripcionHechos={incidente.descripcionHechos} onSuccess={cargarCitaciones} />}
+      <GestionCitacionModal
+        citacion={citacionGestionada}
+        onClose={() => setCitacionGestionada(null)}
+        onUpdated={cargarCitaciones}
+        onReprogramar={(citacion) => {
+          setCitacionGestionada(null);
+          setCitacionReprogramada(citacion);
+          setModalCitacionAbierto(true);
+        }}
+      />
+      {incidente && <ModalCitacion open={modalCitacionAbierto} onOpenChange={(open) => { setModalCitacionAbierto(open); if (!open) setCitacionReprogramada(null); }} incidenteId={incidente.id} involucrados={incidente.involucrados} reprogramacion={citacionReprogramada} onSuccess={cargarCitaciones} />}
     </div>
   );
 };
