@@ -7,11 +7,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-disciplina_db}
       POSTGRES_USER: ${POSTGRES_USER:-admin_disciplina}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret_password_2026}
+    # Security: Port 5432 bound strictly to loopback (127.0.0.1) for local host dev & SSH tunnels.
+    # NOT accessible from external/public network interfaces.
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./docker/postgres/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
       - disciplina-net
     healthcheck:
@@ -19,6 +20,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
 
   backend:
     build:
@@ -32,14 +38,29 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-secret_password_2026}
       JWT_SECRET: ${JWT_SECRET:-9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      WHATSAPP_API_URL: ${WHATSAPP_API_URL:-https://graph.facebook.com/v25.0}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+      WHATSAPP_BUSINESS_ACCOUNT_ID: ${WHATSAPP_BUSINESS_ACCOUNT_ID:-}
+      WHATSAPP_WEBHOOK_VERIFY_TOKEN: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+      WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-citacion_incidente_convivencia}
+      WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-es_CO}
       SERVER_PORT: 8080
-    ports:
-      - "${BACKEND_PORT:-8080}:8080"
+      # CORS relaxed for internal reverse proxy communication
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://127.0.0.1}
+    # Security: Backend is only accessed via Nginx reverse proxy, NOT exposed directly to host IP
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - disciplina-net
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
 
   frontend:
     build:
@@ -47,27 +68,42 @@ services:
       dockerfile: Dockerfile
     container_name: disciplina-frontend
     restart: unless-stopped
+    # Only Nginx is exposed to the host / public network (ports 80 and 443)
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     depends_on:
       - backend
     networks:
       - disciplina-net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
+  # pgAdmin utility: disabled by default in production.
+  # Run only on demand with: docker compose --profile debug up -d pgadmin
+  # Bound strictly to 127.0.0.1 (access via SSH tunnel: ssh -L 5050:localhost:5050 user@vm-ip)
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: disciplina-pgadmin
     restart: unless-stopped
+    profiles:
+      - debug
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@disciplina.local}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_disciplina_2026}
     ports:
-      - "${PGADMIN_PORT:-5050}:80"
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - disciplina-net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 volumes:
   pgdata:

@@ -116,7 +116,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publicos de autenticacion y error
-                        .requestMatchers("/auth/**", "/api/v1/auth/**", "/error").permitAll()
+                        .requestMatchers("/auth/**", "/api/v1/auth/**", "/error", "/api/v1/whatsapp/webhook").permitAll()
                         
                         // Defensa en profundidad a nivel de rutas directivas y auditoria forense
                         .requestMatchers(
@@ -137,6 +137,7 @@ public class SecurityConfig {
                                 "/reportes/**", "/api/v1/reportes/**",
                                 "/ia/**", "/api/v1/ia/**",
                                 "/areas-desempeno/**", "/api/v1/areas-desempeno/**",
+                                "/notificaciones/**", "/api/v1/notificaciones/**",
                                 "/api/v1/**"
                         ).hasAnyAuthority("ROLE_RECTOR", "ROLE_ORIENTADOR")
                         

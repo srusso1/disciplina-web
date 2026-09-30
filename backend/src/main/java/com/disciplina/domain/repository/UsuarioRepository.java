@@ -18,4 +18,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByUsernameIgnoreCase(String username);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    java.util.List<Usuario> findByRol(com.disciplina.domain.enums.RolUsuario rol);
+
+    java.util.List<Usuario> findByRolAndActivoTrue(com.disciplina.domain.enums.RolUsuario rol);
 }

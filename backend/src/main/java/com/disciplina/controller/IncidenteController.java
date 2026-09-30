@@ -61,9 +61,18 @@ public class IncidenteController {
     @PatchMapping("/{id}/estado")
     public ResponseEntity<IncidenteResponseDTO> actualizarEstado(
             @PathVariable("id") Integer id,
-            @Valid @RequestBody ActualizarEstadoIncidenteDTO dto) {
+            @Valid @RequestBody ActualizarEstadoIncidenteDTO dto,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(incidenteService.actualizarEstado(id, dto));
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Acceso no autenticado. Se requiere una sesion valida.");
+        }
+        return ResponseEntity.ok(incidenteService.actualizarEstado(id, dto, authentication.getName()));
+    }
+
+    @GetMapping("/{id}/historial-estados")
+    public ResponseEntity<java.util.List<HistorialEstadoIncidenteDTO>> obtenerHistorialEstados(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(incidenteService.obtenerHistorialEstados(id));
     }
 
     @PutMapping("/{id}/estudiantes/{estudianteId}/descargo")

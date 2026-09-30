@@ -14,9 +14,11 @@ import com.disciplina.domain.repository.IncidenteEstudianteRepository;
 import com.disciplina.domain.repository.MatriculaEstudianteRepository;
 import com.disciplina.dto.catalogo.CatalogoFaltaResponseDTO;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
+import com.disciplina.dto.citacion.CitacionResponseDTO;
 import com.disciplina.dto.expediente.*;
 import com.disciplina.dto.matricula.ActualizarEstudianteDTO;
 import com.disciplina.dto.matricula.EstudianteMatriculaResponseDTO;
+import com.disciplina.dto.matricula.ResumenMatriculasDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,12 +43,14 @@ public class EstudianteService {
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
     private final IncidenteEstudianteRepository incidenteEstudianteRepository;
     private final AuditoriaService auditoriaService;
+    private final CitacionService citacionService;
 
     public PaginaRespuestaDTO<EstudianteMatriculaResponseDTO> listarEstudiantesPaginados(
             Integer anioLectivo,
             String grado,
             String grupo,
             String busqueda,
+            String datosPendientes,
             int page,
             int size) {
 
@@ -58,9 +62,10 @@ public class EstudianteService {
         String filtro = (busqueda != null && !busqueda.trim().isEmpty()) ? busqueda.trim() : null;
         String g = (grado != null && !grado.trim().isEmpty()) ? grado.trim() : null;
         String grp = (grupo != null && !grupo.trim().isEmpty()) ? grupo.trim().replaceFirst("^0+(?!$)", "") : null;
+        String pendientes = normalizarFiltroPendientes(datosPendientes);
 
         Page<MatriculaEstudiante> pagina = matriculaEstudianteRepository
-                .buscarMatriculasPaginadas(anio, g, grp, filtro, pageable);
+                .buscarMatriculasPaginadas(anio, g, grp, filtro, pendientes, pageable);
 
         Page<EstudianteMatriculaResponseDTO> paginaDTO = pagina.map(this::mapToDTO);
         return PaginaRespuestaDTO.de(paginaDTO);
@@ -181,6 +186,22 @@ public class EstudianteService {
         return matriculaEstudianteRepository.countByAnioLectivo(anio);
     }
 
+    public ResumenMatriculasDTO obtenerResumenMatriculas(Integer anioLectivo) {
+        int anio = (anioLectivo != null && anioLectivo > 2000) ? anioLectivo : LocalDate.now().getYear();
+        var resumen = matriculaEstudianteRepository.obtenerResumenPorAnio(anio);
+        return new ResumenMatriculasDTO(
+                anio,
+                resumen == null || resumen.getTotalMatriculados() == null ? 0 : resumen.getTotalMatriculados(),
+                resumen == null || resumen.getSinAcudiente() == null ? 0 : resumen.getSinAcudiente(),
+                resumen == null || resumen.getSinTelefonoContacto() == null ? 0 : resumen.getSinTelefonoContacto());
+    }
+
+    private String normalizarFiltroPendientes(String value) {
+        if (value == null || value.isBlank()) return null;
+        String normalizado = value.trim().toUpperCase();
+        return normalizado.equals("ACUDIENTE") || normalizado.equals("TELEFONO") ? normalizado : null;
+    }
+
     private EstudianteMatriculaResponseDTO mapToDTO(MatriculaEstudiante m) {
         Estudiante e = m.getEstudiante();
         return EstudianteMatriculaResponseDTO.builder()
@@ -223,6 +244,9 @@ public class EstudianteService {
         // 2. Historial de Incidentes y Debido Proceso
         List<IncidenteEstudiante> incidentesRel = incidenteEstudianteRepository
                 .findByEstudianteIdConIncidente(estudianteId);
+        Map<Integer, List<CitacionResponseDTO>> citacionesPorIncidente = citacionService
+                .listarPorEstudiante(estudianteId).stream()
+                .collect(Collectors.groupingBy(CitacionResponseDTO::getIncidenteId));
 
         long agresor = 0;
         long participe = 0;
@@ -281,6 +305,7 @@ public class EstudianteService {
                     .falta(faltaDTO)
                     .descargoEstudiante(ie.getDescargoEstudiante())
                     .compromisoIndividual(ie.getCompromisoIndividual())
+                    .citaciones(citacionesPorIncidente.getOrDefault(inc.getId(), List.of()))
                     .createdAt(inc.getCreatedAt())
                     .build());
         }

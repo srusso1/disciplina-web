@@ -57,31 +57,31 @@ const BadgeActivo: React.FC<{ activo: boolean }> = ({ activo }) =>
   );
 
 const inputClass =
-  'w-full h-9 px-3 py-1.5 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-800 focus:border-blue-800 shadow-xs transition-colors';
+  'w-full h-10 px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800 shadow-xs transition-colors';
 
 const selectClass =
-  'w-full h-9 px-3 py-1.5 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-800 focus:border-blue-800 shadow-xs transition-colors bg-white';
+  'w-full h-10 px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800 shadow-xs transition-colors bg-white';
 
 const textareaClass =
-  'w-full px-3 py-2 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-800 focus:border-blue-800 shadow-xs transition-colors';
+  'w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800 shadow-xs transition-colors';
 
-const labelClass = 'block text-xs font-semibold text-slate-700 mb-1';
+const labelClass = 'block text-sm font-semibold text-slate-700 mb-1.5';
 
 const btnPrimary =
-  'bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-medium px-3.5 py-2 rounded-md shadow-xs transition-colors cursor-pointer';
+  'bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-xs transition-colors cursor-pointer';
 
 const btnSecondary =
-  'border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium px-3.5 py-2 rounded-md transition-colors cursor-pointer';
+  'border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors cursor-pointer';
 
 const btnIcon =
-  'p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer';
+  'p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer';
 
 interface ErrorBannerProps {
   message: string;
 }
 const ErrorBanner: React.FC<ErrorBannerProps> = ({ message }) => (
-  <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-md mb-3 flex items-start gap-2">
-    <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+  <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3.5 rounded-lg mb-3 flex items-start gap-2.5">
+    <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
     <span>{message}</span>
   </div>
 );
@@ -108,22 +108,22 @@ const Pagination: React.FC<PaginationProps> = ({
   const start = totalElementos === 0 ? 0 : pagina * pageSize + 1;
   const end = Math.min((pagina + 1) * pageSize, totalElementos);
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 text-xs text-slate-500">
+    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 text-sm text-slate-600">
       <span>
-        Mostrando {start}–{end} de {totalElementos}
+        Mostrando <strong className="text-slate-800 font-semibold">{start}–{end}</strong> de <strong className="text-slate-800 font-semibold">{totalElementos}</strong>
       </span>
       <div className="flex gap-2">
         <button
           onClick={onPrev}
           disabled={primera}
-          className="px-3 py-1 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+          className="px-3.5 py-1.5 rounded-md border border-slate-200 disabled:opacity-40 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
         >
           Anterior
         </button>
         <button
           onClick={onNext}
           disabled={ultima}
-          className="px-3 py-1 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+          className="px-3.5 py-1.5 rounded-md border border-slate-200 disabled:opacity-40 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
         >
           Siguiente
         </button>
@@ -692,31 +692,31 @@ const TabDocentes: React.FC = () => {
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span className="font-semibold text-slate-700">Columnas reconocidas por el motor de importación:</span>
-              <span className="text-[11px] text-slate-500">Compatible con listados oficiales de secretaría y nómina</span>
+              <span className="text-xs text-slate-500 font-medium">Compatible con listados oficiales de secretaría y nómina</span>
             </div>
             <div className="flex flex-wrap gap-1.5 items-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Obligatorias:</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-medium border border-emerald-200">
                 CEDULA / DOCUMENTO
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-medium border border-emerald-200">
                 1NOMBRE / NOMBRES
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[11px] font-medium border border-emerald-200">
+              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-medium border border-emerald-200">
                 1APELLIDO / APELLIDOS
               </span>
 
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mx-1">Opcionales:</span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">
                 2NOMBRE
               </span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">
                 2APELLIDO
               </span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300" title="Si no está presente o está vacía, se asigna 'PENDIENTE POR REGISTRO'">
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300" title="Si no está presente o está vacía, se asigna 'PENDIENTE POR REGISTRO'">
                 AREA (defecto: PENDIENTE POR REGISTRO)
               </span>
-              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[11px] border border-slate-300">
+              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-xs border border-slate-300">
                 CORREO
               </span>
             </div>
@@ -828,24 +828,24 @@ const TabDocentes: React.FC = () => {
             <div className="space-y-3 pt-2">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Filas Leídas</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Filas Leídas</span>
                   <p className="text-xl font-bold text-slate-900 mt-1">{resumenImportacion.totalFilas}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{resumenImportacion.tiempoMs} ms</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{resumenImportacion.tiempoMs} ms</p>
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 border-l-4 border-l-emerald-500">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Docentes Creados</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">Docentes Creados</span>
                   <p className="text-xl font-bold text-emerald-900 mt-1">{resumenImportacion.docentesCreados}</p>
-                  <p className="text-[10px] text-emerald-600 mt-0.5">Nuevos registros</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">Nuevos registros</p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 border-l-4 border-l-blue-500">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800">Actualizados</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-800">Actualizados</span>
                   <p className="text-xl font-bold text-blue-900 mt-1">{resumenImportacion.docentesActualizados}</p>
-                  <p className="text-[10px] text-blue-600 mt-0.5">Por cédula existente</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Por cédula existente</p>
                 </div>
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 border-l-4 border-l-amber-500">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">Inconsistencias</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-800">Inconsistencias</span>
                   <p className="text-xl font-bold text-amber-900 mt-1">{resumenImportacion.advertencias.length + resumenImportacion.errores.length}</p>
-                  <p className="text-[10px] text-amber-600 mt-0.5">Observaciones</p>
+                  <p className="text-xs text-amber-600 mt-0.5">Observaciones</p>
                 </div>
               </div>
 

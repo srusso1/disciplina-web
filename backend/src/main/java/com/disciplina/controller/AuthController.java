@@ -88,9 +88,10 @@ public class AuthController {
                 .expiresIn(jwtTokenProvider.getExpirationMs())
                 .build();
 
+        boolean esConexionSegura = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
         ResponseCookie cookie = ResponseCookie.from("disciplina_token", jwt)
                 .httpOnly(true)
-                .secure(false)
+                .secure(esConexionSegura)
                 .sameSite("Lax")
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtTokenProvider.getExpirationMs()))
@@ -102,10 +103,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse httpResponse) {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse httpResponse) {
+        boolean esConexionSegura = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
         ResponseCookie cookie = ResponseCookie.from("disciplina_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(esConexionSegura)
                 .sameSite("Lax")
                 .path("/")
                 .maxAge(0)

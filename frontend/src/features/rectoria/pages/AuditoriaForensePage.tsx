@@ -175,65 +175,67 @@ export const AuditoriaForensePage: React.FC = () => {
 
       {/* Contenedor de Tabla con Toolbar Integrado de 1 sola línea */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-        {/* Toolbar en 1 sola línea */}
-        <div className="p-2.5 border-b border-slate-200 bg-slate-50/60">
-          <form onSubmit={handleBuscar} className="flex flex-wrap items-center gap-2">
+        {/* Toolbar de Filtros */}
+        <div className="p-3 border-b border-slate-200 bg-slate-50/60">
+          <form onSubmit={handleBuscar} className="flex flex-wrap items-center gap-2.5">
             {/* Búsqueda */}
-            <div className="relative flex-1 min-w-[180px] max-w-xs">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <div className="relative flex-1 min-w-[200px] max-w-xs">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar por ID, usuario, IP..."
-                className="w-full h-9 pl-8 pr-7 text-xs rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-slate-800"
+                className="w-full h-10 pl-9 pr-8 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 text-slate-800"
               />
               {busqueda && (
                 <button
                   type="button"
                   onClick={() => setBusqueda('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* Filtro Entidad */}
-            <select
-              value={filtroEntidad}
-              onChange={(e) => setFiltroEntidad(e.target.value)}
-              className="h-9 px-2.5 text-xs rounded-md border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium"
-            >
-              <option value="">Todas las Entidades</option>
-              <option value="Incidente">Incidente</option>
-              <option value="IncidenteEstudiante">IncidenteEstudiante</option>
-              <option value="PlanIntervencion">Plan de Intervención</option>
-              <option value="MatriculaEstudiante">Matrícula</option>
-            </select>
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+              {/* Filtro Entidad */}
+              <select
+                value={filtroEntidad}
+                onChange={(e) => setFiltroEntidad(e.target.value)}
+                className="w-full sm:w-auto h-10 px-3 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+              >
+                <option value="">Todas las Entidades</option>
+                <option value="Incidente">Incidente</option>
+                <option value="IncidenteEstudiante">IncidenteEstudiante</option>
+                <option value="PlanIntervencion">Plan de Intervención</option>
+                <option value="MatriculaEstudiante">Matrícula</option>
+              </select>
 
-            {/* Filtro Acción */}
-            <select
-              value={filtroAccion}
-              onChange={(e) => setFiltroAccion(e.target.value)}
-              className="h-9 px-2.5 text-xs rounded-md border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium"
-            >
-              <option value="">Todas las Acciones</option>
-              <option value="CREAR">CREAR</option>
-              <option value="CAMBIO_ESTADO">CAMBIO_ESTADO</option>
-              <option value="ACTUALIZAR">ACTUALIZAR</option>
-              <option value="ACTUALIZAR_DESCARGO">ACTUALIZAR_DESCARGO</option>
-              <option value="REGISTRAR_SEGUIMIENTO">REGISTRAR_SEGUIMIENTO</option>
-              <option value="IMPORTACION_MASIVA">IMPORTACION_MASIVA</option>
-            </select>
+              {/* Filtro Acción */}
+              <select
+                value={filtroAccion}
+                onChange={(e) => setFiltroAccion(e.target.value)}
+                className="w-full sm:w-auto h-10 px-3 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+              >
+                <option value="">Todas las Acciones</option>
+                <option value="CREAR">CREAR</option>
+                <option value="CAMBIO_ESTADO">CAMBIO_ESTADO</option>
+                <option value="ACTUALIZAR">ACTUALIZAR</option>
+                <option value="ACTUALIZAR_DESCARGO">ACTUALIZAR_DESCARGO</option>
+                <option value="REGISTRAR_SEGUIMIENTO">REGISTRAR_SEGUIMIENTO</option>
+                <option value="IMPORTACION_MASIVA">IMPORTACION_MASIVA</option>
+              </select>
+            </div>
 
             {/* Rango de Fechas */}
-            <div className="flex items-center gap-1 text-xs text-slate-500">
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500">
               <input
                 type="date"
                 value={fechaDesde}
                 onChange={(e) => setFechaDesde(e.target.value)}
-                className="h-9 text-xs px-2 rounded-md border border-slate-300 bg-white text-slate-700"
+                className="h-10 text-xs sm:text-sm px-2.5 rounded-lg border border-slate-300 bg-white text-slate-700"
                 title="Fecha inicial"
               />
               <span>-</span>
@@ -241,64 +243,132 @@ export const AuditoriaForensePage: React.FC = () => {
                 type="date"
                 value={fechaHasta}
                 onChange={(e) => setFechaHasta(e.target.value)}
-                className="h-9 text-xs px-2 rounded-md border border-slate-300 bg-white text-slate-700"
+                className="h-10 text-xs sm:text-sm px-2.5 rounded-lg border border-slate-300 bg-white text-slate-700"
                 title="Fecha final"
               />
             </div>
 
             {/* Botones */}
-            <button
-              type="submit"
-              className="h-9 px-3 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-xs"
-            >
-              <Search className="w-3.5 h-3.5" />
-              <span>Filtrar</span>
-            </button>
-
-            {(busqueda || filtroEntidad || filtroAccion || fechaDesde || fechaHasta) && (
+            <div className="flex items-center gap-2">
               <button
-                type="button"
-                onClick={handleLimpiarFiltros}
-                className="h-9 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium rounded-md flex items-center gap-1 transition-colors"
+                type="submit"
+                className="flex-1 sm:flex-initial h-10 px-4 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
-                <span>Limpiar</span>
+                <Search className="w-4 h-4" />
+                <span>Filtrar</span>
               </button>
-            )}
 
-            <div className="text-xs text-slate-500 font-medium ml-auto">
-              Total: <strong className="text-slate-700">{totalElementos}</strong> eventos
+              {(busqueda || filtroEntidad || filtroAccion || fechaDesde || fechaHasta) && (
+                <button
+                  type="button"
+                  onClick={handleLimpiarFiltros}
+                  className="h-10 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline">Limpiar</span>
+                </button>
+              )}
+            </div>
+
+            <div className="text-xs sm:text-sm text-slate-600 font-medium sm:ml-auto">
+              Total: <strong className="text-slate-800 font-bold">{totalElementos}</strong> eventos
             </div>
           </form>
         </div>
 
-        {/* Tabla de Registros Forenses */}
-        <div className="overflow-x-auto relative">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+        {/* Vista Móvil: Tarjetas Forenses */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {cargando ? (
+            <div className="py-12 text-center text-slate-500">
+              <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
+              <p className="text-sm font-medium text-slate-600">Consultando registros inmutables de auditoría...</p>
+            </div>
+          ) : registros.length === 0 ? (
+            <div className="py-12 px-4 text-center text-slate-500">
+              <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
+              <p className="text-base font-medium text-slate-700">No se encontraron eventos de auditoría</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Ajusta los filtros o el rango de fechas para consultar registros históricos.
+              </p>
+            </div>
+          ) : (
+            registros.map((r) => (
+              <div key={`mob-audit-${r.id}`} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="font-semibold">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold border ${getBadgeAccion(
+                      r.accion
+                    )}`}
+                  >
+                    {r.accion}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Entidad afectada:</span>
+                    <span className="font-semibold text-slate-800">
+                      {r.entidad} <span className="font-mono text-slate-500">#{r.entidadId}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Usuario responsable:</span>
+                    <span className="font-semibold text-slate-800 truncate max-w-[180px]">
+                      {r.usuarioNombreCompleto || r.usuarioUsername}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Dirección IP:</span>
+                    <span className="font-mono text-slate-600">{r.ipOrigen || '127.0.0.1'}</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setRegistroSeleccionado(r)}
+                  className="w-full min-h-[44px] py-2.5 px-3 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-300 transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
+                >
+                  <Code2 className="w-4 h-4 text-blue-600" />
+                  <span>Inspeccionar Diff Forense</span>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Vista Escritorio: Tabla de Registros Forenses */}
+        <div className="hidden md:block w-full overflow-x-auto lg:overflow-x-visible relative">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-xs">
               <tr>
-                <th className="py-2.5 px-3">Fecha / Hora</th>
-                <th className="py-2.5 px-3">Usuario Actor</th>
-                <th className="py-2.5 px-3">Dirección IP</th>
-                <th className="py-2.5 px-3">Acción</th>
-                <th className="py-2.5 px-3">Entidad</th>
-                <th className="py-2.5 px-3 text-center">Detalle del Cambio</th>
+                <th className="py-3 px-3.5 w-40">Fecha / Hora</th>
+                <th className="py-3 px-3.5 min-w-[160px]">Usuario Actor</th>
+                <th className="py-3 px-3.5 w-32">Dirección IP</th>
+                <th className="py-3 px-3.5 w-36">Acción</th>
+                <th className="py-3 px-3.5 min-w-[150px]">Entidad</th>
+                <th className="py-3 px-3.5 text-center w-28">Detalle</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-slate-100 text-slate-700 text-sm">
               {cargando ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-500">
                     <Loader2 className="w-7 h-7 animate-spin mx-auto text-blue-600 mb-2" />
-                    <p className="text-xs font-medium text-slate-600">Consultando registros inmutables de auditoría...</p>
+                    <p className="text-sm font-medium text-slate-600">Consultando registros inmutables de auditoría...</p>
                   </td>
                 </tr>
               ) : registros.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-500">
                     <FileText className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-[1.5]" />
-                    <p className="text-sm font-medium text-slate-700">No se encontraron eventos de auditoría</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-base font-medium text-slate-700">No se encontraron eventos de auditoría</p>
+                    <p className="text-sm text-slate-400 mt-0.5">
                       Ajusta los filtros o el rango de fechas para consultar registros históricos.
                     </p>
                   </td>
@@ -306,31 +376,34 @@ export const AuditoriaForensePage: React.FC = () => {
               ) : (
                 registros.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-slate-800 font-medium">
+                    <td className="py-3 px-3.5">
+                      <div className="flex items-center gap-1.5 text-slate-800 font-medium text-sm">
                         <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>{new Date(r.createdAt).toLocaleString()}</span>
+                        <span>{new Date(r.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="text-xs text-slate-500 font-normal pl-5">
+                        {new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </div>
                     </td>
 
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <div>
-                        <span className="font-semibold text-slate-900 block">
+                    <td className="py-3 px-3.5">
+                      <div className="min-w-0">
+                        <span className="font-semibold text-slate-900 block text-sm truncate" title={r.usuarioNombreCompleto || r.usuarioUsername}>
                           {r.usuarioNombreCompleto || r.usuarioUsername}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-medium">
+                        <span className="text-xs text-slate-500 font-medium block truncate">
                           {r.usuarioUsername} ({r.usuarioRol?.replace('ROLE_', '') || 'SISTEMA'})
                         </span>
                       </div>
                     </td>
 
-                    <td className="py-2.5 px-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
+                    <td className="py-3 px-3.5 font-mono text-xs text-slate-600">
                       {r.ipOrigen || '127.0.0.1'}
                     </td>
 
-                    <td className="py-2.5 px-3 whitespace-nowrap">
+                    <td className="py-3 px-3.5">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${getBadgeAccion(
+                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold border ${getBadgeAccion(
                           r.accion
                         )}`}
                       >
@@ -338,20 +411,20 @@ export const AuditoriaForensePage: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium text-slate-800">{r.entidad}</span>
-                        <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-semibold">
+                    <td className="py-3 px-3.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-medium text-slate-800 text-sm">{r.entidad}</span>
+                        <span className="font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs font-semibold border border-slate-200">
                           #{r.entidadId}
                         </span>
                       </div>
                     </td>
 
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                    <td className="py-3 px-3.5 text-center">
                       <button
                         type="button"
                         onClick={() => setRegistroSeleccionado(r)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-300 transition-colors shadow-2xs cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors shadow-2xs cursor-pointer"
                         title="Inspeccionar diff JSON forense"
                       >
                         <Code2 className="w-3.5 h-3.5 text-blue-600" />
@@ -367,22 +440,22 @@ export const AuditoriaForensePage: React.FC = () => {
 
         {/* Paginación */}
         {!cargando && totalElementos > 0 && (
-          <div className="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+          <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
             <div className="flex items-center gap-3">
               <span>
-                Mostrando <strong className="text-slate-700">{paginaActual * tamanoPagina + 1}</strong> a{' '}
-                <strong className="text-slate-700">
+                Mostrando <strong className="text-slate-800 font-semibold">{paginaActual * tamanoPagina + 1}</strong> a{' '}
+                <strong className="text-slate-800 font-semibold">
                   {Math.min(totalElementos, (paginaActual + 1) * tamanoPagina)}
                 </strong>{' '}
-                de <strong className="text-slate-700">{totalElementos}</strong> eventos
+                de <strong className="text-slate-800 font-semibold">{totalElementos}</strong> eventos
               </span>
               <div className="h-3.5 w-[1px] bg-slate-300 hidden sm:block" />
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <span>Por pág:</span>
                 <select
                   value={tamanoPagina}
                   onChange={(e) => handleCambiarTamano(Number(e.target.value))}
-                  className="h-7 px-1.5 rounded border border-slate-300 bg-white text-xs text-slate-700"
+                  className="h-8 px-2 rounded-md border border-slate-300 bg-white text-xs text-slate-700"
                 >
                   <option value={10}>10</option>
                   <option value={15}>15</option>
@@ -392,13 +465,13 @@ export const AuditoriaForensePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <span>
-                Página <strong className="text-slate-700">{paginaActual + 1}</strong> de{' '}
-                <strong className="text-slate-700">{totalPaginas}</strong>
+                Página <strong className="text-slate-800 font-semibold">{paginaActual + 1}</strong> de{' '}
+                <strong className="text-slate-800 font-semibold">{totalPaginas}</strong>
               </span>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   title="Primera página"
@@ -407,9 +480,9 @@ export const AuditoriaForensePage: React.FC = () => {
                     setPaginaActual(0);
                     cargarAuditorias(0, tamanoPagina);
                   }}
-                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                  className="p-1.5 rounded-md border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
                 >
-                  <ChevronsLeft className="w-3.5 h-3.5" />
+                  <ChevronsLeft className="w-4 h-4" />
                 </button>
 
                 <button
@@ -421,9 +494,9 @@ export const AuditoriaForensePage: React.FC = () => {
                     setPaginaActual(nueva);
                     cargarAuditorias(nueva, tamanoPagina);
                   }}
-                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                  className="p-1.5 rounded-md border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
 
                 <button
@@ -435,9 +508,9 @@ export const AuditoriaForensePage: React.FC = () => {
                     setPaginaActual(nueva);
                     cargarAuditorias(nueva, tamanoPagina);
                   }}
-                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                  className="p-1.5 rounded-md border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
                 >
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
 
                 <button
@@ -449,9 +522,9 @@ export const AuditoriaForensePage: React.FC = () => {
                     setPaginaActual(ultima);
                     cargarAuditorias(ultima, tamanoPagina);
                   }}
-                  className="p-1 rounded border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
+                  className="p-1.5 rounded-md border border-slate-200 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-slate-600 transition"
                 >
-                  <ChevronsRight className="w-3.5 h-3.5" />
+                  <ChevronsRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -500,7 +573,7 @@ export const AuditoriaForensePage: React.FC = () => {
                     <span>Estado Previo (Antes):</span>
                     <ArrowRightLeft className="w-3 h-3" />
                   </div>
-                  <pre className="p-2.5 bg-slate-900 text-slate-200 rounded-md text-[11px] font-mono overflow-x-auto max-h-64 border border-slate-800">
+                  <pre className="p-2.5 bg-slate-900 text-slate-200 rounded-md text-xs font-mono overflow-x-auto max-h-64 border border-slate-800 leading-relaxed">
                     {formatearJson(registroSeleccionado.datosAnteriores) || 'null (Creación Inicial)'}
                   </pre>
                 </div>
@@ -511,29 +584,29 @@ export const AuditoriaForensePage: React.FC = () => {
                     <span>Estado Posterior (Después):</span>
                     <ArrowRightLeft className="w-3 h-3" />
                   </div>
-                  <pre className="p-2.5 bg-slate-900 text-emerald-300 rounded-md text-[11px] font-mono overflow-x-auto max-h-64 border border-slate-800">
+                  <pre className="p-2.5 bg-slate-900 text-emerald-300 rounded-md text-xs font-mono overflow-x-auto max-h-64 border border-slate-800 leading-relaxed">
                     {formatearJson(registroSeleccionado.datosNuevos) || 'null'}
                   </pre>
                 </div>
               </div>
 
               {/* Ficha Técnica del Evento */}
-              <div className="p-2.5 bg-slate-50 rounded-md border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Acción:</span>
-                  <span className="font-semibold text-slate-800">{registroSeleccionado.accion}</span>
+                  <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block mb-0.5">Acción:</span>
+                  <span className="font-semibold text-slate-800 text-sm">{registroSeleccionado.accion}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Usuario:</span>
-                  <span className="font-semibold text-slate-800">{registroSeleccionado.usuarioUsername}</span>
+                  <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block mb-0.5">Usuario:</span>
+                  <span className="font-semibold text-slate-800 text-sm">{registroSeleccionado.usuarioUsername}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">IP Origen:</span>
-                  <span className="font-mono text-slate-800">{registroSeleccionado.ipOrigen}</span>
+                  <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block mb-0.5">IP Origen:</span>
+                  <span className="font-mono text-slate-800 text-sm">{registroSeleccionado.ipOrigen}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Hora:</span>
-                  <span className="text-slate-800">{new Date(registroSeleccionado.createdAt).toLocaleTimeString()}</span>
+                  <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block mb-0.5">Hora:</span>
+                  <span className="text-slate-800 text-sm">{new Date(registroSeleccionado.createdAt).toLocaleTimeString()}</span>
                 </div>
               </div>
             </div>
@@ -543,7 +616,7 @@ export const AuditoriaForensePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRegistroSeleccionado(null)}
-                className="h-8 px-3 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium transition cursor-pointer"
+                className="h-9 px-4 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium transition cursor-pointer shadow-2xs"
               >
                 Cerrar
               </button>

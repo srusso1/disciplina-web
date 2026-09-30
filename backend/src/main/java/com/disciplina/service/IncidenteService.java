@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 public class IncidenteService {
 
     private final IncidenteRepository incidenteRepository;
+    private final HistorialEstadoIncidenteRepository historialEstadoIncidenteRepository;
     private final IncidenteEstudianteRepository incidenteEstudianteRepository;
     private final DocenteRepository docenteRepository;
     private final LugarRepository lugarRepository;
@@ -40,6 +42,7 @@ public class IncidenteService {
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
     private final CatalogoFaltaRepository catalogoFaltaRepository;
     private final AuditoriaService auditoriaService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public IncidenteResponseDTO registrarIncidente(RegistrarIncidenteDTO dto, String username) {
@@ -129,6 +132,12 @@ public class IncidenteService {
         }
 
         Incidente guardado = incidenteRepository.save(incidente);
+        historialEstadoIncidenteRepository.save(HistorialEstadoIncidente.builder()
+                .incidente(guardado)
+                .estadoNuevo(EstadoProceso.REPORTADO)
+                .usuario(usuario)
+                .fechaCambio(Instant.now())
+                .build());
         log.info("Incidente registrado exitosamente con ID: {} e involucrados: {}", guardado.getId(), guardado.getInvolucrados().size());
 
         auditoriaService.registrarAuditoria(
@@ -143,6 +152,25 @@ public class IncidenteService {
                         "involucrados", guardado.getInvolucrados().size()
                 ),
                 username);
+
+        boolean contieneTipoIII = guardado.getInvolucrados().stream()
+                .anyMatch(ie -> ie.getCatalogoFalta() != null && ie.getCatalogoFalta().getClasificacionLey() == ClasificacionLey.TIPO_III);
+
+        List<com.disciplina.event.IncidenteRegistradoEvent.InvolucradoResumen> resumenes = guardado.getInvolucrados().stream()
+                .map(ie -> com.disciplina.event.IncidenteRegistradoEvent.InvolucradoResumen.builder()
+                        .estudianteId(ie.getEstudiante().getId())
+                        .estudianteNombre(ie.getEstudiante().getNombres() + " " + ie.getEstudiante().getApellidos())
+                        .rol(ie.getRolEstudiante())
+                        .clasificacionLey(ie.getCatalogoFalta() != null ? ie.getCatalogoFalta().getClasificacionLey() : null)
+                        .build()
+                ).toList();
+
+        eventPublisher.publishEvent(com.disciplina.event.IncidenteRegistradoEvent.builder()
+                .incidenteId(guardado.getId())
+                .fechaIncidente(guardado.getFechaIncidente())
+                .contieneTipoIII(contieneTipoIII)
+                .involucrados(resumenes)
+                .build());
 
         return mapearADTO(guardado, null);
     }
@@ -178,6 +206,11 @@ public class IncidenteService {
 
     @Transactional
     public IncidenteResponseDTO actualizarEstado(Integer id, ActualizarEstadoIncidenteDTO dto) {
+        return actualizarEstado(id, dto, null);
+    }
+
+    @Transactional
+    public IncidenteResponseDTO actualizarEstado(Integer id, ActualizarEstadoIncidenteDTO dto, String username) {
         Incidente incidente = incidenteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Incidente no encontrado con ID: " + id));
 
@@ -185,8 +218,21 @@ public class IncidenteService {
         if (estadoAnterior == EstadoProceso.CERRADO && dto.getEstadoProceso() != EstadoProceso.CERRADO) {
             throw new OperacionInvalidaException("No es posible modificar el estado de un incidente que ya se encuentra CERRADO (debido proceso concluido).");
         }
+        if (estadoAnterior == dto.getEstadoProceso()) {
+            return obtenerIncidentePorId(id);
+        }
         incidente.setEstadoProceso(dto.getEstadoProceso());
         incidente = incidenteRepository.save(incidente);
+
+        Usuario autor = username == null ? null : usuarioRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario autenticado no encontrado: " + username));
+        historialEstadoIncidenteRepository.save(HistorialEstadoIncidente.builder()
+                .incidente(incidente)
+                .estadoAnterior(estadoAnterior)
+                .estadoNuevo(dto.getEstadoProceso())
+                .usuario(autor)
+                .fechaCambio(Instant.now())
+                .build());
 
         auditoriaService.registrarAuditoria(
                 "CAMBIO_ESTADO",
@@ -196,7 +242,25 @@ public class IncidenteService {
                 Map.of("estadoProceso", dto.getEstadoProceso().name()),
                 null);
 
+        eventPublisher.publishEvent(com.disciplina.event.EstadoIncidenteCambiadoEvent.builder()
+                .incidenteId(incidente.getId())
+                .estadoAnterior(estadoAnterior)
+                .nuevoEstado(dto.getEstadoProceso())
+                .build());
+
         return obtenerIncidentePorId(incidente.getId());
+    }
+
+    public List<com.disciplina.dto.incidente.HistorialEstadoIncidenteDTO> obtenerHistorialEstados(Integer id) {
+        if (!incidenteRepository.existsById(id)) {
+            throw new RecursoNoEncontradoException("Incidente no encontrado con ID: " + id);
+        }
+        return historialEstadoIncidenteRepository.findByIncidenteIdOrderByFechaCambioDescIdDesc(id).stream()
+                .map(h -> new com.disciplina.dto.incidente.HistorialEstadoIncidenteDTO(
+                        h.getId(), h.getEstadoAnterior(), h.getEstadoNuevo(),
+                        h.getUsuario() == null ? null : h.getUsuario().getNombreCompleto(),
+                        h.getFechaCambio(), h.isLineaBase()))
+                .toList();
     }
 
     @Transactional

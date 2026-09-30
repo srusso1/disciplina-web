@@ -206,7 +206,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] min-h-[480px] flex flex-col justify-between shadow-xl border border-slate-200/80 min-h-0 animate-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] min-h-[560px] flex flex-col justify-between shadow-2xl border border-slate-200/80 min-h-0 animate-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 shrink-0 rounded-t-xl">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-blue-50 text-blue-900 rounded-md border border-blue-100">
@@ -313,11 +313,11 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                             <p className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
                               {estudiante.nombres} {estudiante.apellidos}
                             </p>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-xs text-slate-500 mt-0.5">
                               Doc: {estudiante.documento} • Grado: {(estudiante as Record<string, any>).gradoMomento || `${estudiante.grado}° - ${estudiante.grupo}`}
                             </p>
                           </div>
-                          <span className="text-[10px] font-medium text-blue-900 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                          <span className="text-xs font-medium text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded">
                             Seleccionar
                           </span>
                         </button>
@@ -328,11 +328,11 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                   {!buscandoEstudiante && debouncedBusquedaEstudiante.trim().length >= 2 && estudiantesBusqueda.length === 0 && (
                     <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-md shadow-lg z-50 p-4 text-center animate-in fade-in duration-100">
                       <Users className="w-6 h-6 mx-auto text-slate-300 mb-1.5 stroke-[1.5]" />
-                      <p className="text-xs font-semibold text-slate-700">No se encontraron estudiantes</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-sm font-semibold text-slate-700">No se encontraron estudiantes</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
                         No hay coincidencias para &quot;{debouncedBusquedaEstudiante}&quot;.
                       </p>
-                      <p className="text-[10px] text-slate-400 mt-1">
+                      <p className="text-xs text-slate-400 mt-1">
                         Verifique el número de documento o apellidos, o confirme que la matrícula esté importada en el sistema.
                       </p>
                     </div>
@@ -416,7 +416,7 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
                 className="px-4 py-2 rounded-lg bg-trujillo-navy hover:bg-trujillo-dark text-white text-xs font-semibold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-sm cursor-pointer disabled:cursor-not-allowed"
               >
                 {planForm.guardando ? <Loader2 className="w-3.5 h-3.5 animate-spin text-trujillo-sky" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                <span>Formular Plan Oficial</span>
+                <span>Guardar plan revisado</span>
               </button>
             </div>
           </div>

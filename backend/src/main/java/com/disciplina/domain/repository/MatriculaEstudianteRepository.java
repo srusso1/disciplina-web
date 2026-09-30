@@ -37,6 +37,9 @@ public interface MatriculaEstudianteRepository extends JpaRepository<MatriculaEs
            "WHERE m.anioLectivo = :anioLectivo " +
            "AND (:grado IS NULL OR :grado = '' OR m.grado = :grado) " +
            "AND (:grupo IS NULL OR :grupo = '' OR m.grupo = :grupo) " +
+           "AND (:datosPendientes IS NULL OR :datosPendientes = '' " +
+           "     OR (:datosPendientes = 'ACUDIENTE' AND (e.nombreAcudiente IS NULL OR TRIM(e.nombreAcudiente) = '' OR UPPER(TRIM(e.nombreAcudiente)) = 'PENDIENTE POR REGISTRAR')) " +
+           "     OR (:datosPendientes = 'TELEFONO' AND (e.telefonoAcudiente IS NULL OR TRIM(e.telefonoAcudiente) = '' OR UPPER(TRIM(e.telefonoAcudiente)) = 'SIN REGISTRO'))) " +
            "AND (:filtro IS NULL OR :filtro = '' OR " +
            "     LOWER(e.nombres) LIKE LOWER(CONCAT('%', :filtro, '%')) OR " +
            "     LOWER(e.apellidos) LIKE LOWER(CONCAT('%', :filtro, '%')) OR " +
@@ -46,6 +49,9 @@ public interface MatriculaEstudianteRepository extends JpaRepository<MatriculaEs
            "WHERE m.anioLectivo = :anioLectivo " +
            "AND (:grado IS NULL OR :grado = '' OR m.grado = :grado) " +
            "AND (:grupo IS NULL OR :grupo = '' OR m.grupo = :grupo) " +
+           "AND (:datosPendientes IS NULL OR :datosPendientes = '' " +
+           "     OR (:datosPendientes = 'ACUDIENTE' AND (e.nombreAcudiente IS NULL OR TRIM(e.nombreAcudiente) = '' OR UPPER(TRIM(e.nombreAcudiente)) = 'PENDIENTE POR REGISTRAR')) " +
+           "     OR (:datosPendientes = 'TELEFONO' AND (e.telefonoAcudiente IS NULL OR TRIM(e.telefonoAcudiente) = '' OR UPPER(TRIM(e.telefonoAcudiente)) = 'SIN REGISTRO'))) " +
            "AND (:filtro IS NULL OR :filtro = '' OR " +
            "     LOWER(e.nombres) LIKE LOWER(CONCAT('%', :filtro, '%')) OR " +
            "     LOWER(e.apellidos) LIKE LOWER(CONCAT('%', :filtro, '%')) OR " +
@@ -55,7 +61,27 @@ public interface MatriculaEstudianteRepository extends JpaRepository<MatriculaEs
             @Param("grado") String grado,
             @Param("grupo") String grupo,
             @Param("filtro") String filtro,
+            @Param("datosPendientes") String datosPendientes,
             Pageable pageable);
 
     long countByAnioLectivo(Integer anioLectivo);
+
+    @Query(value = """
+            SELECT
+                COUNT(*) AS totalMatriculados,
+                COUNT(*) FILTER (
+                    WHERE e.nombre_acudiente IS NULL
+                       OR BTRIM(e.nombre_acudiente) = ''
+                       OR UPPER(BTRIM(e.nombre_acudiente)) = 'PENDIENTE POR REGISTRAR'
+                ) AS sinAcudiente,
+                COUNT(*) FILTER (
+                    WHERE e.telefono_acudiente IS NULL
+                       OR BTRIM(e.telefono_acudiente) = ''
+                       OR UPPER(BTRIM(e.telefono_acudiente)) = 'SIN REGISTRO'
+                ) AS sinTelefonoContacto
+            FROM matriculas_estudiante m
+            JOIN estudiantes e ON e.id = m.estudiante_id
+            WHERE m.anio_lectivo = :anioLectivo
+            """, nativeQuery = true)
+    ResumenMatriculasProjection obtenerResumenPorAnio(@Param("anioLectivo") Integer anioLectivo);
 }

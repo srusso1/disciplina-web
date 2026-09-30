@@ -180,7 +180,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
           <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <p className="font-bold text-amber-900">Estudiante sin incidentes convivenciales registrados</p>
-            <p className="text-[11px] text-amber-700 leading-relaxed">
+            <p className="text-xs text-amber-700 leading-relaxed">
               De acuerdo con el Manual de Convivencia y la Ley 1620, los planes de intervención pedagógica formativa requieren un incidente previo reportado en el sistema. Este alumno no registra faltas disciplinarias.
             </p>
           </div>
@@ -366,14 +366,14 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                       Plan #{plan.id}
                     </span>
                     <span
-                      className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${getBadgeEstado(
+                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getBadgeEstado(
                         plan.estado
                       )}`}
                     >
                       {plan.estado.replace('_', ' ')}
                     </span>
                     {plan.incidenteOrigenId && (
-                      <span className="text-[11px] text-slate-500 hidden sm:inline">
+                      <span className="text-xs text-slate-500 hidden sm:inline">
                         (Origen: Caso #{plan.incidenteOrigenId})
                       </span>
                     )}
@@ -381,12 +381,12 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
 
                   <div className="flex items-center gap-3">
                     {plan.fechaProximoSeguimiento && (
-                      <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                      <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                         <Calendar className="w-3.5 h-3.5 text-trujillo-sky" />
                         <span>Próx: {plan.fechaProximoSeguimiento}</span>
                       </div>
                     )}
-                    <span className="text-[11px] text-slate-400 font-medium hidden md:inline">
+                    <span className="text-xs text-slate-400 font-medium hidden md:inline">
                       {plan.seguimientos?.length || 0} evoluciones
                     </span>
                     {expandido ? (
@@ -403,7 +403,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                     {/* Detalles del Plan */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
                       <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-                        <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px] block">
+                        <span className="text-slate-500 font-semibold uppercase tracking-wider text-xs block">
                           Diagnóstico Situacional:
                         </span>
                         <p className="text-slate-800 leading-relaxed font-medium">
@@ -412,7 +412,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                       </div>
 
                       <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-                        <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px] block">
+                        <span className="text-slate-500 font-semibold uppercase tracking-wider text-xs block">
                           Acciones Formativas Acordadas:
                         </span>
                         <p className="text-slate-800 leading-relaxed font-medium">
@@ -423,7 +423,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
 
                     {plan.compromisoPadres && (
                       <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-200/60 space-y-1">
-                        <span className="text-amber-800 font-semibold uppercase tracking-wider text-[10px] block">
+                        <span className="text-amber-800 font-semibold uppercase tracking-wider text-xs block">
                           Compromisos del Entorno Familiar / Acudiente:
                         </span>
                         <p className="text-amber-950 leading-relaxed">
@@ -434,7 +434,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
 
                     {plan.recomendacionesIa && (
                       <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                        <span className="text-slate-600 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                        <span className="text-slate-600 font-semibold uppercase tracking-wider text-xs flex items-center gap-1.5">
                           <BrainCircuit className="w-3.5 h-3.5 text-slate-500" />
                           <span>Recomendaciones Pedagógicas Sugeridas (IA):</span>
                         </span>
@@ -462,7 +462,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                               setNuevoEstadoPlan(plan.estado);
                               setNuevaFechaSeguimiento(plan.fechaProximoSeguimiento || '');
                             }}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-[11px] font-bold border border-sky-200 transition active:scale-[0.98] cursor-pointer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-trujillo-ice hover:bg-sky-100 text-trujillo-navy text-xs font-bold border border-sky-200 transition active:scale-[0.98] cursor-pointer"
                           >
                             <Plus className="w-3.5 h-3.5" />
                             <span>Registrar Seguimiento</span>
@@ -483,14 +483,14 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                             <button
                               type="button"
                               onClick={() => setPlanIdSeguimiento(null)}
-                              className="text-[11px] text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
+                              className="text-xs text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
                             >
                               Cerrar
                             </button>
                           </div>
 
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">
                               Observación / Avance Formativo: <span className="text-rose-500">*</span>
                             </label>
                             <textarea
@@ -505,7 +505,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">
                                 Actualizar Estado del Plan:
                               </label>
                               <select
@@ -520,7 +520,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                             </div>
 
                             <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">
                                 Nueva Fecha Próximo Seguimiento:
                               </label>
                               <input
@@ -536,14 +536,14 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                             <button
                               type="button"
                               onClick={() => setPlanIdSeguimiento(null)}
-                              className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-[11px] font-semibold transition cursor-pointer"
+                              className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold transition cursor-pointer"
                             >
                               Cancelar
                             </button>
                             <button
                               type="submit"
                               disabled={guardandoSeguimiento}
-                              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-[11px] font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+                              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-trujillo-navy hover:bg-trujillo-navy-light text-white text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
                             >
                               {guardandoSeguimiento ? (
                                 <>
@@ -569,7 +569,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                               key={seg.id}
                               className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-1"
                             >
-                              <div className="flex items-center justify-between text-[11px]">
+                              <div className="flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
                                   <User className="w-3.5 h-3.5 text-trujillo-sky" />
                                   <span>{seg.usuarioNombre || 'Orientador Escolar'}</span>
@@ -588,7 +588,7 @@ export const PlanesIntervencionTab: React.FC<PlanesIntervencionTabProps> = ({
                           ))}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-slate-400 italic py-2">
+                        <p className="text-xs text-slate-400 italic py-2">
                           No se han registrado notas de seguimiento para este plan aún.
                         </p>
                       )}

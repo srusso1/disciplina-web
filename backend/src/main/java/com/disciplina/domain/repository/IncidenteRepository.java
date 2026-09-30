@@ -69,6 +69,18 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
 
     long countByEstadoProceso(EstadoProceso estadoProceso);
 
+    @Query("SELECT i.usuarioRegistro.id, MAX(i.createdAt) FROM Incidente i WHERE i.usuarioRegistro.id IN :usuarioIds GROUP BY i.usuarioRegistro.id")
+    java.util.List<Object[]> fechasUltimoRegistroPorUsuarios(@Param("usuarioIds") java.util.Collection<Integer> usuarioIds);
+
+    @Query("""
+        SELECT i FROM Incidente i WHERE i.estadoProceso <> com.disciplina.domain.enums.EstadoProceso.CERRADO
+          AND EXISTS (SELECT h.id FROM HistorialEstadoIncidente h
+                      WHERE h.incidente = i AND h.fechaCambio <= :limite)
+          AND NOT EXISTS (SELECT h.id FROM HistorialEstadoIncidente h
+                          WHERE h.incidente = i AND h.fechaCambio > :limite)
+        """)
+    java.util.List<Incidente> findIncidentesSinCambioEstadoDesde(@Param("limite") java.time.Instant limite);
+
     @Query("""
         SELECT i.lugar.id, i.lugar.nombre, count(i)
         FROM Incidente i
@@ -90,4 +102,14 @@ public interface IncidenteRepository extends JpaRepository<Incidente, Integer> {
         ORDER BY i.fechaIncidente ASC
         """)
     java.util.List<Object[]> obtenerFechasYHorasIncidentes();
+
+    @Query("""
+        SELECT DISTINCT i FROM Incidente i
+        LEFT JOIN i.involucrados inv
+        WHERE i.estadoProceso IN (com.disciplina.domain.enums.EstadoProceso.REPORTADO, com.disciplina.domain.enums.EstadoProceso.EN_INDAGACION)
+          AND i.fechaIncidente <= :fechaLimite
+          AND (inv.id IS NULL OR inv.descargoEstudiante IS NULL OR TRIM(inv.descargoEstudiante) = '')
+        ORDER BY i.fechaIncidente ASC
+        """)
+    java.util.List<Incidente> findIncidentesConTerminoVencido(@Param("fechaLimite") LocalDate fechaLimite);
 }

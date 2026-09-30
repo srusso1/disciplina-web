@@ -3,6 +3,7 @@ package com.disciplina.dto.expediente;
 import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.domain.enums.RolEstudianteIncidente;
 import com.disciplina.dto.catalogo.CatalogoFaltaResponseDTO;
+import com.disciplina.dto.citacion.CitacionResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -31,5 +33,6 @@ public class IncidenteHistorialEstudianteDTO {
     private CatalogoFaltaResponseDTO falta;
     private String descargoEstudiante;
     private String compromisoIndividual;
+    private List<CitacionResponseDTO> citaciones;
     private Instant createdAt;
 }

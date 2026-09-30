@@ -103,7 +103,7 @@ class ImportadorMatriculasServiceTest {
         }
 
         // Mocks
-        when(estudianteRepository.findAll()).thenReturn(new ArrayList<>());
+        when(estudianteRepository.findByDocumentoIn(anySet())).thenReturn(new ArrayList<>());
 
         when(estudianteRepository.saveAll(anyList())).thenAnswer(invocation -> {
             List<Estudiante> list = invocation.getArgument(0);

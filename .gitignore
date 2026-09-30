@@ -1,5 +1,7 @@
 # Target / Build directories
 backend/target/
+backend/.maven-repository/
+backend/.maven-user-home/
 frontend/dist/
 frontend/node_modules/
 
