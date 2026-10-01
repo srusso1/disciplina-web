@@ -18,6 +18,13 @@ public class IncidenteRegistradoEvent {
     private Integer incidenteId;
     private LocalDate fechaIncidente;
     private boolean contieneTipoIII;
+    /**
+     * Una situación exclusivamente Tipo I se registra para trazabilidad, pero se
+     * cierra de inmediato porque su atención corresponde al docente en el aula.
+     */
+    private boolean exclusivamenteTipoI;
+    private String docenteReportanteNombre;
+    private String orientadorRegistroNombre;
     private List<InvolucradoResumen> involucrados;
 
     @Data

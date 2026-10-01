@@ -714,7 +714,9 @@ export const ExpedienteEstudianteModal: React.FC<ExpedienteEstudianteModalProps>
                 <PlanesIntervencionTab
                   estudianteId={expediente.id}
                   estudianteNombre={expediente.nombreCompleto}
-                  incidentes={expediente.historialIncidentes.map((inc) => ({
+                  incidentes={expediente.historialIncidentes
+                    .filter((inc) => inc.estadoProceso !== 'CERRADO')
+                    .map((inc) => ({
                     incidenteId: inc.incidenteId,
                     descripcion: inc.descripcionHechos,
                     faltaCodigo: inc.falta?.codigo,

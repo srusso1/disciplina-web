@@ -221,6 +221,39 @@ class IncidenteControllerTest {
     }
 
     @Test
+    @DisplayName("Debe cerrar inmediatamente una situación exclusivamente Tipo I")
+    void testRegistrarIncidenteTipoIQuedaCerrado() throws Exception {
+        Estudiante est = crearEstudianteConMatricula("07", "0701", 2026);
+        CatalogoFalta faltaTipoI = catalogoFaltaRepository.save(CatalogoFalta.builder()
+                .codigo("T1_" + System.nanoTime())
+                .clasificacionLey(ClasificacionLey.TIPO_I)
+                .gravedadInstitucional(GravedadInstitucional.LEVE)
+                .descripcion("Situación leve para cierre inmediato")
+                .procedimientoSugerido("Manejo directo en aula")
+                .activo(true)
+                .build());
+
+        RegistrarIncidenteDTO dto = RegistrarIncidenteDTO.builder()
+                .docenteReportaId(docentePrueba.getId())
+                .lugarId(lugarPrueba.getId())
+                .fechaIncidente(LocalDate.now())
+                .descripcionHechos("Situación Tipo I registrada por Orientación para dejar constancia institucional.")
+                .involucrados(List.of(InvolucradoRequestDTO.builder()
+                        .estudianteId(est.getId())
+                        .catalogoFaltaId(faltaTipoI.getId())
+                        .rolEstudiante(RolEstudianteIncidente.AGRESOR_PRINCIPAL)
+                        .build()))
+                .build();
+
+        mockMvc.perform(post("/api/v1/incidentes")
+                        .header("Authorization", "Bearer " + tokenOrientador)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.estadoProceso", is("CERRADO")));
+    }
+
+    @Test
     @DisplayName("Debe registrar exitosamente un incidente COLECTIVO con agresor, victima y testigo")
     void testRegistrarIncidenteColectivoExitoso() throws Exception {
         Estudiante agresor = crearEstudianteConMatricula("09", "0901", 2026);

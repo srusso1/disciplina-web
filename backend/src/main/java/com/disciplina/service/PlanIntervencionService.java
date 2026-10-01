@@ -3,6 +3,7 @@ package com.disciplina.service;
 import com.disciplina.common.exception.OperacionInvalidaException;
 import com.disciplina.common.exception.RecursoNoEncontradoException;
 import com.disciplina.domain.enums.EstadoPlanIntervencion;
+import com.disciplina.domain.enums.EstadoProceso;
 import com.disciplina.domain.model.*;
 import com.disciplina.domain.repository.*;
 import com.disciplina.dto.common.PaginaRespuestaDTO;
@@ -46,6 +47,10 @@ public class PlanIntervencionService {
 
         Incidente incidente = incidenteRepository.findById(dto.getIncidenteOrigenId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Incidente de origen no encontrado con ID: " + dto.getIncidenteOrigenId()));
+
+        if (incidente.getEstadoProceso() == EstadoProceso.CERRADO) {
+            throw new OperacionInvalidaException("No es posible formular un plan de intervención sobre un incidente CERRADO. Las situaciones Tipo I cerradas deben ser manejadas directamente por el docente en el aula.");
+        }
 
         boolean estudianteInvolucrado = incidenteEstudianteRepository.findByIncidenteIdAndEstudianteId(
                 incidente.getId(), estudiante.getId()).isPresent();

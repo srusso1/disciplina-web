@@ -72,6 +72,23 @@ public class IncidenteService {
             throw new OperacionInvalidaException("Todo incidente debe incluir al menos una falta disciplinaria tipificada para los estudiantes agresores o participes.");
         }
 
+        // La clasificación se resuelve desde el catálogo institucional, nunca desde
+        // el cliente. Un caso colectivo solo es Tipo I si todas sus faltas aplicables
+        // lo son; la presencia de Tipo II o III conserva la ruta ordinaria.
+        Map<Integer, CatalogoFalta> faltasPorId = new HashMap<>();
+        for (InvolucradoRequestDTO inv : dto.getInvolucrados()) {
+            boolean esParteProtegida = inv.getRolEstudiante() == RolEstudianteIncidente.VICTIMA
+                    || inv.getRolEstudiante() == RolEstudianteIncidente.TESTIGO;
+            if (!esParteProtegida && inv.getCatalogoFaltaId() != null) {
+                CatalogoFalta falta = catalogoFaltaRepository.findById(inv.getCatalogoFaltaId())
+                        .orElseThrow(() -> new RecursoNoEncontradoException("Falta disciplinaria no encontrada con ID: " + inv.getCatalogoFaltaId()));
+                faltasPorId.put(inv.getCatalogoFaltaId(), falta);
+            }
+        }
+        boolean exclusivamenteTipoI = !faltasPorId.isEmpty()
+                && faltasPorId.values().stream()
+                .allMatch(falta -> falta.getClasificacionLey() == ClasificacionLey.TIPO_I);
+
         Incidente incidente = Incidente.builder()
                 .docenteReporta(docente)
                 .lugar(lugar)
@@ -79,7 +96,7 @@ public class IncidenteService {
                 .fechaIncidente(dto.getFechaIncidente())
                 .horaIncidente(dto.getHoraIncidente())
                 .descripcionHechos(dto.getDescripcionHechos().trim())
-                .estadoProceso(EstadoProceso.REPORTADO)
+                .estadoProceso(exclusivamenteTipoI ? EstadoProceso.CERRADO : EstadoProceso.REPORTADO)
                 .build();
 
         int anioLectivo = dto.getFechaIncidente().getYear();
@@ -99,8 +116,7 @@ public class IncidenteService {
                 if (invDto.getCatalogoFaltaId() == null) {
                     throw new OperacionInvalidaException("Debe seleccionar una falta tipificada para cada agresor o participe involucrado.");
                 }
-                falta = catalogoFaltaRepository.findById(invDto.getCatalogoFaltaId())
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Falta disciplinaria no encontrada con ID: " + invDto.getCatalogoFaltaId()));
+                falta = faltasPorId.get(invDto.getCatalogoFaltaId());
             }
 
             // Snapshot histórico inmutable: consultar matrícula del año del hecho
@@ -134,7 +150,7 @@ public class IncidenteService {
         Incidente guardado = incidenteRepository.save(incidente);
         historialEstadoIncidenteRepository.save(HistorialEstadoIncidente.builder()
                 .incidente(guardado)
-                .estadoNuevo(EstadoProceso.REPORTADO)
+                .estadoNuevo(guardado.getEstadoProceso())
                 .usuario(usuario)
                 .fechaCambio(Instant.now())
                 .build());
@@ -149,7 +165,8 @@ public class IncidenteService {
                         "descripcionHechos", guardado.getDescripcionHechos(),
                         "lugarId", lugar.getId(),
                         "docenteReportaId", docente.getId(),
-                        "involucrados", guardado.getInvolucrados().size()
+                        "involucrados", guardado.getInvolucrados().size(),
+                        "cierreAutomaticoTipoI", exclusivamenteTipoI
                 ),
                 username);
 
@@ -169,6 +186,9 @@ public class IncidenteService {
                 .incidenteId(guardado.getId())
                 .fechaIncidente(guardado.getFechaIncidente())
                 .contieneTipoIII(contieneTipoIII)
+                .exclusivamenteTipoI(exclusivamenteTipoI)
+                .docenteReportanteNombre(docente.getNombreCompleto())
+                .orientadorRegistroNombre(usuario.getNombreCompleto())
                 .involucrados(resumenes)
                 .build());
 

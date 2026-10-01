@@ -30,6 +30,24 @@ public class NotificacionEventListener {
         try {
             log.info("Procesando notificaciones para IncidenteRegistradoEvent #{}" , event.getIncidenteId());
 
+            // Las situaciones Tipo I se cierran durante el registro. Rectoría recibe
+            // una constancia informativa, sin activar la ruta de intervención.
+            if (event.isExclusivamenteTipoI()) {
+                notificacionService.notificarPorRol(
+                        RolUsuario.ROLE_RECTOR,
+                        "Registro de situación Tipo I cerrado",
+                        "El docente " + event.getDocenteReportanteNombre()
+                                + " acudió a Orientación con un incidente Tipo I. El orientador "
+                                + event.getOrientadorRegistroNombre()
+                                + " realizó el registro correspondiente; el caso fue cerrado para su manejo directo en el aula.",
+                        TipoNotificacion.INFORMATIVA,
+                        SeveridadNotificacion.MEDIA,
+                        "/rectoria/reportes",
+                        "INCIDENTE", event.getIncidenteId().toString(),
+                        "tipo-i-cerrado:incidente:" + event.getIncidenteId()
+                );
+            }
+
             // 1. Si se registra un incidente con presunta falta Tipo III:
             // Notificar inmediatamente al Rector
             if (event.isContieneTipoIII()) {

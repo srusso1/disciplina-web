@@ -5,6 +5,8 @@ import {
   Users,
   Shield,
   Loader2,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import { incidentesApi } from '../api/incidentesApi';
 import {
@@ -85,6 +87,8 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
 
   const [cargandoCatalogos, setCargandoCatalogos] = useState<boolean>(false);
   const [guardando, setGuardando] = useState<boolean>(false);
+  const [confirmacionTipoIAbierta, setConfirmacionTipoIAbierta] = useState<boolean>(false);
+  const [registroTipoIPendiente, setRegistroTipoIPendiente] = useState<RegistrarIncidenteData | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -99,6 +103,8 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     setAlertaDocenteNoMencionado(false);
     setSugerenciaLugarPendiente(null);
     setAlertaLugarNoMencionado(false);
+    setConfirmacionTipoIAbierta(false);
+    setRegistroTipoIPendiente(null);
     setInvolucrados([
       {
         idTemp: '1',
@@ -283,6 +289,33 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
     }
   };
 
+  const guardarIncidente = async (data: RegistrarIncidenteData) => {
+    setGuardando(true);
+    try {
+      const incidente = await incidentesApi.registrar(data);
+      const fueCerradoPorTipoI = incidente.estadoProceso === 'CERRADO';
+      notify.success(
+        fueCerradoPorTipoI ? 'Situación Tipo I registrada y cerrada' : 'Incidente registrado oficialmente',
+        fueCerradoPorTipoI
+          ? 'Se dejó constancia del reporte. El manejo corresponde directamente al docente en el aula y Rectoría fue informada.'
+          : 'El caso ha sido anexado a la bitácora y hojas de vida de convivencia.'
+      );
+      resetFormulario();
+      onSuccess();
+      onClose();
+    } catch (err: unknown) {
+      const e = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      reportarError(
+        e.response?.data?.message || e.message || 'Error inesperado al registrar el incidente.'
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -360,24 +393,19 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
       involucrados: payloadInvolucrados,
     };
 
-    setGuardando(true);
-    try {
-      await incidentesApi.registrar(data);
-      notify.success('Incidente registrado oficialmente', 'El caso ha sido anexado a la bitácora y hojas de vida de convivencia.');
-      resetFormulario();
-      onSuccess();
-      onClose();
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      reportarError(
-        e.response?.data?.message || e.message || 'Error inesperado al registrar el incidente.'
-      );
-    } finally {
-      setGuardando(false);
+    const faltasAplicables = involucrados
+      .filter((inv) => inv.rolEstudiante !== 'VICTIMA' && inv.rolEstudiante !== 'TESTIGO')
+      .map((inv) => faltas.find((falta) => falta.id === inv.catalogoFaltaId));
+    const esExclusivamenteTipoI = faltasAplicables.length > 0
+      && faltasAplicables.every((falta) => falta?.clasificacionLey === 'TIPO_I');
+
+    if (esExclusivamenteTipoI) {
+      setRegistroTipoIPendiente(data);
+      setConfirmacionTipoIAbierta(true);
+      return;
     }
+
+    await guardarIncidente(data);
   };
 
   if (!isOpen) return null;
@@ -565,6 +593,62 @@ export const RegistrarIncidenteModal: React.FC<RegistrarIncidenteModalProps> = (
           </div>
         </form>
       </div>
+
+      {confirmacionTipoIAbierta && registroTipoIPendiente && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="alerta-tipo-i-title"
+          aria-describedby="alerta-tipo-i-description"
+        >
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="border-b border-amber-100 bg-gradient-to-br from-amber-50 via-white to-orange-50 px-6 pb-5 pt-6 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-200 bg-amber-100 text-amber-700 shadow-sm">
+                <AlertTriangle className="h-7 w-7" aria-hidden="true" />
+              </div>
+              <h3 id="alerta-tipo-i-title" className="mt-4 text-lg font-bold tracking-tight text-slate-900">
+                Se detectó una situación Tipo I
+              </h3>
+              <p id="alerta-tipo-i-description" className="mt-2 text-sm leading-6 text-slate-600">
+                Las situaciones Tipo I deben ser atendidas directamente por el docente en el aula de clases. Orientación registra esta constancia, pero no activa planes de intervención ni la ruta de debido proceso.
+              </p>
+            </div>
+            <div className="space-y-3 px-6 py-5">
+              <div className="flex gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <p>Al aceptar, el incidente quedará cerrado inmediatamente y se notificará a Rectoría sobre el registro realizado.</p>
+              </div>
+              <p className="text-xs leading-5 text-slate-500">
+                Si la tipificación fue incorrecta, puede volver al formulario y corregirla antes de registrar.
+              </p>
+              <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmacionTipoIAbierta(false);
+                    setRegistroTipoIPendiente(null);
+                    scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
+                  }}
+                  disabled={guardando}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Corregir tipificación
+                </button>
+                <button
+                  type="button"
+                  onClick={() => guardarIncidente(registroTipoIPendiente)}
+                  disabled={guardando}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-trujillo-navy px-4 py-2.5 text-sm font-bold text-white transition hover:bg-trujillo-navy-light disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {guardando && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Aceptar y registrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

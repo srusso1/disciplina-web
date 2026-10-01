@@ -74,6 +74,31 @@ class NotificacionEventListenerTest {
     }
 
     @Test
+    @DisplayName("Debe informar a Rectoría cuando un registro exclusivamente Tipo I se cierra de inmediato")
+    void onIncidenteRegistrado_exclusivamenteTipoI() {
+        IncidenteRegistradoEvent event = IncidenteRegistradoEvent.builder()
+                .incidenteId(52)
+                .fechaIncidente(LocalDate.now())
+                .exclusivamenteTipoI(true)
+                .docenteReportanteNombre("María Docente")
+                .orientadorRegistroNombre("Juan Orientador")
+                .involucrados(List.of())
+                .build();
+
+        listener.onIncidenteRegistrado(event);
+
+        verify(notificacionService).notificarPorRol(
+                eq(RolUsuario.ROLE_RECTOR),
+                contains("Tipo I cerrado"),
+                contains("María Docente"),
+                eq(TipoNotificacion.INFORMATIVA),
+                eq(SeveridadNotificacion.MEDIA),
+                eq("/rectoria/reportes"),
+                eq("INCIDENTE"), eq("52"), eq("tipo-i-cerrado:incidente:52")
+        );
+    }
+
+    @Test
     @DisplayName("Debe alertar de presunto acoso si la victima acumula >= 2 registros en 6 semanas")
     void onIncidenteRegistrado_victimaReincidente() {
         IncidenteRegistradoEvent event = IncidenteRegistradoEvent.builder()

@@ -133,7 +133,10 @@ export const FormularPlanModal: React.FC<FormularPlanModalProps> = ({
       .obtenerExpediente(estudianteSeleccionado.id)
       .then((exp) => {
         if (activo) {
-          const incs = exp.historialIncidentes || [];
+          // Un expediente cerrado —incluido el cierre automático de Tipo I— no
+          // puede reabrir la ruta formativa mediante un plan de intervención.
+          const incs = (exp.historialIncidentes || [])
+            .filter((incidente) => incidente.estadoProceso !== 'CERRADO');
           setIncidentesEstudiante(incs);
           if (incs.length === 1) {
             planForm.setIncidenteSeleccionadoId(incs[0].incidenteId);
