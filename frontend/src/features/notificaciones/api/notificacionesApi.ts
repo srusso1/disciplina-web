@@ -8,6 +8,7 @@ export const notificacionesApi = {
     leida?: boolean;
     desde?: string;
     hasta?: string;
+    tamano?: number;
   }): Promise<PaginaNotificaciones> => {
     const response = await apiClient.get<PaginaNotificaciones>('/notificaciones/historial', { params: filtros });
     return response.data;
