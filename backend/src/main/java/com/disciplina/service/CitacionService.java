@@ -9,6 +9,7 @@ import com.disciplina.domain.repository.*;
 import com.disciplina.dto.catalogo.LugarResponseDTO;
 import com.disciplina.dto.citacion.*;
 import com.disciplina.dto.incidente.ActualizarEstadoIncidenteDTO;
+import com.disciplina.event.CitacionPendienteEnvioEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class CitacionService {
     private final WhatsAppService whatsappService;
     private final IncidenteService incidenteService;
     private final AuditoriaService auditoriaService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public CitacionResponseDTO crearCitacion(CrearCitacionDTO dto, String username) {
         Incidente incidente = incidenteRepository.findById(dto.getIncidenteId())
@@ -65,7 +67,7 @@ public class CitacionService {
                     "Reprogramada mediante la citación #" + citacion.getId(), "REPROGRAMACION", usuario);
         }
 
-        enviar(citacion);
+        solicitarEnvioTrasCommit(citacion);
         if (incidente.getEstadoProceso().ordinal() < EstadoProceso.CITACION_PADRES.ordinal()) {
             incidenteService.actualizarEstado(incidente.getId(),
                     new ActualizarEstadoIncidenteDTO(EstadoProceso.CITACION_PADRES, null), username);
@@ -99,7 +101,7 @@ public class CitacionService {
         if (!Set.of("FALLIDO", "NO_ENVIADO").contains(citacion.getWaEstadoEnvio())) {
             throw new OperacionInvalidaException("Solo se pueden reenviar citaciones cuyo envío falló o no fue realizado.");
         }
-        enviar(citacion);
+        solicitarEnvioTrasCommit(citacion);
         Usuario usuario = buscarUsuario(username);
         registrarHistorial(citacion, citacion.getEstado(), citacion.getEstado(), "REENVIO_WHATSAPP", null, usuario);
         auditoriaService.registrarAuditoria("REENVIAR_CITACION", "Citacion", id, null,
@@ -165,12 +167,11 @@ public class CitacionService {
                 .createdAt(c.getCreatedAt()).updatedAt(c.getUpdatedAt()).build();
     }
 
-    private void enviar(Citacion citacion) {
-        WhatsAppEnvioResultado resultado = whatsappService.enviarCitacion(citacion);
-        citacion.setWaEstadoEnvio(resultado.exitoso() ? "ENVIADO" : "FALLIDO");
-        citacion.setWaMessageId(resultado.messageId());
-        citacion.setWaErrorDetalle(resultado.errorDetalle());
-        if (resultado.exitoso()) citacion.setWaEnviadoAt(Instant.now());
+    private void solicitarEnvioTrasCommit(Citacion citacion) {
+        citacion.setWaEstadoEnvio("NO_ENVIADO");
+        citacion.setWaErrorDetalle(null);
+        citacion.setWaMessageId(null);
+        eventPublisher.publishEvent(new CitacionPendienteEnvioEvent(citacion.getId()));
     }
 
     private Citacion obtenerCitacionReprogramada(CrearCitacionDTO dto, Incidente incidente, Estudiante estudiante) {

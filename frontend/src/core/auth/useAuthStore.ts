@@ -5,7 +5,6 @@ import axios from 'axios';
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -23,25 +22,28 @@ const getInitialUser = (): User | null => {
   }
 };
 
-const getInitialToken = (): string | null => {
-  return sessionStorage.getItem('disciplina_token') || localStorage.getItem('disciplina_token');
-};
-
-const initialToken = getInitialToken();
 const initialUser = getInitialUser();
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: initialUser,
-  token: initialToken,
-  isAuthenticated: Boolean(initialToken && initialUser),
+  isAuthenticated: Boolean(initialUser),
   isLoading: false,
   error: null,
 
   login: async (credentials: LoginCredentials): Promise<UserRole> => {
     set({ isLoading: true, error: null });
     try {
+      // Emite XSRF-TOKEN antes del login; Axios lo reenvía automáticamente
+      // en las posteriores mutaciones autenticadas.
+      await apiClient.get('/auth/csrf');
       const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
       const data = response.data;
+
+      // Spring rota/invalida el token CSRF al autenticar para prevenir
+      // fijación de sesión. Debe solicitarse de nuevo después del login;
+      // de lo contrario el primer POST autenticado (p. ej. una citación)
+      // será rechazado con 403.
+      await apiClient.get('/auth/csrf');
 
       const user: User = {
         username: data.username,
@@ -51,16 +53,14 @@ export const useAuthStore = create<AuthState>((set) => ({
         rol: data.rol,
       };
 
-      // Guardar preferentemente en sessionStorage para no persistir sesiones tras cerrar navegador
-      sessionStorage.setItem('disciplina_token', data.token);
+      // Solo se conserva el perfil para restaurar la interfaz. El JWT vive en
+      // una cookie HttpOnly y no es accesible desde JavaScript.
       sessionStorage.setItem('disciplina_user', JSON.stringify(user));
       // Purgar almacenamiento previo en localStorage para mitigar retención indebida en terminales compartidas
-      localStorage.removeItem('disciplina_token');
       localStorage.removeItem('disciplina_user');
 
       set({
         user,
-        token: data.token,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -78,7 +78,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: errorMessage,
         isAuthenticated: false,
         user: null,
-        token: null,
       });
       throw new Error(errorMessage);
     }
@@ -88,13 +87,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Notificar al backend para que invalide la cookie HttpOnly
     apiClient.post('/auth/logout').catch(() => {});
 
-    sessionStorage.removeItem('disciplina_token');
     sessionStorage.removeItem('disciplina_user');
-    localStorage.removeItem('disciplina_token');
     localStorage.removeItem('disciplina_user');
     set({
       user: null,
-      token: null,
       isAuthenticated: false,
       error: null,
     });
@@ -102,6 +98,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearError: () => set({ error: null }),
 }));
+
+// La cookie CSRF no es persistente por diseño. Al restaurar el perfil de la
+// interfaz tras una recarga, solicitamos un token nuevo antes de la primera
+// mutación autenticada (por ejemplo, crear una citación).
+if (initialUser && typeof window !== 'undefined') {
+  void apiClient.get('/auth/csrf').catch(() => {
+    // Un 401 posterior limpiará el perfil; no interrumpir el render inicial.
+  });
+}
 
 // Escuchar evento de 401 disparado por el interceptor de Axios
 if (typeof window !== 'undefined') {

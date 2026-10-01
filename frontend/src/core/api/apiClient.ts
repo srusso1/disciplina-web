@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
@@ -7,30 +7,23 @@ export const apiClient = axios.create({
   },
   timeout: 15000,
   withCredentials: true,
+  // No depender del comportamiento implícito de Axios: el backend emite
+  // XSRF-TOKEN y toda mutación debe devolverlo como X-XSRF-TOKEN.
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+  withXSRFToken: true,
 });
 
-// Interceptor de Peticiones: inyecta Bearer token JWT si existe (prioriza sessionStorage para mitigar XSS en reposo)
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = sessionStorage.getItem('disciplina_token') || localStorage.getItem('disciplina_token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Interceptor de Respuestas: detecta 401 y purga la sesion en todos los almacenamientos
+// La sesión se transporta exclusivamente en la cookie HttpOnly; nunca se expone
+// el JWT a JavaScript mediante Web Storage o cabeceras Bearer.
+// El interceptor purga únicamente el perfil de interfaz ante un 401.
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response && error.response.status === 401) {
       const isAuthEndpoint = error.config?.url?.includes('/auth/login');
       if (!isAuthEndpoint) {
-        sessionStorage.removeItem('disciplina_token');
         sessionStorage.removeItem('disciplina_user');
-        localStorage.removeItem('disciplina_token');
         localStorage.removeItem('disciplina_user');
         window.dispatchEvent(new Event('auth:unauthorized'));
       }

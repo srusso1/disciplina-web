@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.web.csrf.CsrfToken;
 
 import java.time.Duration;
 
@@ -36,6 +38,12 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UsuarioRepository usuarioRepository;
     private final LoginRateLimiterService loginRateLimiterService;
+
+    /** Fuerza la emisión del token CSRF que Axios reenvía como X-XSRF-TOKEN. */
+    @GetMapping("/csrf")
+    public CsrfToken csrf(CsrfToken token) {
+        return token;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest loginRequest,
@@ -78,14 +86,11 @@ public class AuthController {
                 .orElseThrow(() -> new IllegalStateException("Usuario autenticado no encontrado en base de datos"));
 
         JwtResponse response = JwtResponse.builder()
-                .token(jwt)
-                .type("Bearer")
                 .username(usuario.getUsername())
                 .nombres(usuario.getNombres())
                 .apellidos(usuario.getApellidos())
                 .email(usuario.getEmail())
                 .rol(usuario.getRol().name())
-                .expiresIn(jwtTokenProvider.getExpirationMs())
                 .build();
 
         boolean esConexionSegura = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));

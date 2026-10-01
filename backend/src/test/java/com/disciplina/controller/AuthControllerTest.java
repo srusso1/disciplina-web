@@ -79,7 +79,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("Debe autenticar exitosamente y retornar token JWT para credenciales validas")
+    @DisplayName("Debe autenticar exitosamente mediante cookie HttpOnly sin exponer el JWT")
     void testLoginExitoso() throws Exception {
         LoginRequest request = LoginRequest.builder()
                 .username("test_rector")
@@ -90,11 +90,11 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token", notNullValue()))
-                .andExpect(jsonPath("$.type", is("Bearer")))
+                .andExpect(header().string("Set-Cookie", containsString("disciplina_token=")))
+                .andExpect(header().string("Set-Cookie", containsString("HttpOnly")))
+                .andExpect(jsonPath("$.token").doesNotExist())
                 .andExpect(jsonPath("$.username", is("test_rector")))
-                .andExpect(jsonPath("$.rol", is("ROLE_RECTOR")))
-                .andExpect(jsonPath("$.expiresIn", notNullValue()));
+                .andExpect(jsonPath("$.rol", is("ROLE_RECTOR")));
     }
 
     @Test

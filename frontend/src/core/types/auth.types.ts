@@ -14,14 +14,11 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
-  type: string;
   username: string;
   nombres: string;
   apellidos: string;
   email: string;
   rol: UserRole;
-  expiresIn: number;
 }
 
 export interface ApiError {

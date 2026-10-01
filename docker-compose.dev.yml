@@ -1,0 +1,9 @@
+# Override exclusivo para desarrollo local.
+#
+# Mantiene PostgreSQL fuera de la red del host en la configuración base y solo
+# permite ejecutar `./mvnw spring-boot:run` desde la máquina local cuando se
+# solicita explícitamente con este archivo.
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"

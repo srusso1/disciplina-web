@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -30,6 +31,12 @@ public class ImportadorMatriculasService {
 
     private final EstudianteRepository estudianteRepository;
     private final MatriculaEstudianteRepository matriculaEstudianteRepository;
+
+    @Value("${app.importacion.max-rows:10000}")
+    private int maxRows;
+
+    @Value("${app.importacion.max-sheets:10}")
+    private int maxSheets;
 
     private static final Pattern ANIO_PATTERN = Pattern.compile("\\b(20\\d{2})\\b");
 
@@ -57,6 +64,11 @@ public class ImportadorMatriculasService {
                 .build();
 
         try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+            if (workbook.getNumberOfSheets() > maxSheets) {
+                resumen.getErrores().add(new ErrorFilaDTO(0, "ARCHIVO",
+                        "El archivo supera el máximo permitido de " + maxSheets + " hojas."));
+                return resumen;
+            }
             Sheet sheet = buscarHojaDatos(workbook);
             if (sheet == null) {
                 resumen.getErrores().add(new ErrorFilaDTO(1, "N/A", "No se encontro ninguna hoja de datos valida en el archivo Excel"));
@@ -75,6 +87,11 @@ public class ImportadorMatriculasService {
             Map<String, Integer> colMap = mapearColumnas(sheet.getRow(headerRowIndex));
 
             int totalRows = sheet.getLastRowNum();
+            if (totalRows > maxRows) {
+                resumen.getErrores().add(new ErrorFilaDTO(0, "ARCHIVO",
+                        "El archivo supera el máximo permitido de " + maxRows + " filas."));
+                return resumen;
+            }
             List<FilaParsed> filasValidas = new ArrayList<>();
 
             for (int r = headerRowIndex + 1; r <= totalRows; r++) {

@@ -6,13 +6,28 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-disciplina_db}
       POSTGRES_USER: ${POSTGRES_USER:-admin_disciplina}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret_password_2026}
-    # Security: Port 5432 bound strictly to loopback (127.0.0.1) for local host dev & SSH tunnels.
-    # NOT accessible from external/public network interfaces.
-    ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatorio}
+      APP_DB_USER: ${APP_DB_USER:?APP_DB_USER es obligatorio}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatorio}
+    # Sin publicación al host: únicamente el backend en disciplina-net accede a PostgreSQL.
+    expose:
+      - "5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./docker/postgres/02-create-runtime-role.sh:/docker-entrypoint-initdb.d/02-create-runtime-role.sh:ro
+    command:
+      - postgres
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
+      - -c
+      - max_connections=${POSTGRES_MAX_CONNECTIONS:-20}
+      - -c
+      - shared_buffers=${POSTGRES_SHARED_BUFFERS:-64MB}
+      - -c
+      - work_mem=${POSTGRES_WORK_MEM:-1MB}
+      - -c
+      - maintenance_work_mem=${POSTGRES_MAINTENANCE_WORK_MEM:-32MB}
     networks:
       - disciplina-net
     healthcheck:
@@ -24,7 +39,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          # Ajustable por entorno. El valor por defecto deja margen para el host
+          # en una instancia de prueba con 1 GB de RAM.
+          memory: ${POSTGRES_MEMORY_LIMIT:-320M}
+          cpus: ${POSTGRES_CPU_LIMIT:-0.50}
 
   backend:
     build:
@@ -34,9 +52,11 @@ services:
     restart: unless-stopped
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-disciplina_db}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-admin_disciplina}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-secret_password_2026}
-      JWT_SECRET: ${JWT_SECRET:-9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b}
+      SPRING_DATASOURCE_USERNAME: ${APP_DB_USER:?APP_DB_USER es obligatorio}
+      SPRING_DATASOURCE_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatorio}
+      SPRING_FLYWAY_USER: ${POSTGRES_USER:-admin_disciplina}
+      SPRING_FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatorio}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatorio}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       WHATSAPP_API_URL: ${WHATSAPP_API_URL:-https://graph.facebook.com/v25.0}
       WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
@@ -46,6 +66,14 @@ services:
       WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
       WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-citacion_incidente_convivencia}
       WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-es_CO}
+      # La aplicación resuelve estos valores en application.yml. Mantenerlos
+      # fuera de la imagen permite aumentar capacidad sin cambiar código.
+      DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-4}
+      DB_POOL_MIN_IDLE: ${DB_POOL_MIN_IDLE:-1}
+      DB_POOL_IDLE_TIMEOUT_MS: ${DB_POOL_IDLE_TIMEOUT_MS:-300000}
+      DB_POOL_CONNECTION_TIMEOUT_MS: ${DB_POOL_CONNECTION_TIMEOUT_MS:-10000}
+      DB_POOL_VALIDATION_TIMEOUT_MS: ${DB_POOL_VALIDATION_TIMEOUT_MS:-3000}
+      DB_POOL_MAX_LIFETIME_MS: ${DB_POOL_MAX_LIFETIME_MS:-1200000}
       SERVER_PORT: 8080
       # CORS relaxed for internal reverse proxy communication
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://127.0.0.1}
@@ -60,7 +88,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: ${BACKEND_MEMORY_LIMIT:-448M}
 
   frontend:
     build:
@@ -79,7 +107,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: ${FRONTEND_MEMORY_LIMIT:-96M}
 
   # pgAdmin utility: disabled by default in production.
   # Run only on demand with: docker compose --profile debug up -d pgadmin
@@ -92,7 +120,8 @@ services:
       - debug
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@disciplina.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_disciplina_2026}
+      # Sin fallback conocido. Al activar el perfil debug debe configurarse en .env.
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-}
     ports:
       - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
     depends_on:
@@ -103,7 +132,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: ${PGADMIN_MEMORY_LIMIT:-256M}
 
 volumes:
   pgdata:

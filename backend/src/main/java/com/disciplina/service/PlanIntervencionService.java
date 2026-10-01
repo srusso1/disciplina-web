@@ -117,7 +117,9 @@ public class PlanIntervencionService {
             int page,
             int size) {
 
-        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
+        int paginaValida = Math.max(0, page);
+        int tamanoValido = (size > 0 && size <= 100) ? size : 10;
+        Pageable pageable = PageRequest.of(paginaValida, tamanoValido);
         Page<PlanIntervencion> resultado = planIntervencionRepository.buscarPlanesPaginados(
                 estado,
                 busqueda != null ? busqueda.trim() : null,

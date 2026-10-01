@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+: "${APP_DB_USER:?APP_DB_USER es obligatorio}"
+: "${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatorio}"
+
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 \
+  --set app_db_user="$APP_DB_USER" --set app_db_password="$APP_DB_PASSWORD" <<'SQL'
+SELECT format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT PASSWORD %L',
+              :'app_db_user', :'app_db_password')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'app_db_user')\gexec
+
+REVOKE ALL ON DATABASE disciplina_db FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT CONNECT ON DATABASE disciplina_db TO :"app_db_user";
+GRANT USAGE ON SCHEMA public TO :"app_db_user";
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO :"app_db_user";
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO :"app_db_user";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"app_db_user";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO :"app_db_user";
+SQL

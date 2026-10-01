@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -67,7 +68,9 @@ public class WhatsAppService {
                                             .map(value -> Map.of("type", "text", "text", value))
                                             .toList()))));
 
-            Map<?, ?> response = restClientBuilder.build().post()
+            Map<?, ?> response = restClientBuilder
+                    .requestFactory(requestFactory())
+                    .build().post()
                     .uri(properties.getApiUrl() + "/" + properties.getPhoneNumberId() + "/messages")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getAccessToken())
                     .contentType(MediaType.APPLICATION_JSON).body(body).retrieve().body(Map.class);
@@ -109,5 +112,12 @@ public class WhatsAppService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private SimpleClientHttpRequestFactory requestFactory() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofSeconds(5));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(10));
+        return factory;
     }
 }
