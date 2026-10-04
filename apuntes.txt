@@ -1,0 +1,3 @@
+WHATSAPP:
+
+id_plantilla: 1873784590656931 (https://business.facebook.com/latest/whatsapp_manager/template_details?business_id=1112294667991559&tab=template-details&childRoute=CAPI&psp_linking_success=false&id=1873784590656931&nav_ref=whatsapp_manager&asset_id=1785813209416084)
